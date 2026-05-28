@@ -954,7 +954,8 @@ namespace pk3DS.WinForms
                 // If the column is an "Address"-type (virtual) and we're targeting code.bin,
                 // auto-subtract the 0x100000 ExeFS load base to get the real file offset.
                 bool isAddressColumn = offKey.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0
-                                    && offKey.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) < 0;
+                                    && offKey.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) < 0
+                                    && offKey.IndexOf("File", StringComparison.OrdinalIgnoreCase) < 0;
                 bool isCodeBin = target.ToLower().Contains("code");
                 if (isAddressColumn && isCodeBin && off >= 0x100000u)
                     off -= 0x100000u;
