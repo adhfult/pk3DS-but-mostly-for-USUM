@@ -19,86 +19,86 @@ public struct Item
 
     private byte _HeldEffect;
     [Category(Battle)]
-        public byte HeldEffect { get => _HeldEffect; set => _HeldEffect = value; }
+        public byte HeldEffect { readonly get => _HeldEffect; set => _HeldEffect = value; }
 
     private byte _HeldArgument;
-        public byte HeldArgument { get => _HeldArgument; set => _HeldArgument = value; }
+        public byte HeldArgument { readonly get => _HeldArgument; set => _HeldArgument = value; }
     private byte _NaturalGiftEffect;
-        public byte NaturalGiftEffect { get => _NaturalGiftEffect; set => _NaturalGiftEffect = value; }
+        public byte NaturalGiftEffect { readonly get => _NaturalGiftEffect; set => _NaturalGiftEffect = value; }
     private byte _FlingEffect;
-        public byte FlingEffect { get => _FlingEffect; set => _FlingEffect = value; }
+        public byte FlingEffect { readonly get => _FlingEffect; set => _FlingEffect = value; }
     private byte _FlingPower;
-        public byte FlingPower { get => _FlingPower; set => _FlingPower = value; }
+        public byte FlingPower { readonly get => _FlingPower; set => _FlingPower = value; }
     private byte _NaturalGiftPower;
-        public byte NaturalGiftPower { get => _NaturalGiftPower; set => _NaturalGiftPower = value; }
+        public byte NaturalGiftPower { readonly get => _NaturalGiftPower; set => _NaturalGiftPower = value; }
     private ushort _Packed;
-        public ushort Packed { get => _Packed; set => _Packed = value; }
+        public ushort Packed { readonly get => _Packed; set => _Packed = value; }
 
     private byte _EffectField;
     [Category(Field), Description("Routine # to call when used; 0=unusable.")]
-        public byte EffectField { get => _EffectField; set => _EffectField = value; }
+        public byte EffectField { readonly get => _EffectField; set => _EffectField = value; }
 
     private byte _EffectBattle;
     [Category(Battle), Description("Routine # to call when used; 0=unusable.")]
-        public byte EffectBattle { get => _EffectBattle; set => _EffectBattle = value; } // Battle Type
+        public byte EffectBattle { readonly get => _EffectBattle; set => _EffectBattle = value; } // Battle Type
 
     private byte _Unk_0xC;
-        public byte Unk_0xC { get => _Unk_0xC; set => _Unk_0xC = value; } // 0 or 1
+        public byte Unk_0xC { readonly get => _Unk_0xC; set => _Unk_0xC = value; } // 0 or 1
     private byte _Unk_0xD;
-        public byte Unk_0xD { get => _Unk_0xD; set => _Unk_0xD = value; } // Classification (0-3 Battle, 4 Balls, 5 Mail)
+        public byte Unk_0xD { readonly get => _Unk_0xD; set => _Unk_0xD = value; } // Classification (0-3 Battle, 4 Balls, 5 Mail)
     private byte _Consumable;
-        private byte Consumable { get => _Consumable; set => _Consumable = value; } // 4 bits for use consume, 4 bits for use not consumed
+        private byte Consumable { readonly get => _Consumable; set => _Consumable = value; } // 4 bits for use consume, 4 bits for use not consumed
     private byte _SortIndex;
-        public byte SortIndex { get => _SortIndex; set => _SortIndex = value; }
+        public byte SortIndex { readonly get => _SortIndex; set => _SortIndex = value; }
     private BattleStatusFlags _CureInflict;
-        public BattleStatusFlags CureInflict { get => _CureInflict; set => _CureInflict = value; } // Bitflags
+        public BattleStatusFlags CureInflict { readonly get => _CureInflict; set => _CureInflict = value; } // Bitflags
     private byte Boost0; // Revive 1, Sacred Ash 3, Rare Candy 5, EvoStone 8, upper4 for BoostAtk
     private byte Boost1; // DEF, SPA
     private byte Boost2; // SPD, SPE
     private byte Boost3; // ACC, CRIT PPUpFlags
     private ItemFlags1 _FunctionFlags0;
-        public ItemFlags1 FunctionFlags0 { get => _FunctionFlags0; set => _FunctionFlags0 = value; }
+        public ItemFlags1 FunctionFlags0 { readonly get => _FunctionFlags0; set => _FunctionFlags0 = value; }
     private ItemFlags2 _FunctionFlags1;
-        public ItemFlags2 FunctionFlags1 { get => _FunctionFlags1; set => _FunctionFlags1 = value; }
+        public ItemFlags2 FunctionFlags1 { readonly get => _FunctionFlags1; set => _FunctionFlags1 = value; }
 
     private sbyte _EVHP;
     [Category(Field), Description("Adds EVs to the HP stat.")]
-        public sbyte EVHP { get => _EVHP; set => _EVHP = value; }
+        public sbyte EVHP { readonly get => _EVHP; set => _EVHP = value; }
 
     private sbyte _EVATK;
     [Category(Field), Description("Adds EVs to the Attack stat.")]
-        public sbyte EVATK { get => _EVATK; set => _EVATK = value; }
+        public sbyte EVATK { readonly get => _EVATK; set => _EVATK = value; }
 
     private sbyte _EVDEF;
     [Category(Field), Description("Adds EVs to the Defense stat.")]
-        public sbyte EVDEF { get => _EVDEF; set => _EVDEF = value; }
+        public sbyte EVDEF { readonly get => _EVDEF; set => _EVDEF = value; }
 
     private sbyte _EVSPE;
     [Category(Field), Description("Adds EVs to the Speed stat.")]
-        public sbyte EVSPE { get => _EVSPE; set => _EVSPE = value; }
+        public sbyte EVSPE { readonly get => _EVSPE; set => _EVSPE = value; }
 
     private sbyte _EVSPA;
     [Category(Field), Description("Adds EVs to the Sp. Attack stat.")]
-        public sbyte EVSPA { get => _EVSPA; set => _EVSPA = value; }
+        public sbyte EVSPA { readonly get => _EVSPA; set => _EVSPA = value; }
 
     private sbyte _EVSPD;
     [Category(Field), Description("Adds EVs to the Sp. Defense stat.")]
-        public sbyte EVSPD { get => _EVSPD; set => _EVSPD = value; }
+        public sbyte EVSPD { readonly get => _EVSPD; set => _EVSPD = value; }
 
     private Heal _HealAmount;
     [Category(Heal), Description("Determines the healing percent, or if a flat value is used."), RefreshProperties(RefreshProperties.All)]
-        public Heal HealAmount { get => _HealAmount; set => _HealAmount = value; }
+        public Heal HealAmount { readonly get => _HealAmount; set => _HealAmount = value; }
 
     private byte _PPGain;
     [Category(Field), Description("PP to be added to the move's current PP if used.")]
-        public byte PPGain { get => _PPGain; set => _PPGain = value; }
+        public byte PPGain { readonly get => _PPGain; set => _PPGain = value; }
 
     private sbyte _Friendship1;
-        public sbyte Friendship1 { get => _Friendship1; set => _Friendship1 = value; }
+        public sbyte Friendship1 { readonly get => _Friendship1; set => _Friendship1 = value; }
     private sbyte _Friendship2;
-        public sbyte Friendship2 { get => _Friendship2; set => _Friendship2 = value; }
+        public sbyte Friendship2 { readonly get => _Friendship2; set => _Friendship2 = value; }
     private sbyte _Friendship3;
-        public sbyte Friendship3 { get => _Friendship3; set => _Friendship3 = value; }
+        public sbyte Friendship3 { readonly get => _Friendship3; set => _Friendship3 = value; }
     public byte _0x23, _0x24;
     #endregion
 
