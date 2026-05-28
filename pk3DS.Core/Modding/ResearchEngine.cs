@@ -1291,23 +1291,18 @@ public static class ResearchEngine
             }
         }
         
-        // Vanilla fallback: read from known vanilla TM item table, capped at 100 entries
-        int vanillaMax = Math.Min(count, 100);
-        if (code.Length > 0x4BB794 + vanillaMax * 2)
+        // Vanilla fallback: just return the default vanilla TM items, extended if necessary
+        ushort[] readItemsFallback = new ushort[count];
+        for (int i = 0; i < count; i++)
         {
-            ushort[] readItems = new ushort[count];
-            for (int i = 0; i < vanillaMax; i++)
-                readItems[i] = BitConverter.ToUInt16(code, 0x4BB794 + i * 2);
-            
-            // Use defaults for anything beyond the vanilla table
-            for (int i = vanillaMax; i < count; i++)
-            {
-                if (i < defaultItems.Length)
-                    readItems[i] = defaultItems[i];
-            }
-            return readItems;
+            if (i < defaultItems.Length)
+                readItemsFallback[i] = defaultItems[i];
+            else if (i >= 107)
+                readItemsFallback[i] = (ushort)(960 + (i - 107)); // Default expansion start ID is 960
+            else
+                readItemsFallback[i] = 0;
         }
-        return defaultItems;
+        return readItemsFallback;
     }
 
 

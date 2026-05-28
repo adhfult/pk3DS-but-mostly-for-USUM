@@ -338,10 +338,22 @@ public partial class TMEditor7 : Form
 
         // Update descriptions
         string[] itemNames = Main.Config.GetText(TextName.ItemNames);
+        if (maxItemID >= itemNames.Length)
+        {
+            Array.Resize(ref itemNames, maxItemID + 1);
+            for (int i = 0; i < itemNames.Length; i++)
+                if (itemNames[i] == null) itemNames[i] = "???";
+        }
         for (int i = 0; i < tmlist.Length; i++) { int target = itemlist[i]; if (target > 0 && target < itemNames.Length) { itemNames[target] = $"TM{(i+1):D3}"; } }
         Main.Config.SetText(TextName.ItemNames, itemNames);
         
         string[] itemDescriptions = Main.Config.GetText(TextName.ItemFlavor);
+        if (maxItemID >= itemDescriptions.Length)
+        {
+            Array.Resize(ref itemDescriptions, maxItemID + 1);
+            for (int i = 0; i < itemDescriptions.Length; i++)
+                if (itemDescriptions[i] == null) itemDescriptions[i] = "???";
+        }
         string[] moveDescriptions = Main.Config.GetText(TextName.MoveFlavor);
         
         // TM01-TM92
