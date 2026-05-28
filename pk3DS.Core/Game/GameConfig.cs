@@ -218,12 +218,12 @@ public class GameConfig
 
     private GARC.MemGARC GetMemGARC(string file)
     {
-        return new(File.ReadAllBytes(GetGARCPath(file)));
+        return new(GetGARCPath(file));
     }
 
     private GARC.LazyGARC GetlzGARC(string file)
     {
-        return new(File.ReadAllBytes(GetGARCPath(file)));
+        return new(GetGARCPath(file));
     }
 
     public string RomFS, ExeFS;

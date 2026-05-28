@@ -262,11 +262,13 @@ private int PromptFormMapping(string formName)
                 }
             }
         }
-        pkm.Moves = [.. moves];
-        pkm.Levels = [.. levels];
+        var sorted = levels.Select((l, i) => new { Level = l, Move = moves[i] })
+                           .OrderBy(x => x.Level)
+                           .ToList();
+        pkm.Levels = sorted.Select(x => x.Level).ToArray();
+        pkm.Moves = sorted.Select(x => x.Move).ToArray();
         int dataIndex = entry < files.Length ? entry : baseForms[entry];
         files[dataIndex] = pkm.Write();
-        GenerateFullChangelog();
         LogChange($"Saved changes for {CB_Species.Text}");
     }
 
@@ -346,8 +348,8 @@ private int PromptFormMapping(string formName)
     private void GenerateFullChangelog()
     {
         if (vanillaFiles == null) { WinFormsUtil.Alert("Vanilla baseline missing."); return; }
-        RTB_Changelog.Clear();
-        RTB_Changelog.AppendText("=== LEVEL-UP CHANGELOG ===\n");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("=== LEVEL-UP CHANGELOG ===");
         int changes = 0;
 
         for (int i = 1; i < files.Length; i++)
@@ -370,14 +372,15 @@ private int PromptFormMapping(string formName)
             if (added.Count > 0 || removed.Count > 0)
             {
                 string speciesName = (CB_Species.Items.Count > i) ? CB_Species.Items[i].ToString() : $"Entry {i}";
-                RTB_Changelog.AppendText($"\n[{i:000} - {speciesName}]\n");
+                sb.AppendLine($"\n[{i:000} - {speciesName}]");
                 
-                foreach (var move in added) RTB_Changelog.AppendText($"  + Added: {move}\n");
-                foreach (var move in removed) RTB_Changelog.AppendText($"  - Removed: {move}\n");
+                foreach (var move in added) sb.AppendLine($"  + Added: {move}");
+                foreach (var move in removed) sb.AppendLine($"  - Removed: {move}");
                 changes++;
             }
         }
-        RTB_Changelog.AppendText($"\nTotal Modified Species: {changes}\n");
+        sb.AppendLine($"\nTotal Modified Species: {changes}");
+        RTB_Changelog.Text = sb.ToString();
     }
 
     private void B_AddMove_Click(object sender, EventArgs e)
@@ -392,6 +395,9 @@ private int PromptFormMapping(string formName)
         
         pkm.Levels = [.. levels];
         pkm.Moves = [.. moves];
+        
+        int dataIndex = entry < files.Length ? entry : baseForms[entry];
+        files[dataIndex] = pkm.Write();
         GetList();
     }
 
@@ -399,7 +405,6 @@ private int PromptFormMapping(string formName)
     {
         if (dgv.CurrentRow == null) return;
         int rowIdx = dgv.CurrentRow.Index;
-        int colIdx = dgv.CurrentCell.ColumnIndex;
         
         SetList(); // Commit current UI state
         if (pkm == null) return;
@@ -407,16 +412,16 @@ private int PromptFormMapping(string formName)
         var levels = pkm.Levels.ToList();
         var moves = pkm.Moves.ToList();
         
-        // Determine which move to remove (Single Column)
-        int targetIdx = rowIdx;
-        
-        if (targetIdx < levels.Count)
+        if (rowIdx < levels.Count)
         {
-            levels.RemoveAt(targetIdx);
-            moves.RemoveAt(targetIdx);
+            levels.RemoveAt(rowIdx);
+            moves.RemoveAt(rowIdx);
             
             pkm.Levels = [.. levels];
             pkm.Moves = [.. moves];
+            
+            int dataIndex = entry < files.Length ? entry : baseForms[entry];
+            files[dataIndex] = pkm.Write();
             GetList();
         }
     }

@@ -59,23 +59,30 @@ namespace pk3DS.Core.CTR
         public static byte[] ExpandSegment(byte[] data, char section, int bytesToAdd, int insertionPointRequested = -1, byte fill = 0x00)
         {
             int fileSize = data.Length;
-            uint segmentTableOffset = ReadU32(data, 0xC8);
             if (ReadU32(data, 0x80) != 0x304F5243) // "CRO0" magic
                 return data; // Not a CRO file, do not expand.
-            
-            uint[] startTable = GetSegmentStartIndices(data);
+
+            // Use inline header fields (0xB0-0xBC) for segment boundaries.
+            // The segment table pointer at 0xC8 can point into string data on some CROs.
+            uint codeStart = ReadU32(data, 0xB0);
+            uint codeSize  = ReadU32(data, 0xB4);
+            uint dataStart = ReadU32(data, 0xB8);
+            uint dataSize  = ReadU32(data, 0xBC);
 
             uint segmentEnd = 0;
-            // .code, .rodata, .data
-            if (section == 'c') segmentEnd = startTable[0] + ReadU32(data, (int)segmentTableOffset + 4);
-            else if (section == 'r') segmentEnd = startTable[1] + ReadU32(data, (int)segmentTableOffset + 0x10);
-            else if (section == 'd') segmentEnd = startTable[2] + ReadU32(data, (int)segmentTableOffset + 0x1C);
+            if (section == 'c') segmentEnd = codeStart + codeSize;
+            else if (section == 'r') segmentEnd = dataStart; // rodata sits between code and data
+            else if (section == 'd') segmentEnd = dataStart + dataSize;
             else segmentEnd = (uint)data.Length;
+
+            // Validate segment boundaries before proceeding
+            if (segmentEnd > (uint)fileSize || segmentEnd == 0)
+                segmentEnd = (uint)fileSize;
 
             // Use insertion point if provided and valid, otherwise append to end of segment
             uint skipCheck = (insertionPointRequested >= 0) ? (uint)insertionPointRequested : segmentEnd;
             int skip = (int)skipCheck;
-            if (skip > fileSize) skip = fileSize; // Safety clamp
+            if (skip < 0 || skip > fileSize) skip = fileSize; // Safety clamp
 
             byte[] newData = new byte[fileSize + Math.Abs(bytesToAdd)];
             if (bytesToAdd > 0)
@@ -91,32 +98,22 @@ namespace pk3DS.Core.CTR
                 Array.Copy(data, skip + del, newData, skip, fileSize - skip - del);
             }
 
-            // 1. Update Segment Table entries and starts
-            if (segmentTableOffset >= skip) segmentTableOffset += (uint)bytesToAdd;
-            WriteU32(newData, segmentTableOffset, 0xC8);
+            // 1. Update inline segment fields in the header
+            if (section == 'c') UpdateOffsetPointer(newData, 0xB4, bytesToAdd); // Code size
+            else if (section == 'r') { /* rodata size not stored inline; skip */ }
+            else if (section == 'd') UpdateOffsetPointer(newData, 0xBC, bytesToAdd); // Data size
 
-            // Update individual segment lengths
-            if (section == 'c') UpdateOffsetPointer(newData, (int)segmentTableOffset + 4, bytesToAdd);
-            else if (section == 'r') UpdateOffsetPointer(newData, (int)segmentTableOffset + 0x10, bytesToAdd);
-            else if (section == 'd') UpdateOffsetPointer(newData, (int)segmentTableOffset + 0x1C, bytesToAdd);
+            // Update segment table pointer and other header offsets that shifted
+            uint segmentTableOffset = ReadU32(newData, 0xC8);
+            if (segmentTableOffset >= (uint)skip) { segmentTableOffset += (uint)bytesToAdd; WriteU32(newData, segmentTableOffset, 0xC8); }
 
-            // Update all segment start addresses that are after the skip point
-            for (int i = 0; i < 4; i++)
-            {
-                int startPtr = (int)segmentTableOffset + i * 0x0C;
-                uint s = ReadU32(newData, startPtr);
-                if (s >= skip)
-                {
-                    s += (uint)bytesToAdd;
-                    WriteU32(newData, s, startPtr);
-                }
-            }
+            // Update inline segment start offsets that shifted
+            UpdateOffsetPointer(newData, 0xB0, bytesToAdd, skipCheck); // Code start
+            UpdateOffsetPointer(newData, 0xB8, bytesToAdd, skipCheck); // Data start
 
             // 2. Global Header Pointers
             UpdateOffsetPointer(newData, 0x84, bytesToAdd, skipCheck); // Name Offset
             WriteU32(newData, (uint)(fileSize + bytesToAdd), 0x90); // File Size
-            UpdateOffsetPointer(newData, 0xB8, bytesToAdd, skipCheck); // Data Start
-            UpdateOffsetPointer(newData, 0xBC, bytesToAdd, skipCheck);
             for (int x = 0; x < 15; x++)
                 UpdateOffsetPointer(newData, 0xC0 + x * 8, bytesToAdd, skipCheck);
 
@@ -234,10 +231,20 @@ namespace pk3DS.Core.CTR
 
         public static uint[] GetSegmentStartIndices(byte[] data)
         {
-            uint segmentTableOffset = ReadU32(data, 0xC8);
+            // Use inline header fields instead of the segment table at 0xC8,
+            // which can point into string data on some CROs (like USUM Battle.cro).
+            uint codeStart = ReadU32(data, 0xB0);
+            uint dataStart = ReadU32(data, 0xB8);
+            uint codeSize  = ReadU32(data, 0xB4);
+            uint dataSize  = ReadU32(data, 0xBC);
+            uint bssSize   = ReadU32(data, 0x94);
+
+            // Segment layout: [0]=code, [1]=rodata (between code+data), [2]=data, [3]=bss
             uint[] starts = new uint[4];
-            for (int i = 0; i < 4; i++)
-                starts[i] = ReadU32(data, (int)(segmentTableOffset + i * 0x0C));
+            starts[0] = codeStart;                     // .code
+            starts[1] = codeStart + codeSize;           // .rodata (immediately after code)
+            starts[2] = dataStart;                      // .data
+            starts[3] = dataStart + dataSize;            // .bss
             return starts;
         }
 

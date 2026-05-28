@@ -64,11 +64,6 @@ public partial class PersonalEditor7 : Form
         entryNames = Main.Config.Personal.GetPersonalEntryList(altForms, species, Main.Config.MaxSpeciesID, out baseForms, out formVal);
         TMs = TMEditor7.GetTMHMList();
 
-        Setup();
-        LoadVanillaStats();
-        if (CB_Species.Items.Count > 1) CB_Species.SelectedIndex = 1;
-        RandSettings.GetFormSettings(this, TP_Randomizer.Controls);
-
         B_GenerateDiff.Click += (s, e) => GenerateFullChangelog();
         B_CopyPage1.Click += B_CopyPage1_Click;
         B_PastePage1.Click += B_PastePage1_Click;
@@ -105,10 +100,58 @@ public partial class PersonalEditor7 : Form
         CB_ZMove.SelectedIndexChanged += (s, e) => { if (!reading) SaveEntry(); };
         B_SaveCurrent.Click += (s, e) => { SaveEntry(); WinFormsUtil.Alert("Current Pokémon saved to internal buffer."); };
 
-        this.FormClosing += Form_Closing;
         RegisterAutosave(TP_General.Controls);
-        RegisterAutosave(TP_MoveTutors.Controls);
+        NUD_TutorBase = new NumericUpDown
+        {
+            Minimum = 0x28, Maximum = 0x2F, Hexadecimal = true, 
+            Value = 0x29, Location = new Point(370, 370), Size = new Size(50, 20),
+            Enabled = false // Locked — ASM patch expects base 0x29
+        };
+        L_TutorBase = new Label { Text = "Base:", Location = new Point(300, 373), Size = new Size(70, 20) };
+        B_AlignTutors = new Button { Text = "Align", Location = new Point(430, 368), Size = new Size(50, 24) };
+        L_ContinuousTutors = new CheckBox { Text = "Continuous Mapping (ASM)", Location = new Point(490, 370), Size = new Size(200, 20), Checked = true, Enabled = false };
+
+        TP_MoveTutors.Controls.Add(L_TutorBase);
+        TP_MoveTutors.Controls.Add(NUD_TutorBase);
+        TP_MoveTutors.Controls.Add(B_AlignTutors);
+        TP_MoveTutors.Controls.Add(L_ContinuousTutors);
+
+        B_CopyTutors = new Button { Text = "Copy Tutors", Location = new Point(300, 405), Size = new Size(130, 30) };
+        B_PasteTutors = new Button { Text = "Paste Tutors", Location = new Point(440, 405), Size = new Size(130, 30) };
+        B_CopyTutors.Click += B_CopyTutors_Click;
+        B_PasteTutors.Click += B_PasteTutors_Click;
+        TP_MoveTutors.Controls.Add(B_CopyTutors);
+        TP_MoveTutors.Controls.Add(B_PasteTutors);
+
+        B_AlignTutors.Click += B_AlignTutors_Click;
+        L_NewTutors.Visible = false;
+        L_Special.Visible = false; // Get rid of Special Tutors text
+        CLB_NewTutors.Visible = false;
+        CLB_BeachTutors.Location = new Point(300, 35);
+        CLB_BeachTutors.Width = 490;
+        CLB_BeachTutors.Height = 275;
+        CLB_BeachTutors.MultiColumn = true;
+        CLB_BeachTutors.ColumnWidth = 150;
+
+        L_DebugTutors = new RichTextBox 
+        { 
+            ReadOnly = true, 
+            BackColor = Color.Black, 
+            ForeColor = Color.Yellow, 
+            Font = new Font("Consolas", 8),
+            Location = new Point(300, 315), 
+            Size = new Size(490, 45),
+            BorderStyle = BorderStyle.None
+        };
+        TP_MoveTutors.Controls.Add(L_DebugTutors);
+
+        Setup();
+        LoadVanillaStats();
+        if (CB_Species.Items.Count > 1) CB_Species.SelectedIndex = 1;
+        RandSettings.GetFormSettings(this, TP_Randomizer.Controls);
     }
+
+
 
     private void RegisterAutosave(Control.ControlCollection controls)
     {
@@ -120,6 +163,67 @@ public partial class PersonalEditor7 : Form
             
             if (c.HasChildren) RegisterAutosave(c.Controls);
         }
+    }
+
+    private void InitializeMoveTutors()
+    {
+        string croPath = Path.Combine(Main.RomFSPath, "Shop.cro");
+        var tutorData = TutorEditor7.GetUSUMTutorData(croPath, Tutors_USUM);
+        
+        CLB_MoveTutors.Items.Clear();
+        CLB_BeachTutors.Items.Clear();
+        
+        L_Special.Visible = CLB_MoveTutors.Visible = true;
+        L_Special.Text = "Special Tutors:";
+        L_Special.Location = new Point(230, 5);
+        CLB_MoveTutors.Location = new Point(233, 25);
+        CLB_MoveTutors.Size = new Size(160, 280);
+        CLB_MoveTutors.MultiColumn = false;
+
+        L_BeachTutors.Visible = CLB_BeachTutors.Visible = true;
+        L_BeachTutors.Text = "Beach Tutors:";
+        L_BeachTutors.Location = new Point(410, 5);
+        CLB_BeachTutors.Location = new Point(413, 25);
+        CLB_BeachTutors.Size = new Size(240, 280);
+        CLB_BeachTutors.MultiColumn = false;
+
+        List<int> beachMap = [];
+        int baseOfs = (int)NUD_TutorBase.Value;
+        int startBit = (baseOfs - 0x28) * 32;
+
+        // 1. Add Special Tutors (Always Bits 0-7)
+        for (int i = 0; i < tutormoves.Length; i++)
+        {
+            int moveID = tutormoves[i];
+            string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
+            CLB_MoveTutors.Items.Add($"[{moveID:000}] {name}");
+        }
+
+        // 2. Add Vanilla Beach Tutors
+        for (int i = 0; i < Tutors_USUM.Length; i++)
+        {
+            int moveID = Tutors_USUM[i];
+            string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
+            CLB_BeachTutors.Items.Add($"[{moveID:000}] {name}");
+            beachMap.Add(startBit + i);
+        }
+
+        // 3. Add Expansion Moves
+        var seen = new HashSet<int>(Tutors_USUM);
+        var shopTutors = tutorData.moves;
+        int nextExpIndex = 67;
+        for (int i = 0; i < shopTutors.Length; i++)
+        {
+            int moveID = shopTutors[i];
+            if (moveID > 0 && !seen.Contains(moveID))
+            {
+                seen.Add(moveID);
+                string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
+                CLB_BeachTutors.Items.Add($"* [{moveID:000}] {name}");
+                beachMap.Add(startBit + nextExpIndex++);
+            }
+        }
+        Tutors_Beach_Map = beachMap.ToArray();
     }
     // Removed redundant handler
     #region Global Variables
@@ -175,16 +279,30 @@ public partial class PersonalEditor7 : Form
     private string[] entryNames;
     private readonly ushort[] TMs;
     private int entry = -1;
+    private NumericUpDown NUD_TutorBase;
+    private Button B_AlignTutors;
+    private Button B_CopyTutors;
+    private Button B_PasteTutors;
+    private Label L_TutorBase;
+    private CheckBox L_ContinuousTutors;
+    private RichTextBox L_DebugTutors;
+    private int[] Tutors_Beach_Map;
     private static bool[] ClipboardTMs;
     private static bool[] ClipboardTutors;
     private static bool[] ClipboardBeachTutors;
     private readonly byte[][] originalFiles;
     #endregion
     private bool reading;
-    private int[] Tutors_Beach_Map; // Mapping from UI index to actual bit index
-    private int[] Tutors_New_Map;   // Mapping from New Tutors UI index to CRO bit index
+    private int tutorBase = 0x29;
     private void Setup()
     {
+        reading = true;
+        if (Main.Config.USUM)
+        {
+            tutorBase = 0x29;
+            NUD_TutorBase.Value = tutorBase;
+        }
+
         CLB_TM.Items.Clear();
         CB_Species.Items.Clear();
         CLB_MoveTutors.Items.Clear();
@@ -259,52 +377,28 @@ public partial class PersonalEditor7 : Form
         CB_EXPGroup.Items.AddRange(EXPGroups);
         CB_EXPGroup.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
         CB_EXPGroup.AutoCompleteSource = AutoCompleteSource.ListItems;
-
         if (Main.Config.USUM)
         {
-            string croPath = Path.Combine(Main.RomFSPath, "Shop.cro");
-            var tutorData = TutorEditor7.GetUSUMTutorData(croPath, Tutors_USUM);
-            
-            // 1. Beach Tutors (Map UI items to their correct vanilla bits)
-            CLB_BeachTutors.Items.Clear();
-            List<int> beachMap = [];
-            for (int i = 0; i < Tutors_USUM.Length; i++)
-            {
-                int moveID = Tutors_USUM[i];
-                CLB_BeachTutors.Items.Add($"[{moveID:000}] {(moveID < moves.Length ? moves[moveID] : $"Move {moveID}")}");
-                
-                // Use the vanilla bit index if found, otherwise its slot in CRO
-                int bitIdx = Array.IndexOf(Tutors_USUM_Vanilla_Bits, moveID);
-                if (bitIdx == -1) bitIdx = Array.IndexOf(tutorData.moves, moveID);
-                beachMap.Add(bitIdx);
-            }
-            Tutors_Beach_Map = beachMap.ToArray();
-
-            // 2. New Tutors (Moves in CRO not in the predefined Vanilla list)
-            CLB_NewTutors.Items.Clear();
-            List<int> newMap = [];
-            var vanillaSet = new HashSet<int>(Tutors_USUM);
-            for (int i = 0; i < tutorData.moves.Length; i++)
-            {
-                int moveID = tutorData.moves[i];
-                if (!vanillaSet.Contains(moveID))
-                {
-                    CLB_NewTutors.Items.Add($"[{moveID:000}] {(moveID < moves.Length ? moves[moveID] : $"Move {moveID}")}");
-                    newMap.Add(i);
-                }
-            }
-            Tutors_New_Map = newMap.ToArray();
+            InitializeMoveTutors();
         }
 
         CLB_BeachTutors.ItemCheck += (s, e) => { if (!reading) BeginInvoke(new Action(() => SaveEntry(false))); };
         CLB_NewTutors.ItemCheck += (s, e) => { if (!reading) BeginInvoke(new Action(() => SaveEntry(false))); };
         CLB_MoveTutors.ItemCheck += (s, e) => { if (!reading) BeginInvoke(new Action(() => SaveEntry(false))); };
-        CLB_TM.ItemCheck += (s, e) => { if (!reading) BeginInvoke(new Action(() => SaveEntry(false))); };
+        CLB_TM.ItemCheck += (s, e) => { 
+            if (!reading) 
+            { 
+                if (e.Index >= 0 && e.Index < pkm.TMHM.Length)
+                    pkm.TMHM[e.Index] = (e.NewValue == CheckState.Checked);
+                BeginInvoke(new Action(() => SaveEntry(false))); 
+            } 
+        };
 
         // toggle usum content
         CHK_BeachTutors.Checked = CHK_BeachTutors.Visible =
             CLB_BeachTutors.Visible = CLB_BeachTutors.Enabled = L_BeachTutors.Visible = Main.Config.USUM;
-
+        
+        reading = false;
         if (entry > -1 && entry < CB_Species.Items.Count) CB_Species.SelectedIndex = entry;
     }
 
@@ -326,7 +420,9 @@ public partial class PersonalEditor7 : Form
             return;
 
         // ── Phase 1: Update in-memory arrays ──
-        files = form.ResultPersonal;
+        // Filter out the Master Table from the result if it was accidentally carried over
+        int entryLen = form.ResultPersonal[0].Length;
+        files = form.ResultPersonal.Where(f => f != null && f.Length == entryLen).ToArray();
         evolutionFiles = form.ResultEvolution;
         learnsets = form.ResultLevelUp;
         eggmoves = form.ResultEggMoves;
@@ -378,7 +474,6 @@ public partial class PersonalEditor7 : Form
         entryNames = Main.Config.Personal.GetPersonalEntryList(altForms, species, Main.Config.MaxSpeciesID, out baseForms, out formVal);
 
         // ── Phase 4: Resort if requested ──
-        if (form.ShouldResort) ResortFileStructure();
 
         // ── Phase 5: Refresh the UI ──
         Setup();
@@ -415,126 +510,19 @@ public partial class PersonalEditor7 : Form
         array = list.ToArray();
     }
 
-    private void B_SortForms_Click(object sender, EventArgs e)
-    {
-        if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Perform a global species-contiguous resort? This will shift file pointers for Models, Animations, Cries, and Sprites.") != DialogResult.Yes)
-            return;
-
-        ResortFileStructure();
-    }
-
-    private void ResortFileStructure()
-    {
-        if (Main.Config.Version is not (GameVersion.US or GameVersion.UM or GameVersion.USUM))
-        {
-            WinFormsUtil.Alert("Resort logic currently only optimized for USUM.");
-            return;
-        }
-
-        // 1. Calculate Permutation
-        var order = Enumerable.Range(0, entryNames.Length)
-            .OrderBy(i => baseForms[i])
-            .ThenBy(i => i)
-            .ToArray();
-
-        int[] oldToNew = new int[entryNames.Length];
-        for (int i = 0; i < order.Length; i++) oldToNew[order[i]] = i;
-
-        // 2. Update Main Tables in Memory
-        files = Reorder(files, order);
-        learnsets = Reorder(learnsets, order);
-        eggmoves = Reorder(eggmoves, order);
-        evolutionFiles = Reorder(evolutionFiles, order);
-
-        // 3. Realignment: All form pointers must be updated to their new indices
-        for (int i = 0; i < files.Length; i++)
-        {
-            int oldPtr = BitConverter.ToUInt16(files[i], 0x1C);
-            if (oldPtr == 0) continue;
-            
-            // Map old pointer to new pointer using oldToNew table
-            int newPtr = oldToNew[oldPtr];
-            byte[] ptrBytes = BitConverter.GetBytes((ushort)newPtr);
-            files[i][0x1C] = ptrBytes[0];
-            files[i][0x1D] = ptrBytes[1];
-        }
-
-        // 4. Update Global Config and Refresh Info Objects
-        Main.Config.Personal.Table = files.Select(f => PersonalTable.GetInfo(f, Main.Config.Version)).ToArray();
-        
-        // Refresh names and base forms logic
-        var altForms = Main.Config.Personal.GetFormList(species, Main.Config.MaxSpeciesID);
-        entryNames = Main.Config.Personal.GetPersonalEntryList(altForms, species, Main.Config.MaxSpeciesID, out baseForms, out formVal);
-
-        // 5. Persist resorted data to disk
-        try
-        {
-            byte[][] personalWithTable = [.. files, RebuildMasterTable(files)];
-            Main.Config.GARCPersonal.Files = personalWithTable;
-            Main.Config.GARCPersonal.Save();
-
-            Main.Config.GARCLearnsets.Files = learnsets;
-            Main.Config.GARCLearnsets.Save();
-
-            var eggGarc = Main.Config.GetGARCData("eggmove");
-            if (eggGarc != null) { eggGarc.Files = eggmoves; eggGarc.Save(); }
-
-            var evoGarc = Main.Config.GetGARCData("evolution");
-            if (evoGarc != null) { evoGarc.Files = evolutionFiles; evoGarc.Save(); }
-            
-            // Memory cleanup after heavy resort
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        }
-        catch (Exception ex)
-        {
-            WinFormsUtil.Error("Failed to save resorted GARCs.", ex.Message);
-        }
-
-        Setup(); // Refresh UI with new order
-        WinFormsUtil.Alert("Global resort and repointing complete. All GARCs have been synchronized.");
-    }
-
-    private T[] Reorder<T>(T[] array, int[] order)
-    {
-        if (array == null) return null;
-        var newArray = new T[array.Length];
-        for (int i = 0; i < Math.Min(order.Length, array.Length); i++) 
-        {
-            int idx = order[i];
-            if (idx >= 0 && idx < array.Length)
-                newArray[i] = array[idx];
-        }
-        return newArray;
-    }
-
-    private void SyncGARC(string path, int[] order)
-    {
-        if (!File.Exists(path)) return;
-        var memgarc = new GARC.MemGARC(File.ReadAllBytes(path));
-        var oldFiles = memgarc.Files;
-        var newFiles = new byte[oldFiles.Length][];
-        
-        // Only reorder within bounds of both order array and oldFiles
-        for (int i = 0; i < oldFiles.Length; i++)
-        {
-            if (i < order.Length && order[i] >= 0 && order[i] < oldFiles.Length) 
-                newFiles[i] = oldFiles[order[i]];
-            else 
-                newFiles[i] = oldFiles[i];
-        }
-        
-        memgarc.Files = newFiles;
-        File.WriteAllBytes(path, memgarc.Data);
-    }
-
     private void B_Import_Click(object sender, EventArgs e)
     {
-        var ofd = new OpenFileDialog { Filter = "JSON File|*.json" };
+        var ofd = new OpenFileDialog { Filter = "JSON File|*.json|TM/Tutor CSV|*.csv" };
         if (ofd.ShowDialog() != DialogResult.OK) return;
         
         try
         {
+            if (ofd.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                ImportTMsTutors(ofd.FileName);
+                return;
+            }
+
             string json = File.ReadAllText(ofd.FileName);
             var imported = JsonSerializer.Deserialize<PersonalInfoSM[]>(json);
             if (imported != null && imported.Length > 0)
@@ -551,7 +539,62 @@ public partial class PersonalEditor7 : Form
                 WinFormsUtil.Alert($"Successfully imported {imported.Length} personal entries from JSON.");
             }
         }
-        catch (Exception ex) { WinFormsUtil.Error("Failed to import JSON:", ex.Message); }
+        catch (Exception ex) { WinFormsUtil.Error("Failed to import:", ex.Message); }
+    }
+
+    private void ImportTMsTutors(string path)
+    {
+        string[] lines = File.ReadAllLines(path);
+        if (lines.Length < 2) return;
+        
+        // Auto-detect delimiter from header
+        char sep = ',';
+        if (path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase))
+            sep = '\t';
+        if (lines[0].Contains('\t') && !lines[0].Contains(','))
+            sep = '\t';
+        
+        int count = 0;
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string[] parts = lines[i].Split(sep);
+            if (parts.Length < 2) continue;
+            if (!int.TryParse(parts[0], out int id)) continue;
+            if (id < 0 || id >= Main.SpeciesStat.Length || Main.SpeciesStat[id] == null) continue;
+            
+            var sm = (PersonalInfoSM)Main.SpeciesStat[id];
+            int col = 2; // Skip ID and Name
+            
+            // TMs
+            for (int t = 0; t < CLB_TM.Items.Count; t++)
+            {
+                if (col < parts.Length && t < sm.TMHM.Length)
+                    sm.TMHM[t] = parts[col] == "1";
+                col++;
+            }
+            // Move Tutors (Special)
+            for (int t = 0; t < CLB_MoveTutors.Items.Count && t < 8; t++)
+            {
+                if (col < parts.Length)
+                    sm.TutorFlags[t] = parts[col] == "1";
+                col++;
+            }
+            // Beach Tutors
+            if (CLB_BeachTutors.Visible)
+            {
+                for (int t = 0; t < CLB_BeachTutors.Items.Count; t++)
+                {
+                    int bitPos = GetUSUMBitPos(t);
+                    if (col < parts.Length && bitPos >= 0 && bitPos < sm.TutorFlags.Length)
+                        sm.TutorFlags[bitPos] = parts[col] == "1";
+                    col++;
+                }
+            }
+            files[id] = sm.Write();
+            count++;
+        }
+        ReadEntry();
+        WinFormsUtil.Alert($"Successfully imported {count} TM/Tutor entries.");
     }
 
     private void ByteLimiter(object sender, EventArgs e)
@@ -621,57 +664,51 @@ public partial class PersonalEditor7 : Form
         TB_Weight.Text = ((decimal)pkm.Weight / 10).ToString("000.0");
 
         for (int i = 0; i < CLB_TM.Items.Count && i < pkm.TMHM.Length; i++)
-            CLB_TM.SetItemChecked(i, pkm.TMHM[i]); 
+            CLB_TM.SetItemChecked(i, pkm.TMHM[i]);
 
-        for (int i = 0; i < CLB_MoveTutors.Items.Count && i < pkm.TypeTutors.Length; i++)
-            CLB_MoveTutors.SetItemChecked(i, pkm.TypeTutors[i]);
+        PersonalInfoSM sm = (PersonalInfoSM)pkm;
+        TB_CallRate.Text = sm.EscapeRate.ToString("000");
+        TB_CallRate.TextAlign = HorizontalAlignment.Center;
+        CB_ZItem.SelectedIndex = sm.SpecialZ_Item == 65535 || sm.SpecialZ_Item >= CB_ZItem.Items.Count ? 0 : sm.SpecialZ_Item;
+        CB_ZBaseMove.SelectedIndex = sm.SpecialZ_BaseMove == 65535 || sm.SpecialZ_BaseMove >= CB_ZBaseMove.Items.Count ? 0 : sm.SpecialZ_BaseMove;
+        CB_ZMove.SelectedIndex = sm.SpecialZ_ZMove == 65535 || sm.SpecialZ_ZMove >= CB_ZMove.Items.Count ? 0 : sm.SpecialZ_ZMove;
+        CHK_Variant.Checked = sm.LocalVariant;
 
-        if (Main.Config.SM || Main.Config.USUM)
-        {
-            PersonalInfoSM sm = (PersonalInfoSM)pkm;
-            TB_CallRate.Text = sm.EscapeRate.ToString("000");
-            TB_CallRate.TextAlign = HorizontalAlignment.Center;
-            CB_ZItem.SelectedIndex = sm.SpecialZ_Item == 65535 || sm.SpecialZ_Item >= CB_ZItem.Items.Count ? 0 : sm.SpecialZ_Item;
-            CB_ZBaseMove.SelectedIndex = sm.SpecialZ_BaseMove == 65535 || sm.SpecialZ_BaseMove >= CB_ZBaseMove.Items.Count ? 0 : sm.SpecialZ_BaseMove;
-            CB_ZMove.SelectedIndex = sm.SpecialZ_ZMove == 65535 || sm.SpecialZ_ZMove >= CB_ZMove.Items.Count ? 0 : sm.SpecialZ_ZMove;
-            CHK_Variant.Checked = sm.LocalVariant;
-        }
-        var special = pkm.SpecialTutors.SelectMany(b => b).ToArray();
+        CLB_MoveTutors.Visible = L_Special.Visible = true;
+        for (int i = 0; i < CLB_MoveTutors.Items.Count && i < 8; i++)
+            CLB_MoveTutors.SetItemChecked(i, sm.TutorFlags[i]);
+
+        // Beach Tutors (Standard USUM Island-based mapping + Expansion)
         for (int i = 0; i < CLB_BeachTutors.Items.Count; i++)
         {
-            int moveID = Tutors_USUM[i];
-            
-            // Check all vanilla bits that correspond to this move ID
-            bool isChecked = false;
-            for (int bitIdx = 0; bitIdx < Tutors_USUM_Vanilla_Bits.Length; bitIdx++)
-            {
-                if (Tutors_USUM_Vanilla_Bits[bitIdx] == moveID && bitIdx < special.Length)
-                {
-                    if (special[bitIdx]) { isChecked = true; break; }
-                }
-            }
-            
-            // If not found in vanilla, check the 'New Tutors' map/slots
-            if (!isChecked && Tutors_Beach_Map != null && i < Tutors_Beach_Map.Length)
-            {
-                int bitIdx = Tutors_Beach_Map[i];
-                if (bitIdx >= 67 && bitIdx < special.Length) isChecked = special[bitIdx];
-            }
-
-            CLB_BeachTutors.SetItemChecked(i, isChecked);
+            int bitPos = GetUSUMBitPos(i);
+            CLB_BeachTutors.SetItemChecked(i, bitPos >= 0 && bitPos < sm.TutorFlags.Length && sm.TutorFlags[bitPos]);
         }
-
-        if (Tutors_New_Map != null)
-        {
-            for (int i = 0; i < CLB_NewTutors.Items.Count && i < Tutors_New_Map.Length; i++)
-            {
-                int bitIdx = Tutors_New_Map[i];
-                if (bitIdx < special.Length) CLB_NewTutors.SetItemChecked(i, special[bitIdx]);
-            }
-        }
+        ReadDexEntry();
+        UpdateDebugLabel(sm);
         reading = false;
+    }
 
-        // Read Dex Entry
+    private void UpdateDebugLabel(PersonalInfoSM sm)
+    {
+        if (L_DebugTutors == null) return;
+        byte[] data = sm.Write();
+        byte[] tutorData = data.Skip(0x38).Take(20).ToArray();
+        string hex = "0x38:\n" + BitConverter.ToString(tutorData).Replace("-", " ");
+        L_DebugTutors.Text = hex;
+    }
+
+    private int GetUSUMBitPos(int index)
+    {
+        // Use the absolute map calculated during Setup()
+        if (Tutors_Beach_Map != null && index < Tutors_Beach_Map.Length)
+            return Tutors_Beach_Map[index];
+            
+        return -1;
+    }
+
+    private void ReadDexEntry()
+    {
         var dexBox = RTB_DexEntry;
         if (dexBox != null)
         {
@@ -691,6 +728,7 @@ public partial class PersonalEditor7 : Form
                 }
             }
         }
+        reading = false;
     }
 
     private void ReadEntry()
@@ -760,55 +798,56 @@ public partial class PersonalEditor7 : Form
         for (int i = 0; i < CLB_TM.Items.Count && i < pkm.TMHM.Length; i++)
             pkm.TMHM[i] = CLB_TM.GetItemChecked(i);
 
-        for (int t = 0; t < CLB_MoveTutors.Items.Count && t < pkm.TypeTutors.Length; t++)
-            pkm.TypeTutors[t] = CLB_MoveTutors.GetItemChecked(t);
-
-        if (Main.Config.SM || Main.Config.USUM)
-        {
-            pkm.EscapeRate = Convert.ToByte(TB_CallRate.Text);
-            PersonalInfoSM sm = (PersonalInfoSM)pkm;
-            sm.SpecialZ_Item = CB_ZItem.SelectedIndex;
-            sm.SpecialZ_BaseMove = CB_ZBaseMove.SelectedIndex;
-            sm.SpecialZ_ZMove = CB_ZMove.SelectedIndex;
-            sm.LocalVariant = CHK_Variant.Checked;
-        }
-        var bits = pkm.SpecialTutors.SelectMany(b => b).ToArray();
+        PersonalInfoSM sm = (PersonalInfoSM)pkm;
+        // Save Special Tutors (Bits 0-7)
+        for (int i = 0; i < CLB_MoveTutors.Items.Count && i < 8; i++)
+            sm.TutorFlags[i] = CLB_MoveTutors.GetItemChecked(i);
+ 
+        // Save Beach Tutors (Standard + Expansion)
         for (int i = 0; i < CLB_BeachTutors.Items.Count; i++)
         {
-            int moveID = Tutors_USUM[i];
-            bool isChecked = CLB_BeachTutors.GetItemChecked(i);
-
-            // Set ALL vanilla bits that correspond to this move ID
-            for (int bitIdx = 0; bitIdx < Tutors_USUM_Vanilla_Bits.Length; bitIdx++)
-            {
-                if (Tutors_USUM_Vanilla_Bits[bitIdx] == moveID && bitIdx < bits.Length)
-                {
-                    bits[bitIdx] = isChecked;
-                }
-            }
-
-            // Also set the specific bit from the CRO scan if it's a 'New' or shifted move
-            if (Tutors_Beach_Map != null && i < Tutors_Beach_Map.Length)
-            {
-                int bitIdx = Tutors_Beach_Map[i];
-                if (bitIdx >= 0 && bitIdx < bits.Length) bits[bitIdx] = isChecked;
-            }
+            int bitPos = GetUSUMBitPos(i);
+            if (bitPos >= 0 && bitPos < sm.TutorFlags.Length) 
+                sm.TutorFlags[bitPos] = CLB_BeachTutors.GetItemChecked(i);
         }
-
-        if (Tutors_New_Map != null)
-        {
-            for (int i = 0; i < CLB_NewTutors.Items.Count && i < Tutors_New_Map.Length; i++)
-            {
-                int bitIdx = Tutors_New_Map[i];
-                if (bitIdx < bits.Length) bits[bitIdx] = CLB_NewTutors.GetItemChecked(i);
-            }
-        }
-
-        for (int loc = 0; loc < 4; loc++)
-            pkm.SpecialTutors[loc] = bits.Skip(loc * 32).Take(32).ToArray();
+        UpdateDebugLabel(sm);
 
         // Log significant changes
         LogChange($"Saved changes for {CB_Species.Text}");
+    }
+
+    private void B_AlignTutors_Click(object sender, EventArgs e)
+    {
+        int newBase = (int)NUD_TutorBase.Value;
+        var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, 
+            "Shift all Pokémon compatibility bits to align with the current Base?\n\n" +
+            "YES: Shift bits from 29 -> 28 (Corrects expansion mismatch)\n" +
+            "NO: Shift bits from 28 -> 29 (Reverts to vanilla display)\n" +
+            "CANCEL: Do nothing.");
+
+        if (dr == DialogResult.Cancel) return;
+        int shift = (dr == DialogResult.Yes) ? -32 : 32;
+
+        int count = 0;
+        for (int i = 0; i < files.Length && i < Main.SpeciesStat.Length; i++)
+        {
+            if (files[i] == null || files[i].Length < 0x50) continue;
+            var sm = new PersonalInfoSM(files[i]);
+            bool[] newBits = new bool[sm.TutorFlags.Length];
+            for (int b = 0; b < sm.TutorFlags.Length; b++)
+            {
+                int oldIdx = b - shift;
+                if (oldIdx >= 0 && oldIdx < sm.TutorFlags.Length)
+                    newBits[b] = sm.TutorFlags[oldIdx];
+            }
+            sm.TutorFlags = newBits;
+            files[i] = sm.Write();
+            Main.SpeciesStat[i] = sm;
+            count++;
+        }
+        tutorBase = newBase;
+        ReadInfo();
+        WinFormsUtil.Alert("Tutor bits shifted and cache refreshed.", $"Successfully aligned {count} Pokémon.");
     }
 
     private void LogChange(string text)
@@ -824,7 +863,8 @@ public partial class PersonalEditor7 : Form
         SavePersonal();
         byte[] edits = pkm.Write();
         files[entry] = edits;
-        if (updateChangelog) GenerateFullChangelog();
+        // Changelog generation removed to prevent UI locking on autosave
+
     }
 
     private void B_RandomizeCurrent_Click(object sender, EventArgs e)
@@ -953,11 +993,21 @@ public partial class PersonalEditor7 : Form
 
     private void B_Export_Click(object sender, EventArgs e)
     {
-        var sfd = new SaveFileDialog { FileName = "Personal Entries", Filter = "Text File|*.txt|JSON File|*.json" };
+        var sfd = new SaveFileDialog { FileName = "Personal Entries", Filter = "Text File|*.txt|JSON File|*.json|TM/Tutor CSV|*.csv" };
         if (sfd.ShowDialog() != DialogResult.OK)
             return;
 
         SystemSounds.Asterisk.Play();
+
+        if (sfd.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                ExportTMsTutors(sfd.FileName);
+            }
+            catch (Exception ex) { WinFormsUtil.Error("CSV Export Failed:", ex.Message); }
+            return;
+        }
 
         if (sfd.FileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
         {
@@ -1006,6 +1056,57 @@ public partial class PersonalEditor7 : Form
         string path = sfd.FileName;
         File.WriteAllLines(path, lines, Encoding.Unicode);
         dumping = false;
+    }
+
+    private void ExportTMsTutors(string path)
+    {
+        // Determine delimiter from extension
+        string sep = ",";
+        if (path.EndsWith(".txt", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".ts", StringComparison.OrdinalIgnoreCase))
+            sep = "\t";
+
+        List<string> lines = new List<string>();
+        string header = $"SpeciesID{sep}Pokemon";
+        for (int i = 0; i < CLB_TM.Items.Count; i++) header += $"{sep}TM{i + 1}";
+        for (int i = 0; i < CLB_MoveTutors.Items.Count; i++) header += $"{sep}Tutor{i + 1}";
+        if (CLB_BeachTutors.Visible)
+            for (int i = 0; i < CLB_BeachTutors.Items.Count; i++) header += $"{sep}BeachTutor{i + 1}";
+        lines.Add(header);
+
+        for (int i = 1; i < Main.SpeciesStat.Length; i++)
+        {
+            if (Main.SpeciesStat[i] == null) continue;
+            var sm = (PersonalInfoSM)Main.SpeciesStat[i];
+            
+            string speciesName = i < CB_Species.Items.Count ? CB_Species.Items[i].ToString().Replace(",", "").Replace("\t", "") : $"Entry {i}";
+            string line = $"{i}{sep}{speciesName}";
+            
+            // TMs
+            for (int t = 0; t < CLB_TM.Items.Count; t++)
+            {
+                bool val = t < sm.TMHM.Length && sm.TMHM[t];
+                line += val ? $"{sep}1" : $"{sep}0";
+            }
+            // Move Tutors (Special)
+            for (int t = 0; t < CLB_MoveTutors.Items.Count && t < 8; t++)
+            {
+                bool val = sm.TutorFlags[t];
+                line += val ? $"{sep}1" : $"{sep}0";
+            }
+            // Beach Tutors
+            if (CLB_BeachTutors.Visible)
+            {
+                for (int t = 0; t < CLB_BeachTutors.Items.Count; t++)
+                {
+                    int bitPos = GetUSUMBitPos(t);
+                    bool val = bitPos >= 0 && bitPos < sm.TutorFlags.Length && sm.TutorFlags[bitPos];
+                    line += val ? $"{sep}1" : $"{sep}0";
+                }
+            }
+            lines.Add(line);
+        }
+        File.WriteAllLines(path, lines);
+        WinFormsUtil.Alert("Exported TMs and Tutors successfully!");
     }
     private void B_GenerateDiff_Click(object sender, EventArgs e) => GenerateFullChangelog();
 
@@ -1094,8 +1195,8 @@ public partial class PersonalEditor7 : Form
     private void GenerateFullChangelog()
     {
         if (vanillaStats == null) { WinFormsUtil.Alert("Vanilla stats missing."); return; }
-        RTB_Changelog.Clear();
-        RTB_Changelog.AppendText("=== COMPREHENSIVE CHANGELOG ===\n");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("=== COMPREHENSIVE CHANGELOG ===");
         int changes = 0;
         var pkmTypeNames = Main.Config.GetText(TextName.Types);
         var abilityNames = Main.Config.GetText(TextName.AbilityNames);
@@ -1129,12 +1230,13 @@ public partial class PersonalEditor7 : Form
             if (specDiffs.Count > 0)
             {
                 string speciesName = (CB_Species.Items.Count > i) ? CB_Species.Items[i].ToString() : $"Entry {i}";
-                RTB_Changelog.AppendText($"\n[{i:000} - {speciesName}]\n");
-                foreach (var d in specDiffs) RTB_Changelog.AppendText($"  • {d}\n");
+                sb.AppendLine($"\n[{i:000} - {speciesName}]");
+                foreach (var d in specDiffs) sb.AppendLine($"  • {d}");
                 changes++;
             }
         }
-        RTB_Changelog.AppendText($"\nTotal Changed Species: {changes}\n");
+        sb.AppendLine($"\nTotal Modified Species: {changes}");
+        RTB_Changelog.Text = sb.ToString();
     }
 
     private void B_CopyPage1_Click(object sender, EventArgs e)
@@ -1229,6 +1331,51 @@ public partial class PersonalEditor7 : Form
         if (ClipboardTMs == null) return;
         for (int i = 0; i < Math.Min(CLB_TM.Items.Count, ClipboardTMs.Length); i++)
             CLB_TM.SetItemChecked(i, ClipboardTMs[i]);
+        SaveEntry();
+        System.Media.SystemSounds.Asterisk.Play();
+    }
+
+    private void B_ExportTM_Click(object sender, EventArgs e)
+    {
+        var sfd = new SaveFileDialog { FileName = "TM_Tutor_Dump", Filter = "CSV File|*.csv|Text File (Tab)|*.txt|TS File (Tab)|*.ts" };
+        if (sfd.ShowDialog() != DialogResult.OK) return;
+        try { ExportTMsTutors(sfd.FileName); }
+        catch (Exception ex) { WinFormsUtil.Error("Export Failed:", ex.Message); }
+    }
+
+    private void B_ImportTM_Click(object sender, EventArgs e)
+    {
+        var ofd = new OpenFileDialog { Filter = "Supported Formats|*.csv;*.txt;*.ts|CSV File|*.csv|Text File|*.txt|TS File|*.ts" };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+        try { ImportTMsTutors(ofd.FileName); }
+        catch (Exception ex) { WinFormsUtil.Error("Import Failed:", ex.Message); }
+    }
+
+    private void B_CopyTutors_Click(object sender, EventArgs e)
+    {
+        ClipboardTutors = new bool[CLB_MoveTutors.Items.Count];
+        for (int i = 0; i < CLB_MoveTutors.Items.Count; i++)
+            ClipboardTutors[i] = CLB_MoveTutors.GetItemChecked(i);
+
+        ClipboardBeachTutors = new bool[CLB_BeachTutors.Items.Count];
+        for (int i = 0; i < CLB_BeachTutors.Items.Count; i++)
+            ClipboardBeachTutors[i] = CLB_BeachTutors.GetItemChecked(i);
+
+        System.Media.SystemSounds.Asterisk.Play();
+    }
+
+    private void B_PasteTutors_Click(object sender, EventArgs e)
+    {
+        if (ClipboardTutors != null)
+        {
+            for (int i = 0; i < Math.Min(CLB_MoveTutors.Items.Count, ClipboardTutors.Length); i++)
+                CLB_MoveTutors.SetItemChecked(i, ClipboardTutors[i]);
+        }
+        if (ClipboardBeachTutors != null)
+        {
+            for (int i = 0; i < Math.Min(CLB_BeachTutors.Items.Count, ClipboardBeachTutors.Length); i++)
+                CLB_BeachTutors.SetItemChecked(i, ClipboardBeachTutors[i]);
+        }
         SaveEntry();
         System.Media.SystemSounds.Asterisk.Play();
     }
@@ -1341,11 +1488,15 @@ public partial class PersonalEditor7 : Form
     private byte[] RebuildMasterTable(byte[][] entries)
     {
         if (entries == null || entries.Length == 0) return [];
-        int len = entries[0].Length;
-        byte[] table = new byte[entries.Length * len];
-        for (int i = 0; i < entries.Length; i++)
+        byte[] firstValid = entries.FirstOrDefault(e => e != null && e.Length < 0x1000); // Master tables are huge
+        if (firstValid == null) return [];
+        int len = firstValid.Length;
+
+        var actualEntries = entries.Where(f => f != null && f.Length == len).ToList();
+        byte[] table = new byte[actualEntries.Count * len];
+        for (int i = 0; i < actualEntries.Count; i++)
         {
-            entries[i].CopyTo(table, i * len);
+            actualEntries[i].CopyTo(table, i * len);
         }
         return table;
     }

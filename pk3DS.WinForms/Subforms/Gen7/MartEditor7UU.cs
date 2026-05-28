@@ -224,6 +224,7 @@ public partial class MartEditor7UU : Form
     {
         if (entryItem > -1) SetListItem();
         if (entryBPItem > -1) SetListBPItem();
+        CROUtil.UpdateHashes(data);
         File.WriteAllBytes(CROPath, data);
         SyncMartsToCodeBin();
         Close();

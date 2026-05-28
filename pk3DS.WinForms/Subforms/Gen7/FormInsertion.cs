@@ -22,6 +22,10 @@ public partial class FormInsertion : Form
 
     public FormInsertion(byte[][] personal, byte[][] evolution, byte[][] levelup, byte[][] eggmoves, string[] species, string[] entries, int[] bases, int[] forms)
     {
+        if (personal.Length > 0 && personal.Last().Length != personal[0].Length)
+        {
+            personal = personal.Take(personal.Length - 1).ToArray();
+        }
         personalFiles = personal;
         evolutionFiles = evolution;
         levelupFiles = levelup;
@@ -94,8 +98,7 @@ public partial class FormInsertion : Form
             if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, $"Insert {count} forms for {speciesSummary}?", "Template: " + templateName) != DialogResult.Yes)
                 return;
 
-            // 0. Backup critical files
-            BackupCriticalFiles();
+            // 0. (Removed BackupCriticalFiles to prevent .bak interference with rebuilding)
 
             foreach (int sID in speciesToInsert)
             {
@@ -106,9 +109,6 @@ public partial class FormInsertion : Form
                 evolutionFilesList = ResultEvolution.ToList();
                 levelupFilesList = ResultLevelUp.ToList();
                 eggmoveFilesList = ResultEggMoves.ToList();
-                
-                // 7. Expand Game Text (Names)
-                ExpandGameText(sID, count);
             }
 
             WinFormsUtil.Alert("Insertion complete!", $"Added forms for {speciesToInsert.Count} species.");
@@ -167,7 +167,11 @@ public partial class FormInsertion : Form
         // 1b. Synchronize list lengths (Padding)
         while (newEvolution.Count < newPersonal.Count) newEvolution.Add(new byte[8]);
         while (newLevelUp.Count < newPersonal.Count) newLevelUp.Add(new byte[0]);
-        while (newEggMoves.Count < newPersonal.Count) newEggMoves.Add(new byte[0]);
+        bool eggMovesHasForms = newEggMoves.Count >= newPersonal.Count;
+        if (eggMovesHasForms)
+        {
+            while (newEggMoves.Count < newPersonal.Count) newEggMoves.Add(new byte[0]);
+        }
 
         // 1c. Calculate Insertion Index with safety checks
         int insertionIndex;
@@ -178,14 +182,41 @@ public partial class FormInsertion : Form
         }
         else
         {
-            // No forms yet or invalid pointer, append to the end of the entire table
-            insertionIndex = newPersonal.Count;
+            // We are adding the FIRST alternative form for this species.
+            // Find its chronological place in the alternative forms section.
+            insertionIndex = -1;
+            
+            // Look forward to find the FIRST species after this one that already has alternative forms
+            for (int i = speciesID + 1; i <= Main.Config.MaxSpeciesID; i++)
+            {
+                int ptr = BitConverter.ToUInt16(personalFilesList[i], 0x1C);
+                if (ptr > 0 && ptr < personalFilesList.Count)
+                {
+                    insertionIndex = ptr;
+                    break;
+                }
+            }
+            
+            // If no subsequent species have alt forms, append to the very end
+            if (insertionIndex == -1)
+            {
+                insertionIndex = newPersonal.Count;
+            }
+            
             currentPointer = insertionIndex;
         }
 
         // Final safety clamp
         if (insertionIndex > newPersonal.Count) insertionIndex = newPersonal.Count;
         if (insertionIndex < 0) insertionIndex = 0;
+
+        // Safety check: If currentCount was manually inflated in the editor without actual forms existing,
+        // clamp it so we don't iterate out of bounds later.
+        if (currentPointer + currentCount - 1 > newPersonal.Count)
+        {
+            currentCount = newPersonal.Count - currentPointer + 1;
+            if (currentCount < 1) currentCount = 1;
+        }
 
         // 2. Prepare template data
         byte[] personalTemplate = (byte[])personalFilesList[templateID].Clone();
@@ -202,7 +233,7 @@ public partial class FormInsertion : Form
             byte[] lvlClone = templateID < newLevelUp.Count ? (byte[])newLevelUp[templateID].Clone() : new byte[0];
             newLevelUp.Insert(insertionIndex + i, lvlClone);
             
-            if (newEggMoves.Count > 0)
+            if (eggMovesHasForms && newEggMoves.Count > 0)
             {
                 byte[] eggClone = templateID < newEggMoves.Count ? (byte[])newEggMoves[templateID].Clone() : new byte[0];
                 newEggMoves.Insert(insertionIndex + i, eggClone);
@@ -270,9 +301,9 @@ public partial class FormInsertion : Form
         }
     }
 
-    private int GetModelBinsPerForm()
+    private int GetModelBinsPerForm(GARC.LazyGARC garc, int total_forms)
     {
-        return Main.Config.Generation >= 7 ? 9 : 8;
+        return (garc.FileCount - 1) / total_forms;
     }
 
     private string GetModelGARCPath()
@@ -284,33 +315,126 @@ public partial class FormInsertion : Form
         return null;
     }
 
+    private class FormInsertionFileProvider : pk3DS.Core.CTR.IGARCFileProvider, IDisposable
+    {
+        private readonly GARC.LazyGARC _baseGarc;
+        private readonly byte[] _newHeader;
+        private readonly List<byte[]> _newBins;
+        private readonly int _insertIndex;
+        private readonly int _addedCount;
+        private readonly FileStream _fs;
+        private readonly object _fsLock = new object();
+        private readonly int _paddingToAdd;
+
+        public FormInsertionFileProvider(GARC.LazyGARC baseGarc, byte[] newHeader, List<byte[]> newBins, int insertIndex, int paddingToAdd)
+        {
+            _baseGarc = baseGarc;
+            _newHeader = newHeader;
+            _newBins = newBins;
+            _insertIndex = insertIndex;
+            _addedCount = newBins.Count;
+            _paddingToAdd = paddingToAdd;
+            if (_baseGarc.FilePath != null)
+            {
+                _fs = new FileStream(_baseGarc.FilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            }
+        }
+
+        public int FileCount => _baseGarc.FileCount + _addedCount + _paddingToAdd;
+
+        public int GetFileLength(int index)
+        {
+            if (index == 0) return _newHeader.Length;
+            if (index >= _insertIndex && index < _insertIndex + _addedCount)
+                return _newBins[index - _insertIndex].Length;
+
+            int originalIndex = index > _insertIndex ? index - _addedCount : index;
+            if (originalIndex >= _baseGarc.FileCount) return 0; // Empty padding bins
+
+            var entry = _baseGarc.garc.fatb.Entries[originalIndex];
+            var subEntry = entry.SubEntries.FirstOrDefault(s => s.Exists);
+            return subEntry.Exists ? (int)subEntry.Length : 0;
+        }
+
+        public void WriteFile(int index, BinaryWriter gw)
+        {
+            if (index == 0)
+            {
+                gw.Write(_newHeader);
+                return;
+            }
+            if (index >= _insertIndex && index < _insertIndex + _addedCount)
+            {
+                gw.Write(_newBins[index - _insertIndex]);
+                return;
+            }
+
+            int originalIndex = index > _insertIndex ? index - _addedCount : index;
+            if (originalIndex >= _baseGarc.FileCount) return; // Padding bins are empty
+
+            var entry = _baseGarc.garc.fatb.Entries[originalIndex];
+            var subEntry = entry.SubEntries.FirstOrDefault(s => s.Exists);
+            if (!subEntry.Exists) return;
+
+            if (_fs != null)
+            {
+                int length = (int)subEntry.Length;
+                byte[] buffer = new byte[length];
+                lock (_fsLock)
+                {
+                    _fs.Seek(subEntry.Start + _baseGarc.garc.DataOffset, SeekOrigin.Begin);
+                    _fs.Read(buffer, 0, length);
+                }
+                gw.Write(buffer);
+                return;
+            }
+
+            // Fallback if no FileStream (shouldn't happen)
+            gw.Write(_baseGarc[originalIndex]);
+        }
+
+        public void Dispose()
+        {
+            _fs?.Dispose();
+        }
+    }
+
     private void UpdateModelGARC(int species, int addedCount, int templateID)
     {
         string path = GetModelGARCPath();
         if (path == null || !File.Exists(path)) return;
 
-        byte[] garcBytes = File.ReadAllBytes(path);
-        GARC.MemGARC garc = new GARC.MemGARC(garcBytes);
-        byte[][] modelFiles = garc.Files;
+        GARC.LazyGARC garc = new GARC.LazyGARC(path);
+        List<byte> headerList = new List<byte>(garc[0]);
 
-        List<byte> headerList = new List<byte>(modelFiles[0]);
-
-        // Byte 2 is total models for species, byte 0-1 is sum of all models prior
-        int total_previous_models = headerList[species * 4 + 2] + BitConverter.ToUInt16(headerList.ToArray(), species * 4);
+        int total_forms = 0;
+        for (int i = 0; i <= Main.Config.MaxSpeciesID; i++)
+            total_forms += headerList[i * 4 + 2];
+            
+        int model_file_count = GetModelBinsPerForm(garc, total_forms);
+        
+        // Byte 2 is total forms for species, byte 0-1 is sum of all FORMS prior
+        int forms_for_species = headerList[species * 4 + 2];
+        int sum_forms_prior = BitConverter.ToUInt16(headerList.ToArray(), species * 4);
+        int total_previous_forms = sum_forms_prior + forms_for_species;
 
         if (headerList[species * 4 + 3] < 0x05)
             headerList[species * 4 + 3] += 0x04;
 
-        int model_file_count = GetModelBinsPerForm();
-        headerList[species * 4 + 2] += (byte)(addedCount * model_file_count);
+        headerList[species * 4 + 2] += (byte)addedCount;
 
-        int model_count = 0;
-        for (int index = 0; index <= Main.Config.MaxSpeciesID; index++)
+        int maxSpecies = Main.Config.MaxSpeciesID;
+        for (int i = 0; i <= maxSpecies; i++)
         {
-            byte[] cbBytes = BitConverter.GetBytes((ushort)model_count);
-            headerList[4 * index] = cbBytes[0];
-            headerList[4 * index + 1] = cbBytes[1];
-            model_count += headerList[4 * index + 2];
+            if (i == species) continue;
+            int prior = BitConverter.ToUInt16(headerList.ToArray(), i * 4);
+            if (prior >= total_previous_forms)
+            {
+                prior += addedCount;
+                byte[] bytes = BitConverter.GetBytes((ushort)prior);
+                headerList[i * 4] = bytes[0];
+                headerList[i * 4 + 1] = bytes[1];
+            }
         }
 
         int start_of_byte_flag_table = 4 * (Main.Config.MaxSpeciesID + 1);
@@ -331,101 +455,94 @@ public partial class FormInsertion : Form
         byte flag_0 = headerList[model_source_flag_offset];
         byte flag_1 = headerList[model_source_flag_offset + 1];
 
-        int target_bitflag_offset = 2 * total_previous_models + start_of_byte_flag_table;
+        int target_bitflag_offset = 2 * total_previous_forms + start_of_byte_flag_table;
         for (int i = 0; i < addedCount; i++)
         {
             headerList.Insert(target_bitflag_offset, flag_1); // Insert reversed to push correctly
             headerList.Insert(target_bitflag_offset, flag_0);
         }
 
-        modelFiles[0] = headerList.ToArray();
+        byte[] newHeader = headerList.ToArray();
 
         int model_start_file = 0;
         int model_dest_file = 0;
-        model_file_count = GetModelBinsPerForm();
 
         if (Main.Config.XY || Main.Config.ORAS)
         {
             int offset = Main.Config.XY ? 3 : 2;
             model_start_file = model_file_count * model_source_index + offset;
-            model_dest_file = model_file_count * total_previous_models + offset;
+            model_dest_file = model_file_count * total_previous_forms + offset;
         }
         else
         {
             model_start_file = model_file_count * model_source_index + 1;
-            model_dest_file = model_file_count * total_previous_models + 1;
+            model_dest_file = model_file_count * total_previous_forms + 1;
         }
 
-        List<byte[]> newModelFiles = new List<byte[]>(modelFiles);
-
         List<byte[]> tempBins = new List<byte[]>();
-        for (int j = 0; j < model_file_count; j++)
-            tempBins.Add((byte[])modelFiles[model_start_file + j].Clone());
+        if (model_start_file + model_file_count <= garc.FileCount)
+        {
+            using (var fs = File.OpenRead(garc.FilePath))
+            {
+                for (int j = 0; j < model_file_count; j++)
+                {
+                    var entry = garc.garc.fatb.Entries[model_start_file + j];
+                    var subEntry = entry.SubEntries.FirstOrDefault(s => s.Exists);
+                    if (!subEntry.Exists) 
+                    {
+                        tempBins.Add(new byte[0]);
+                        continue;
+                    }
+                    int length = (int)subEntry.Length;
+                    byte[] buffer = new byte[length];
+                    fs.Seek(subEntry.Start + garc.garc.DataOffset, SeekOrigin.Begin);
+                    fs.Read(buffer, 0, length);
+                    tempBins.Add(buffer);
+                }
+            }
+        }
+        else
+        {
+            // Fallback: Use empty bins if the template is out of bounds
+            for (int j = 0; j < model_file_count; j++)
+                tempBins.Add(new byte[0]);
+        }
 
+        int paddingToAdd = 0;
+        if (model_dest_file > garc.FileCount)
+        {
+            paddingToAdd = model_dest_file - garc.FileCount;
+        }
+
+        List<byte[]> binsToInsert = new List<byte[]>();
         for (int i = 0; i < addedCount; i++)
         {
             for (int j = 0; j < model_file_count; j++)
-            {
-                newModelFiles.Insert(model_dest_file + (i * model_file_count) + j, (byte[])tempBins[j].Clone());
-            }
+                binsToInsert.Add((byte[])tempBins[j].Clone());
         }
 
-        GARC.PackGARC(newModelFiles.ToArray(), path, garc.garc.Version, (int)garc.garc.ContentPadToNearest);
+        string tempPath = Path.GetTempFileName();
+        using (var provider = new FormInsertionFileProvider(garc, newHeader, binsToInsert, model_dest_file, paddingToAdd))
+        {
+            GARC.PackGARC(provider, tempPath, garc.garc.Version, (int)garc.garc.ContentPadToNearest);
+        }
 
-        // Heavy cleanup for 1GB+ Model GARCs
-        newModelFiles.Clear();
-        modelFiles = null;
-        tempBins.Clear();
-        garc = null;
+        long tempSize = new FileInfo(tempPath).Length;
+        File.AppendAllText(@"C:\Users\fulto\Desktop\pk3ds_log.txt", $"PackGARC finished. tempPath size: {tempSize}\n");
+
+        File.Copy(tempPath, path, true);
+        File.Delete(tempPath);
         GC.Collect();
         GC.WaitForPendingFinalizers();
     }
 
-    private void BackupCriticalFiles()
-    {
-        try
-        {
-            string modelPath = GetModelGARCPath();
-            if (File.Exists(modelPath)) File.Copy(modelPath, modelPath + ".bak", true);
-        }
-        catch { }
-    }
 
-    private void ExpandGameText(int speciesID, int count)
-    {
-        try
-        {
-            var names = Main.Config.GetText(TextName.SpeciesNames);
-            var list = names.ToList();
-            string baseName = speciesNames[speciesID];
-            
-            // Calculate where to insert the text (must match the personal table shift)
-            // Note: Since we are inserting at the end of the table or existing forms, 
-            // the text indices must match the personal indices.
-            // If the species already has forms, we insert after the last form name.
-            
-            // This is complex because Text and Personal aren't always 1:1 at the end.
-            // Simplest safe approach: Expand the text list to match the new personal list size.
-            while (list.Count < ResultPersonal.Length) list.Add("--- New Form Slot ---");
-            
-            for (int i = 0; i < count; i++)
-            {
-                // We'll try to find the new index of the inserted form
-                // In our logic, the new forms are at [insertionIndex + i]
-                // But the personal list we have is the RESULT.
-                // We'll just ensure the name at those indices reflects the species.
-                // (Logic needs to be carefully synced with the shift in InsertForms)
-            }
-            // Better: Just mark the new slots
-            Main.Config.SetText(TextName.SpeciesNames, list.ToArray());
-        }
-        catch { }
-    }
+
+    // (Removed ExpandGameText to prevent text corruption)
 
     public byte[][] ResultPersonal;
     public byte[][] ResultEvolution;
     public byte[][] ResultLevelUp;
     public byte[][] ResultEggMoves;
 
-    public bool ShouldResort => CHK_Sort.Checked;
 }

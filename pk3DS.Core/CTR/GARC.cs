@@ -489,7 +489,7 @@ public static class GARC
         return garc;
     }
 
-    public static void PackGARC(byte[][] data, string garcPath, int version, int contentpadnearest)
+    public static void PackGARC(IGARCFileProvider provider, string garcPath, int version, int contentpadnearest)
     {
         if (contentpadnearest < 0) contentpadnearest = 4;
         var garc = new GARCFile
@@ -497,15 +497,15 @@ public static class GARC
             ContentPadToNearest = (uint)contentpadnearest,
             fato =
             {
-                Entries = new FATO_Entry[data.Length],
-                EntryCount = (ushort)data.Length,
-                HeaderSize = 0xC + (data.Length * 4),
+                Entries = new FATO_Entry[provider.FileCount],
+                EntryCount = (ushort)provider.FileCount,
+                HeaderSize = 0xC + (provider.FileCount * 4),
                 Padding = 0xFFFF,
             },
             fatb =
             {
-                Entries = new FATB_Entry[data.Length],
-                FileCount = data.Length,
+                Entries = new FATB_Entry[provider.FileCount],
+                FileCount = provider.FileCount,
             },
         };
 
@@ -522,12 +522,13 @@ public static class GARC
             garc.fatb.Entries[i].SubEntries[0].Exists = true;
 
             // Assemble Entry
-            var paddingRequired = (uint)data[i].Length % garc.ContentPadToNearest;
+            int entryLength = provider.GetFileLength(i);
+            var paddingRequired = (uint)entryLength % garc.ContentPadToNearest;
             if (paddingRequired != 0) paddingRequired = garc.ContentPadToNearest - paddingRequired;
-            long actualLength = data[i].Length + paddingRequired;
+            long actualLength = entryLength + paddingRequired;
             garc.fatb.Entries[i].SubEntries[0].Start = (uint)od;
             garc.fatb.Entries[i].SubEntries[0].End = (uint)(actualLength + od);
-            garc.fatb.Entries[i].SubEntries[0].Length = (uint)data[i].Length;
+            garc.fatb.Entries[i].SubEntries[0].Length = (uint)entryLength;
             garc.fatb.Entries[i].SubEntries[0].Padding = (uint)paddingRequired;
             od += actualLength;
 
@@ -588,13 +589,12 @@ public static class GARC
         long largestSize = 0;
         long largestPadded = 0;
 
-        for (int i = 0; i < data.Length; i++)
+        for (int i = 0; i < provider.FileCount; i++)
         {
-            byte[] e = data[i];
-            int len = e.Length;
+            int len = provider.GetFileLength(i);
             uint padding = garc.fatb.Entries[i].SubEntries[0].Padding;
             if (len > largestSize) { largestSize = len; largestPadded = len + padding; }
-            gw.Write(e);
+            provider.WriteFile(i, gw);
             while (padding-- > 0) gw.Write((byte)0xFF);
         }
 
@@ -609,20 +609,52 @@ public static class GARC
         else { gw.Write((uint)largestPadded); gw.Write((uint)largestSize); gw.Write(garc.ContentPadToNearest); }
     }
 
+    public class ArrayGARCFileProvider : IGARCFileProvider
+    {
+        private readonly byte[][] _data;
+        public ArrayGARCFileProvider(byte[][] data) { _data = data; }
+        public int FileCount => _data.Length;
+        public int GetFileLength(int index) => _data[index]?.Length ?? 0;
+        public void WriteFile(int index, BinaryWriter gw)
+        {
+            if (_data[index] != null) gw.Write(_data[index]);
+        }
+    }
+
+
+    public static void PackGARC(byte[][] data, string garcPath, int version, int contentpadnearest)
+    {
+        PackGARC(new ArrayGARCFileProvider(data), garcPath, version, contentpadnearest);
+    }
+
     public static MemGARC PackGARC(byte[][] data, int version, int contentpadnearest)
     {
         string temp = Path.GetTempFileName();
-        PackGARC(data, temp, version, contentpadnearest);
+        PackGARC(new ArrayGARCFileProvider(data), temp, version, contentpadnearest);
         byte[] garcData = File.ReadAllBytes(temp);
         File.Delete(temp);
         return new MemGARC(garcData);
     }
 
-    public class MemGARC(byte[] data)
+    public class MemGARC
     {
-        public GARCFile garc = UnpackGARC(data);
-        public byte[] Data = data;
+        public GARCFile garc;
+        public byte[] Data;
+        public string FilePath;
         public int FileCount => garc.fato.EntryCount;
+
+        public MemGARC(byte[] data)
+        {
+            Data = data;
+            garc = UnpackGARC(data);
+        }
+
+        public MemGARC(string path)
+        {
+            FilePath = path;
+            using var fs = File.OpenRead(path);
+            garc = UnpackGARC(fs);
+        }
 
         // Returns an individual file
         public byte[] GetFile(int file, int subfile = 0)
@@ -633,7 +665,16 @@ public static class GARC
                 throw new ArgumentException("SubFile does not exist.");
             var offset = SubEntry.Start + garc.DataOffset;
             byte[] data = new byte[SubEntry.Length];
-            Array.Copy(Data, offset, data, 0, data.Length);
+            if (Data != null)
+            {
+                Array.Copy(Data, offset, data, 0, data.Length);
+            }
+            else if (FilePath != null)
+            {
+                using var fs = File.OpenRead(FilePath);
+                fs.Seek(offset, SeekOrigin.Begin);
+                fs.Read(data, 0, data.Length);
+            }
             return data;
         }
 
@@ -644,8 +685,26 @@ public static class GARC
             {
                 if (_files != null) return _files;
                 _files = new byte[FileCount][];
-                for (int i = 0; i < _files.Length; i++)
-                    _files[i] = GetFile(i);
+                if (Data != null)
+                {
+                    for (int i = 0; i < _files.Length; i++)
+                        _files[i] = GetFile(i);
+                }
+                else if (FilePath != null)
+                {
+                    using var fs = File.OpenRead(FilePath);
+                    for (int i = 0; i < _files.Length; i++)
+                    {
+                        var Entry = garc.fatb.Entries[i];
+                        var SubEntry = Entry.SubEntries[0];
+                        if (!SubEntry.Exists)
+                            throw new ArgumentException("SubFile does not exist.");
+                        var offset = SubEntry.Start + garc.DataOffset;
+                        _files[i] = new byte[SubEntry.Length];
+                        fs.Seek(offset, SeekOrigin.Begin);
+                        fs.Read(_files[i], 0, _files[i].Length);
+                    }
+                }
                 return _files;
             }
             set
@@ -656,6 +715,7 @@ public static class GARC
                 var ng = PackGARC(value, garc.Version, (int)garc.ContentPadToNearest);
                 garc = ng.garc;
                 Data = ng.Data;
+                FilePath = null;
                 _files = value;
             }
         }
@@ -666,9 +726,11 @@ public static class GARC
     /// </summary>
     public class LazyGARC
     {
-        private GARCFile garc;
-        private byte[] Data;
+        public GARCFile garc;
+        public byte[] Data;
+        public string FilePath;
         public int FileCount => garc.fato.EntryCount;
+        public GARCEntry[] Storage;
 
         public LazyGARC(byte[] data)
         {
@@ -677,9 +739,15 @@ public static class GARC
             Storage = new GARCEntry[FileCount];
         }
 
-        private readonly GARCEntry[] Storage;
+        public LazyGARC(string path)
+        {
+            FilePath = path;
+            using var fs = File.OpenRead(path);
+            garc = UnpackGARC(fs);
+            Storage = new GARCEntry[FileCount];
+        }
 
-        private class GARCEntry
+        public class GARCEntry
         {
             public bool Saved;
             public byte[] Data;
@@ -697,11 +765,7 @@ public static class GARC
 
                 try
                 {
-                    using (var newMS = new MemoryStream())
-                    {
-                        LZSS.Decompress(new MemoryStream(data), data.Length, newMS);
-                        Data = newMS.ToArray();
-                    }
+                    Data = LZSS.Decompress(data);
                     WasCompressed = true;
                 }
                 catch { }
@@ -715,7 +779,7 @@ public static class GARC
                 byte[] data;
                 try
                 {
-                    using var newMS = new MemoryStream();
+                    using var newMS = new MemoryStream(Data.Length);
                     LZSS.Compress(new MemoryStream(Data), Data.Length, newMS, original: true);
                     data = newMS.ToArray();
                 }
@@ -732,7 +796,16 @@ public static class GARC
                 throw new ArgumentException("SubFile does not exist.");
             var offset = SubEntry.Start + garc.DataOffset;
             byte[] data = new byte[SubEntry.Length];
-            Array.Copy(Data, offset, data, 0, data.Length);
+            if (Data != null)
+            {
+                Array.Copy(Data, offset, data, 0, data.Length);
+            }
+            else if (FilePath != null)
+            {
+                using var fs = File.OpenRead(FilePath);
+                fs.Seek(offset, SeekOrigin.Begin);
+                fs.Read(data, 0, data.Length);
+            }
             return data;
         }
 
@@ -754,21 +827,148 @@ public static class GARC
             }
         }
 
-        public byte[] Save()
+        public byte[][] Files
         {
-            byte[][] data = new byte[FileCount][];
-            for (int i = 0; i < data.Length; i++)
+            get
             {
-                if (Storage[i]?.Saved != true) // retrieve original
-                    data[i] = GetFile(i, 0);
-                else // use modified
-                    data[i] = Storage[i].Save();
+                byte[][] rawData = new byte[FileCount][];
+                if (Data != null)
+                {
+                    for (int i = 0; i < rawData.Length; i++)
+                        rawData[i] = GetFile(i, 0);
+                }
+                else if (FilePath != null)
+                {
+                    using var fs = File.OpenRead(FilePath);
+                    for (int i = 0; i < rawData.Length; i++)
+                    {
+                        var Entry = garc.fatb.Entries[i];
+                        var SubEntry = Entry.SubEntries[0];
+                        if (!SubEntry.Exists) throw new ArgumentException("SubFile does not exist.");
+                        var offset = SubEntry.Start + garc.DataOffset;
+                        rawData[i] = new byte[SubEntry.Length];
+                        fs.Seek(offset, SeekOrigin.Begin);
+                        fs.Read(rawData[i], 0, rawData[i].Length);
+                    }
+                }
+                
+                byte[][] finalData = new byte[FileCount][];
+                System.Threading.Tasks.Parallel.For(0, FileCount, i =>
+                {
+                    Storage[i] ??= new GARCEntry(rawData[i]);
+                    finalData[i] = Storage[i].Data;
+                });
+                return finalData;
+            }
+        }
+
+        public void Save(string path)
+        {
+            string tempPath = path;
+            bool useTemp = false;
+            if (path.Equals(FilePath, StringComparison.OrdinalIgnoreCase) || File.Exists(path))
+            {
+                tempPath = Path.Combine(Path.GetDirectoryName(path) ?? "", Guid.NewGuid().ToString() + ".tmp");
+                useTemp = true;
             }
 
-            var ng = PackGARC(data, garc.Version, (int)garc.ContentPadToNearest);
-            garc = ng.garc;
-            Data = ng.Data;
+            using (var provider = new LazyGARCFileProvider(this))
+            {
+                PackGARC(provider, tempPath, garc.Version, (int)garc.ContentPadToNearest);
+            }
+            
+            if (useTemp)
+            {
+                File.Copy(tempPath, path, true);
+                File.Delete(tempPath);
+            }
+
+            // Re-bind to the new file
+            FilePath = path;
+            Data = null;
+            using var fs = File.OpenRead(path);
+            garc = UnpackGARC(fs);
+
+            // Clear saved flags as everything is now on disk
+            for (int i = 0; i < Storage.Length; i++)
+            {
+                if (Storage[i] != null)
+                {
+                    Storage[i].Saved = false;
+                    Storage[i].Data = null;
+                }
+            }
+        }
+
+        public byte[] Save()
+        {
+            string temp = Path.GetTempFileName();
+            Save(temp);
+            byte[] garcData = File.ReadAllBytes(temp);
+            File.Delete(temp);
+            Data = garcData;
+            FilePath = null;
             return Data;
+        }
+
+        public class LazyGARCFileProvider : IGARCFileProvider, IDisposable
+        {
+            private readonly LazyGARC _lazyGarc;
+            private readonly FileStream _fs;
+            private readonly object _fsLock = new object();
+
+            public LazyGARCFileProvider(LazyGARC lazyGarc)
+            {
+                _lazyGarc = lazyGarc;
+                if (_lazyGarc.FilePath != null)
+                    _fs = File.OpenRead(_lazyGarc.FilePath);
+            }
+
+            public int FileCount => _lazyGarc.FileCount;
+
+            public int GetFileLength(int index)
+            {
+                if (_lazyGarc.Storage[index]?.Saved == true)
+                    return _lazyGarc.Storage[index].Save().Length;
+
+                var entry = _lazyGarc.garc.fatb.Entries[index];
+                var subEntry = entry.SubEntries[0];
+                return (int)subEntry.Length;
+            }
+
+            public void WriteFile(int index, BinaryWriter gw)
+            {
+                if (_lazyGarc.Storage[index]?.Saved == true)
+                {
+                    gw.Write(_lazyGarc.Storage[index].Save());
+                    return;
+                }
+
+                var entry = _lazyGarc.garc.fatb.Entries[index];
+                var subEntry = entry.SubEntries[0];
+                var length = (int)subEntry.Length;
+
+                if (_fs != null)
+                {
+                    var offset = subEntry.Start + _lazyGarc.garc.DataOffset;
+                    byte[] buffer = new byte[length];
+                    lock (_fsLock)
+                    {
+                        _fs.Seek(offset, SeekOrigin.Begin);
+                        _fs.Read(buffer, 0, length);
+                    }
+                    gw.Write(buffer);
+                    return;
+                }
+
+                var dataOffset = subEntry.Start + _lazyGarc.garc.DataOffset;
+                gw.Write(_lazyGarc.Data, (int)dataOffset, length);
+            }
+
+            public void Dispose()
+            {
+                _fs?.Dispose();
+            }
         }
     }
 

@@ -577,7 +577,7 @@ namespace pk3DS.WinForms;
         }
     }
 
-    internal static GameConfig Config;
+    public static GameConfig Config;
     public static string RomFSPath;
     public static string ExeFSPath;
     public static string ExHeaderPath;
@@ -791,7 +791,15 @@ namespace pk3DS.WinForms;
             CheckIfExeFS(f);
 
         if (count > 3)
-            WinFormsUtil.Alert("pk3DS will function best if you keep your Game Files folder clean and free of unnecessary folders.");
+            if (Properties.Settings.Default.ShowFolderWarning)
+            {
+                var msg = "pk3DS will function best if you keep your Game Files folder clean and free of unnecessary folders.\n\nDo you want to hide this warning in the future?";
+                if (MessageBox.Show(msg, "Alert", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                {
+                    Properties.Settings.Default.ShowFolderWarning = false;
+                    Properties.Settings.Default.Save();
+                }
+            }
 
         // Enable buttons if applicable
         Tab_RomFS.Enabled = Menu_Restore.Enabled = Tab_CRO.Enabled = Menu_CRO.Enabled = Menu_Shuffler.Enabled = RomFSPath != null;
@@ -1328,17 +1336,23 @@ namespace pk3DS.WinForms;
                     break;
             }
 
-            // Set Master Table back (Safely resize if needed)
+            // Set Master Table back (Safely reconstruct to avoid length mismatches)
             if (d.Length > 1)
             {
-                int len = d[0].Length;
-                int tableSize = (d.Length - 1) * len;
-                if (d[^1].Length != tableSize)
-                {
-                    d[^1] = new byte[tableSize];
-                }
-                for (int i = 0; i < d.Length - 1; i++)
-                    d[i].CopyTo(d[^1], i * len);
+                int entryLen = d[0].Length;
+                // In Gen 7, all personal entries are the same size. 
+                // The Master Table is the last entry and is much larger.
+                var actualEntries = d.Where(f => f != null && f.Length == entryLen).ToList();
+                int tableSize = actualEntries.Count * entryLen;
+                byte[] masterTable = new byte[tableSize];
+                for (int i = 0; i < actualEntries.Count; i++)
+                    actualEntries[i].CopyTo(masterTable, i * entryLen);
+
+                // Re-assemble the file list: [Entries...] + [MasterTable]
+                var finalFiles = actualEntries.ToArray();
+                Array.Resize(ref finalFiles, finalFiles.Length + 1);
+                finalFiles[^1] = masterTable;
+                d = finalFiles;
             }
 
             Config.GARCPersonal.Files = d;

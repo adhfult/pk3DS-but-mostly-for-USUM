@@ -31,14 +31,15 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
         dgv.RowsAdded += UpdateCounters;
         dgv.RowsRemoved += UpdateCounters;
 
-        for (int i = 0; i < species.Length; i++) // add all species & forms
+        for (int i = 0; i <= Main.Config.MaxSpeciesID; i++) // add all base species
         {
-            names[i] = species[i];
+            if (i < species.Length) names[i] = species[i];
             int formoff = entries[i].FormTableIndex;
             int count = Main.Config.Personal[i].FormeCount;
             for (int j = 1; j < count; j++)
             {
-                names[formoff + j - 1] ??= $"{species[i]} [{AltForms[i][j].Replace(species[i] + " ", "")}]";
+                if (formoff + j - 1 < names.Length)
+                    names[formoff + j - 1] ??= $"{names[i]} [{AltForms[i][j].Replace(names[i] + " ", "")}]";
             }
         }
 

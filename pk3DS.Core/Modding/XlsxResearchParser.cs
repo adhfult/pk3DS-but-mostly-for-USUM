@@ -95,7 +95,12 @@ namespace pk3DS.Core.Modding
                                 {
                                     if (rel.Attributes["Id"]?.Value == targetRelId)
                                     {
-                                        sheetPath = "xl/" + rel.Attributes["Target"]?.Value;
+                                        string targetPath = rel.Attributes["Target"]?.Value ?? "";
+                                        targetPath = targetPath.TrimStart('/');
+                                        if (targetPath.StartsWith("xl/"))
+                                            sheetPath = targetPath;
+                                        else
+                                            sheetPath = "xl/" + targetPath;
                                         break;
                                     }
                                 }
@@ -160,11 +165,17 @@ namespace pk3DS.Core.Modding
 
         private static string GetCellValue(XmlNode cell, List<string> sharedStrings)
         {
+            var tAttr = cell.Attributes["t"];
+            if (tAttr != null && tAttr.Value == "inlineStr")
+            {
+                var tNode = cell.SelectSingleNode("*[local-name()='is']/*[local-name()='t']");
+                return tNode?.InnerText ?? "";
+            }
+
             var vNode = cell.SelectSingleNode("*[local-name()='v']");
             if (vNode == null) return "";
 
             string val = vNode.InnerText;
-            var tAttr = cell.Attributes["t"];
             if (tAttr != null && tAttr.Value == "s") // Shared String
             {
                 if (int.TryParse(val, out int idx) && idx >= 0 && idx < sharedStrings.Count)

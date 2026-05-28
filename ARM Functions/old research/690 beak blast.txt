@@ -1,6 +1,0 @@
-The following are the hexadecimal addresses where the value 0xb2 0x2 was found (written explicitly in little-Endian, presumably loaded by functions pointing to that address):
-
-D:\Dropbox\ROM\3ds\Modded ROM\Balanced Formed Ultra Sun\ExtractedRomFS\Battle.cro
-
-0
-x606d8

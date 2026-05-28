@@ -388,8 +388,27 @@ public partial class MoveEditor7 : Form
         "Paralyze", "Sleep", "Freeze", "Burn", "Poison",
         "Confusion", "Attract", "Capture", "Nightmare", "Curse",
         "Taunt", "Torment", "Disable", "Yawn", "Heal Block",
-        "?", "Detect", "Leech Seed", "Embargo", "Perish Song",
-        "Ingrain", "??? 0x16", "??? 0x17", "Mute",
+        "Ability Negated", "Detected", "Leech Seed", "Embargo", "Perish Song",
+        "Ingrain", "Unknown 0x16", "Encore", "Mute", "Special (Use hardcoded effect)",
+        "Locked into move", "Unknown 0x1B", "Unknown 0x1C", "Unknown 0x1D", "Unknown 0x1E",
+        "Magnet Rise?", "Grounded", "Telekinesis", "Unknown 0x22", "Unknown 0x23",
+        "Aqua Ring", "Unknown 0x25", "Unknown 0x26", "Sleepless (Uproar)", "Thrash/Petal Dance/Outrage",
+        "Laser Focus", "Unknown 0x2A", "Unknown 0x2B", "Unknown 0x2C", "Unknown 0x2D",
+        "Unknown 0x2E", "Unknown 0x2F", "Unknown 0x30", "Unknown 0x31", "Unknown 0x32",
+        "Unknown 0x33", "Unknown 0x34", "Unknown 0x35", "Unknown 0x36", "Unknown 0x37",
+        "Unknown 0x38", "Unknown 0x39", "Unknown 0x3A", "Unknown 0x3B", "Unknown 0x3C",
+        "Unknown 0x3D", "Unknown 0x3E", "Unknown 0x3F", "Unknown 0x40", "Unknown 0x41",
+        "Focus Punch", "Unknown 0x43", "Unknown 0x44", "Unknown 0x45", "Unknown 0x46",
+        "Unknown 0x47", "Unknown 0x48", "Unknown 0x49", "Unknown 0x4A", "Unknown 0x4B",
+        "Unknown 0x4C", "Unknown 0x4D", "Unknown 0x4E", "Unknown 0x4F", "Unknown 0x50",
+        "Unknown 0x51", "Unknown 0x52", "Unknown 0x53", "Unknown 0x54", "Unknown 0x55",
+        "Unknown 0x56", "Unknown 0x57", "Unknown 0x58", "Unknown 0x59", "Unknown 0x5A",
+        "Unknown 0x5B", "Unknown 0x5C", "Unknown 0x5D", "Unknown 0x5E", "Unknown 0x5F",
+        "Unknown 0x60", "Unknown 0x61", "Unknown 0x62", "Unknown 0x63", "Unknown 0x64",
+        "Unknown 0x65", "Unknown 0x66", "Unknown 0x67", "Unknown 0x68", "Unknown 0x69",
+        "Unknown 0x6A", "Unknown 0x6B", "Unknown 0x6C", "Beak Blast", "Shell Trap",
+        "Unknown 0x6F", "Unknown 0x70", "Unknown 0x71", "Unknown 0x72", "Unknown 0x73",
+        "Unknown 0x74", "Unknown 0x75", "Quick Guard, Wide Guard, Mat Block",
     ];
 
     private static readonly string[] MoveQualities =
@@ -478,7 +497,6 @@ public partial class MoveEditor7 : Form
         CB_ZMove.Items.AddRange(movelist);
         RefreshFlagNames();
         CB_ZEffect.Items.AddRange(ZMoveEffects);
-        CB_Inflict.Items.Add("Special");
         var refreshtypes = Enum.GetNames(typeof(RefreshType));
         CB_AfflictRefresh.Items.AddRange(refreshtypes);
 

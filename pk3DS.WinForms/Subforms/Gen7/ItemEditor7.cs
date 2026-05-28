@@ -83,14 +83,20 @@ public partial class ItemEditor7 : Form
 
     private void B_CopyTable_Click(object sender, EventArgs e)
     {
-        var sb = new StringBuilder();
-        foreach (var file in files)
+        try
         {
-            var it = new Item(file);
-            sb.AppendLine(string.Join(",", it.Write().Select(b => b.ToString("X2"))));
+            if (entry < 1) return;
+            
+            // Just copy the current item
+            var it = (Item)Grid.SelectedObject;
+            string txt = string.Join(",", it.Write().Select(b => b.ToString("X2")));
+            Clipboard.SetText(txt);
+            WinFormsUtil.Alert("Item copied to clipboard!");
         }
-        Clipboard.SetText(sb.ToString());
-        WinFormsUtil.Alert("Item Table copied to clipboard!");
+        catch (Exception ex)
+        {
+            WinFormsUtil.Alert($"Copy failed: {ex.Message}");
+        }
     }
 
     private void B_PasteTable_Click(object sender, EventArgs e)
@@ -98,15 +104,41 @@ public partial class ItemEditor7 : Form
         string text = Clipboard.GetText();
         if (string.IsNullOrWhiteSpace(text)) return;
         var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        if (lines.Length != files.Length) { WinFormsUtil.Alert("Paste aborted: Item count mismatch."); return; }
 
-        for (int i = 0; i < files.Length; i++)
+        try
         {
-            var bytes = lines[i].Split(',').Select(s => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
-            files[i] = bytes;
+            if (lines.Length == 1)
+            {
+                // Single item paste
+                if (entry < 1) return;
+                var bytes = lines[0].Split(',').Select(s => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
+                files[entry] = bytes;
+                Grid.SelectedObject = new Item(files[entry]);
+                WinFormsUtil.Alert("Item pasted successfully!");
+            }
+            else
+            {
+                // Full table paste
+                if (lines.Length != files.Length) 
+                {
+                    var res = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, $"Item count mismatch.\nCopied {lines.Length}\nExpected {files.Length}\n\nPaste anyway? (Will overwrite up to {Math.Min(lines.Length, files.Length)} items)");
+                    if (res != DialogResult.Yes) return;
+                }
+
+                int max = Math.Min(files.Length, lines.Length);
+                for (int i = 0; i < max; i++)
+                {
+                    var bytes = lines[i].Split(',').Select(s => byte.Parse(s, System.Globalization.NumberStyles.HexNumber)).ToArray();
+                    files[i] = bytes;
+                }
+                ChangeEntry(null, null);
+                WinFormsUtil.Alert("Item Table pasted successfully!");
+            }
         }
-        ChangeEntry(null, null);
-        WinFormsUtil.Alert("Item Table pasted successfully!");
+        catch (Exception ex)
+        {
+            WinFormsUtil.Alert($"Paste failed: {ex.Message}");
+        }
     }
 
     private int entry = -1;

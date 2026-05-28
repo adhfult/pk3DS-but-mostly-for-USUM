@@ -128,6 +128,7 @@ public class PersonalTable
         for (int i = 0; i <= MaxSpecies && i < species.Length && i < Table.Length; i++)
         {
             result[i] = species[i];
+            baseForm[i] = i;
             if (i >= AltForms.Length || AltForms[i].Length == 0) continue;
             int altformpointer = this[i].FormStatsIndex;
             if (altformpointer <= 0) continue;

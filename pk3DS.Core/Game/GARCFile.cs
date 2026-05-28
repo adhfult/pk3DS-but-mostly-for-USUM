@@ -28,9 +28,7 @@ public class LazyGARCFile(GARC.LazyGARC g, GARCReference r, string p)
         get
         {
             if (_cachedFiles != null) return _cachedFiles;
-            _cachedFiles = new byte[FileCount][];
-            for (int i = 0; i < _cachedFiles.Length; i++)
-                _cachedFiles[i] = g[i];
+            _cachedFiles = g.Files;
             return _cachedFiles;
         }
         set
@@ -49,7 +47,7 @@ public class LazyGARCFile(GARC.LazyGARC g, GARCReference r, string p)
 
     public void Save()
     {
-        File.WriteAllBytes(p, g.Save());
+        g.Save(p);
         Console.WriteLine($"Wrote {r.Name} to {r.Reference}");
     }
 }

@@ -23,7 +23,6 @@ partial class FormInsertion
         this.CB_CopyFrom = new System.Windows.Forms.ComboBox();
         this.B_Insert = new System.Windows.Forms.Button();
         this.B_Cancel = new System.Windows.Forms.Button();
-        this.CHK_Sort = new System.Windows.Forms.CheckBox();
         this.CHK_Batch = new System.Windows.Forms.CheckBox();
         this.CB_TargetSpeciesEnd = new System.Windows.Forms.ComboBox();
         this.L_To = new System.Windows.Forms.Label();
@@ -75,11 +74,6 @@ partial class FormInsertion
         this.CB_CopyFrom.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
         this.CB_CopyFrom.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
 
-        // CHK_Sort
-        this.CHK_Sort.Location = new System.Drawing.Point(120, 100);
-        this.CHK_Sort.Size = new System.Drawing.Size(200, 24);
-        this.CHK_Sort.Text = "Resort table after insertion";
-        this.CHK_Sort.Checked = true;
 
         // CHK_Batch
         this.CHK_Batch.Location = new System.Drawing.Point(120, 125);
@@ -133,7 +127,6 @@ partial class FormInsertion
         this.Controls.Add(this.NUD_FormCount);
         this.Controls.Add(this.L_CopyFrom);
         this.Controls.Add(this.CB_CopyFrom);
-        this.Controls.Add(this.CHK_Sort);
         this.Controls.Add(this.CHK_Batch);
         this.Controls.Add(this.B_Insert);
         this.Controls.Add(this.B_Cancel);
@@ -157,7 +150,6 @@ partial class FormInsertion
     private System.Windows.Forms.ComboBox CB_CopyFrom;
     private System.Windows.Forms.Button B_Insert;
     private System.Windows.Forms.Button B_Cancel;
-    private System.Windows.Forms.CheckBox CHK_Sort;
     private System.Windows.Forms.CheckBox CHK_Batch;
     private System.Windows.Forms.CheckBox CHK_BatchList;
     private System.Windows.Forms.RichTextBox RTB_BatchList;

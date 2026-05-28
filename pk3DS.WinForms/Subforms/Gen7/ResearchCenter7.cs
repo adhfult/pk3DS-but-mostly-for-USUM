@@ -27,6 +27,8 @@ namespace pk3DS.WinForms
         private ComboBox cmbSheets;
         private ComboBox cmbTargetSearch;
         private string detectedTypeForOverride = "Move";
+        private TextBox txtHexSearch;
+        private ComboBox cmbTargetFile;
 
         public ResearchCenter7()
         {
@@ -67,7 +69,20 @@ namespace pk3DS.WinForms
 
         private void InitializeTargetingUI()
         {
-            var pnl = new Panel { Dock = DockStyle.Top, Height = 65, Padding = new Padding(10), BackColor = Color.FromArgb(30, 30, 40) };
+            var pnl = new Panel { Dock = DockStyle.Top, Height = 135, Padding = new Padding(10), BackColor = Color.FromArgb(30, 30, 40) };
+            
+            cmbTargetFile = new ComboBox
+            {
+                Dock = DockStyle.Top,
+                DropDownStyle = ComboBoxStyle.DropDown,
+                BackColor = Color.FromArgb(45, 45, 55),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
+                AutoCompleteSource = AutoCompleteSource.ListItems
+            };
+            cmbTargetFile.Items.AddRange(new object[] { "Battle.cro", "code.bin", "Shop.cro", "Bag.cro", "Field.cro", "title.cro" });
+            
             cmbTargetSearch = new ComboBox 
             { 
                 Dock = DockStyle.Top, 
@@ -78,13 +93,17 @@ namespace pk3DS.WinForms
                 AutoCompleteMode = AutoCompleteMode.SuggestAppend,
                 AutoCompleteSource = AutoCompleteSource.ListItems
             };
-            numTargetOverride = new NumericUpDown { Visible = false }; // Keep logic-only, hide from UI
+            numTargetOverride = new NumericUpDown { Visible = false, Maximum = 4095 }; // Keep logic-only, hide from UI
             
             pnl.Controls.Add(cmbTargetSearch);
-            pnl.Controls.Add(new Label { Text = "QUICK TARGET (Searchable):", Dock = DockStyle.Top, ForeColor = Color.Cyan, Font = new Font("Segoe UI", 8F, FontStyle.Bold) });
+            pnl.Controls.Add(new Label { Text = "QUICK TARGET (ID):", Dock = DockStyle.Top, ForeColor = Color.Cyan, Font = new Font("Segoe UI", 8F, FontStyle.Bold) });
+            pnl.Controls.Add(new Panel { Dock = DockStyle.Top, Height = 8 }); // Spacer
+            pnl.Controls.Add(cmbTargetFile);
+            pnl.Controls.Add(new Label { Text = "TARGET BINARY / CRO:", Dock = DockStyle.Top, ForeColor = Color.Gold, Font = new Font("Segoe UI", 8F, FontStyle.Bold) });
             
             splitInspector.Panel2.Controls.Add(pnl);
             cmbTargetSearch.SelectedIndexChanged += (s, e) => { if (cmbTargetSearch.SelectedIndex > 0) numTargetOverride.Value = cmbTargetSearch.SelectedIndex; };
+            cmbTargetFile.TextChanged += (s, e) => UpdateHexViewFromSelection();
         }
 
         private void ApplyPremiumAesthetics()
@@ -215,7 +234,17 @@ namespace pk3DS.WinForms
             foreach (var f in Directory.GetFiles(path, "*.xlsx")) { var n = node.Nodes.Add(Path.GetFileName(f)); n.Tag = f; n.ForeColor = Color.LightGray; }
         }
 
-        private void InitializeModernHexEditor() { rtbHex.Font = new Font("Consolas", 10F); }
+        private void InitializeModernHexEditor() 
+        { 
+            rtbHex.Font = new Font("Consolas", 10F); 
+            
+            var pnl = new Panel { Dock = DockStyle.Top, Height = 30, BackColor = Color.FromArgb(35, 35, 45) };
+            var lbl = new Label { Text = "JUMP TO OFFSET (HEX):", ForeColor = Color.Cyan, Left = 5, Top = 8, AutoSize = true, Font = new Font("Segoe UI", 7F, FontStyle.Bold) };
+            txtHexSearch = new TextBox { Left = 130, Top = 4, Width = 120, BackColor = Color.FromArgb(20, 20, 30), ForeColor = Color.White, Font = new Font("Consolas", 9F) };
+            pnl.Controls.AddRange(new Control[] { lbl, txtHexSearch });
+            Tab_HexEditor.Controls.Add(pnl);
+            txtHexSearch.KeyDown += (s, e) => { if (e.KeyCode == Keys.Enter) UpdateHexViewFromSelection(); };
+        }
 
         private void InitializeARMTranslator()
         {
@@ -381,6 +410,13 @@ namespace pk3DS.WinForms
                 if (stream != null) { string tmp = Path.Combine(Path.GetTempPath(), "pk3ds_tmp.xlsx"); using (var fs = new FileStream(tmp, FileMode.Create)) stream.CopyTo(fs); selectedXlsxPath = tmp; }
             }
             
+            // Auto-detect target file
+            string detectedTarget = DetectFileLevelTarget(selectedXlsxPath);
+            if (cmbTargetFile != null)
+            {
+                cmbTargetFile.Text = detectedTarget;
+            }
+
             try {
                 var sheets = XlsxResearchParser.GetSheetNames(selectedXlsxPath)
                     .Where(s => !IsMetadataSheet(s))
@@ -429,27 +465,27 @@ namespace pk3DS.WinForms
 
         private string GetTargetPath(string target, string actualXlsxSourcePath)
         {
-            bool isCode = target.ToLower().Contains("code") || (actualXlsxSourcePath != null && actualXlsxSourcePath.ToLower().Contains("code"));
-            
-            // Standard mappings
+            if (string.IsNullOrEmpty(target)) return null;
             string lower = target.ToLower();
-            if (lower == "main") isCode = true; // 'main' is usually code.bin in USUM research
-
+            bool isCode = lower.Contains("code") || (actualXlsxSourcePath != null && actualXlsxSourcePath.ToLower().Contains("code"));
+            
+            // 1. Handle ExeFS / Code targets
             if (isCode)
             {
                 if (string.IsNullOrEmpty(Main.ExeFSPath)) return null;
-                string p1 = Path.Combine(Main.ExeFSPath, "code.bin");
-                string p2 = Path.Combine(Main.ExeFSPath, ".code.bin");
-                if (File.Exists(p1)) return p1;
-                if (File.Exists(p2)) return p2;
-                if (!lower.Contains("cro")) return null; // If it was explicitly a .cro, keep searching
+                string[] codeNames = { "code.bin", ".code.bin", target };
+                foreach (var cn in codeNames)
+                {
+                    string p = Path.Combine(Main.ExeFSPath, cn);
+                    if (File.Exists(p)) return p;
+                }
             }
 
+            // 2. Handle RomFS / CRO targets
             if (string.IsNullOrEmpty(Main.RomFSPath)) return null;
 
-            // Common research name mappings for CROs
             var candidates = new List<string> { target };
-            if (!target.Contains(".")) candidates.Add(target + ".cro");
+            if (!target.Contains(".")) { candidates.Add(target + ".cro"); candidates.Add(target + ".bin"); }
             if (lower == "main") { candidates.Add("shop.cro"); candidates.Add("title.cro"); }
             if (lower == "field") candidates.Add("Field.cro");
             if (lower == "battle") candidates.Add("Battle.cro");
@@ -458,70 +494,114 @@ namespace pk3DS.WinForms
 
             foreach (var c in candidates)
             {
-                string p1 = Path.Combine(Main.RomFSPath, c);
-                string p2 = Path.Combine(Main.RomFSPath, "battle", c);
-                if (File.Exists(p1)) return p1;
-                if (File.Exists(p2)) return p2;
+                // Check root, then common subdirs
+                string[] subdirs = { "", "battle", "message", "menu", "field" };
+                foreach (var sd in subdirs)
+                {
+                    string p = Path.Combine(Main.RomFSPath, sd, c);
+                    if (File.Exists(p)) return p;
+                }
             }
+
+            // 3. Fallback: Search all RomFS for the filename
+            try {
+                var files = Directory.GetFiles(Main.RomFSPath, target, SearchOption.AllDirectories);
+                if (files.Length > 0) return files[0];
+                if (!target.Contains(".")) {
+                    files = Directory.GetFiles(Main.RomFSPath, target + ".cro", SearchOption.AllDirectories);
+                    if (files.Length > 0) return files[0];
+                }
+            } catch { }
+
             return null;
         }
 
         private void UpdateHexViewFromSelection()
         {
-            if (string.IsNullOrEmpty(selectedXlsxPath)) return;
-            string target = "Battle.cro";
-            var meta = XlsxResearchParser.ReadSheet(selectedXlsxPath, "Table Locations and Sizes");
-            if (meta.Count > 0 && meta.Any(r => r.Keys.Any(k => k.Equals("File", StringComparison.OrdinalIgnoreCase))))
+            string target = cmbTargetFile?.Text;
+            if (string.IsNullOrEmpty(target)) target = "Battle.cro";
+            uint jump = 0;
+            bool manualJump = false;
+
+            // 1. Check if we have a manual jump address first
+            if (txtHexSearch != null && !string.IsNullOrEmpty(txtHexSearch.Text))
             {
-                var row = meta.First(r => r.Keys.Any(k => k.Equals("File", StringComparison.OrdinalIgnoreCase)));
-                var fileKey = row.Keys.First(k => k.Equals("File", StringComparison.OrdinalIgnoreCase));
-                target = row[fileKey];
+                string t = txtHexSearch.Text.Replace("0x", "").Replace("0X", "").Trim();
+                if (uint.TryParse(t, System.Globalization.NumberStyles.HexNumber, null, out jump))
+                {
+                    manualJump = true;
+                }
             }
-            else if (actualXlsxSourcePath != null && actualXlsxSourcePath.ToLower().Contains("code")) 
+
+            if (!manualJump && string.IsNullOrEmpty(selectedXlsxPath)) return;
+
+            if (!manualJump)
             {
-                target = "code.bin";
-            }
-            else 
-            {
-                var sheetNames = XlsxResearchParser.GetSheetNames(selectedXlsxPath);
-                foreach (var s in sheetNames) {
-                    var rows = XlsxResearchParser.ReadSheet(selectedXlsxPath, s);
-                    int maxCheck = Math.Min(rows.Count, 10);
-                    for (int i = 0; i < maxCheck; i++) {
-                        var r = rows[i];
-                        string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
-                        if (offKey != null && r.ContainsKey(offKey) && uint.TryParse(r[offKey].Replace("0x", "").Replace("0X", "").Trim(), System.Globalization.NumberStyles.HexNumber, null, out uint off)) {
-                            if (off > 0x180000) { target = "code.bin"; break; }
+                var meta = XlsxResearchParser.ReadSheet(selectedXlsxPath, "Table Locations and Sizes");
+                if (meta.Count > 0 && meta.Any(r => r.Keys.Any(k => k.Equals("File", StringComparison.OrdinalIgnoreCase))))
+                {
+                    var row = meta.First(r => r.Keys.Any(k => k.Equals("File", StringComparison.OrdinalIgnoreCase)));
+                    var fileKey = row.Keys.First(k => k.Equals("File", StringComparison.OrdinalIgnoreCase));
+                    target = row[fileKey];
+                }
+                else if (actualXlsxSourcePath != null && actualXlsxSourcePath.ToLower().Contains("code")) 
+                {
+                    target = ".code.bin";
+                }
+                else 
+                {
+                    var sheetNames = XlsxResearchParser.GetSheetNames(selectedXlsxPath);
+                    foreach (var s in sheetNames) {
+                        var rows = XlsxResearchParser.ReadSheet(selectedXlsxPath, s);
+                        int maxCheck = Math.Min(rows.Count, 10);
+                        for (int i = 0; i < maxCheck; i++) {
+                            var r = rows[i];
+                            string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
+                            if (offKey != null && r.ContainsKey(offKey) && uint.TryParse(r[offKey].Replace("0x", "").Replace("0X", "").Trim(), System.Globalization.NumberStyles.HexNumber, null, out uint off)) {
+                                if (off > 0x180000) { target = ".code.bin"; break; }
+                            }
                         }
+                        if (target == ".code.bin") break;
                     }
-                    if (target == "code.bin") break;
                 }
             }
 
             string path = GetTargetPath(target, actualXlsxSourcePath);
+            if (!File.Exists(path) && target.Contains("code")) path = Path.Combine(Main.ExeFSPath, ".code.bin");
+            if (!File.Exists(path) && target.Contains("code")) path = Path.Combine(Main.ExeFSPath, "code.bin");
+            
             if (File.Exists(path))
             {
                 currentFileBytes = File.ReadAllBytes(path);
-                var highlights = new List<long>(); uint jump = 0; bool first = true;
-                foreach (var r in selectedResearchData) {
-                    string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
-                    string hexKey = r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
-                    
-                    if (offKey == null || !r.ContainsKey(offKey)) continue;
-                    if (!uint.TryParse(r[offKey].Replace("0x", "").Trim(), System.Globalization.NumberStyles.HexNumber, null, out uint off)) continue;
-                    
-                    if (first) jump = off;
-                    int len = 4;
-                    if (hexKey != null && r.ContainsKey(hexKey)) {
-                        byte[] p = Util.StringToByteArray(r[hexKey].Replace("0x", "").Replace("0X", ""));
-                        if (p != null) len = p.Length;
+                var highlights = new List<long>(); 
+                bool first = true;
+                
+                if (manualJump)
+                {
+                    highlights.Add(jump); highlights.Add(jump+1); highlights.Add(jump+2); highlights.Add(jump+3);
+                }
+                else if (selectedResearchData != null)
+                {
+                    foreach (var r in selectedResearchData) {
+                        string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
+                        string hexKey = r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
+                        
+                        if (offKey == null || !r.ContainsKey(offKey)) continue;
+                        if (!uint.TryParse(r[offKey].Replace("0x", "").Trim(), System.Globalization.NumberStyles.HexNumber, null, out uint off)) continue;
+                        
+                        if (first) jump = off;
+                        int len = 4;
+                        if (hexKey != null && r.ContainsKey(hexKey)) {
+                            byte[] p = Util.StringToByteArray(r[hexKey].Replace("0x", "").Replace("0X", ""));
+                            if (p != null) len = p.Length;
+                        }
+                        
+                        for (int l = 0; l < len; l++) highlights.Add(off + l);
+                        first = false;
                     }
-                    
-                    for (int l = 0; l < len; l++) highlights.Add(off + l);
-                    first = false;
                 }
                 ShowHexData(currentFileBytes, jump, highlights, Path.GetFileName(path));
-            } else LogDeployment($"Hex Error: {target} not found.");
+            } else LogDeployment($"Hex Error: {target} not found at {path}");
         }
 
         private void ShowHexData(byte[] data, uint offset, List<long> highlights, string fileName)
@@ -681,6 +761,7 @@ namespace pk3DS.WinForms
 
         private void ProcessXlsxPatch(string path)
         {
+            selectedXlsxPath = path;
             try {
                 LogDeployment($"Analyzing patch: {Path.GetFileName(path)}");
                 var allSheets = XlsxResearchParser.GetSheetNames(path);
@@ -689,8 +770,10 @@ namespace pk3DS.WinForms
                 // Group sheets by their target file
                 var filePatches = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-                // Global fallback target for this file (legacy detection)
-                string fileFallbackTarget = DetectFileLevelTarget(path);
+                // Use user-selected target as the fallback if available, otherwise detect
+                string fileFallbackTarget = cmbTargetFile != null && !string.IsNullOrEmpty(cmbTargetFile.Text) 
+                                            ? cmbTargetFile.Text 
+                                            : DetectFileLevelTarget(path);
 
                 foreach (var sheet in allSheets)
                 {
@@ -772,7 +855,7 @@ namespace pk3DS.WinForms
             if (s == "code" || s == "main") return "code.bin";
             if (s == "shop") return "shop.cro";
             if (s == "field") return "Field.cro";
-            if (s == "battle") return "Battle.cro";
+            if (s == "battle" || s.Contains("move") || s.Contains("abil") || s.Contains("item")) return "Battle.cro";
             if (s == "bag") return "Bag.cro";
             return null;
         }
@@ -790,10 +873,10 @@ namespace pk3DS.WinForms
 
             // 2. Filename heuristics
             string fn = Path.GetFileName(path).ToLower();
+            if (fn.Contains("battle") || fn.Contains("move") || fn.Contains("abil") || fn.Contains("item")) return "Battle.cro";
             if (fn.Contains("shop")) return "shop.cro";
             if (fn.Contains("code")) return "code.bin";
             if (fn.Contains("field")) return "Field.cro";
-            if (fn.Contains("battle")) return "Battle.cro";
             if (fn.Contains("bag")) return "Bag.cro";
 
             // 3. Content heuristics (check first few rows of first non-meta sheet for code.bin-like addresses)
@@ -807,7 +890,8 @@ namespace pk3DS.WinForms
                 string offKey = rows[0].Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
                 if (offKey != null && uint.TryParse(rows[0][offKey].Replace("0x", "").Trim(), System.Globalization.NumberStyles.HexNumber, null, out uint off))
                 {
-                    if (off > 0x180000) return "code.bin";
+                    if (off > 0x180000 && !fn.Contains("battle")) return "code.bin";
+                    if (off < 0x180000) return "Battle.cro";
                 }
                 break; // Only check one sheet
             }
@@ -821,8 +905,34 @@ namespace pk3DS.WinForms
         private int ApplyPatchRows(byte[] bin, List<Dictionary<string, string>> rows, string target)
         {
             int count = 0;
+            bool inTrampolineSection = false; // Track if we're in a code.bin trampoline section
+            bool targetIsCro = target.EndsWith(".cro", StringComparison.OrdinalIgnoreCase);
+
+            uint firstAddress = 0;
+            bool foundFirstAddress = false;
+
             foreach (var r in rows)
             {
+                // Detect section headers: rows where the first column has text but no valid hex in the Hex column.
+                // If the header mentions "trampoline" or "code.bin", mark subsequent rows to skip when targeting a CRO.
+                string firstVal = r.Values.FirstOrDefault()?.Trim() ?? "";
+                string hexKey0 = r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
+                string hexVal0 = hexKey0 != null && r.ContainsKey(hexKey0) ? r[hexKey0]?.Trim() : "";
+                bool isHeaderRow = !string.IsNullOrEmpty(firstVal) && string.IsNullOrEmpty(hexVal0) && firstVal.Length > 8;
+
+                if (isHeaderRow)
+                {
+                    string headerLower = firstVal.ToLower();
+                    if (headerLower.Contains("trampoline") || headerLower.Contains("code.bin"))
+                        inTrampolineSection = true;
+                    else
+                        inTrampolineSection = false; // New non-trampoline section resets
+                    continue;
+                }
+
+                // Skip trampoline/code.bin rows when we're patching a CRO file
+                if (inTrampolineSection && targetIsCro)
+                    continue;
                 // Prefer "in-file" columns (actual file offsets) over "Address" columns
                 // (which contain virtual memory addresses, e.g. loaded at 0x100000 for code.bin).
                 string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) >= 0)
@@ -836,6 +946,10 @@ namespace pk3DS.WinForms
 
                 string offStr = r[offKey].Replace("0x", "").Trim();
                 if (string.IsNullOrEmpty(offStr) || !uint.TryParse(offStr, System.Globalization.NumberStyles.HexNumber, null, out uint off)) continue;
+
+                // Skip individual rows that reference code.bin trampolines even if not in a trampoline section header
+                if (targetIsCro && r.Values.Any(v => v != null && v.IndexOf("trampoline", StringComparison.OrdinalIgnoreCase) >= 0))
+                    continue;
 
                 // If the column is an "Address"-type (virtual) and we're targeting code.bin,
                 // auto-subtract the 0x100000 ExeFS load base to get the real file offset.
@@ -859,9 +973,11 @@ namespace pk3DS.WinForms
                 if (p.Length == 4 && p[0] == 0xCC && p[1] == 0xCC && p[2] == 0xCC && p[3] == 0xCC)
                     continue;
 
-                if (numTargetOverride.Value > 0 && target.ToLower().Contains("battle.cro")) {
-                    int b = ResearchEngine.GetRelocationTableBase(bin, detectedTypeForOverride);
-                    if (b != -1) off = (uint)(b + ((int)numTargetOverride.Value * 4));
+                // Track the first valid code offset to link the relocation hook to
+                if (!foundFirstAddress && targetIsCro)
+                {
+                    firstAddress = off;
+                    foundFirstAddress = true;
                 }
 
                 // Modular TM support (Universal Expansion Detection)
@@ -903,6 +1019,77 @@ namespace pk3DS.WinForms
                     LogDeployment($"Skip Out of Bounds: 0x{off:X} (Size {p.Length})");
                 }
             }
+
+            // Link relocation entry if override is selected
+            decimal overrideVal = numTargetOverride.Value;
+            if (overrideVal == 0 && target.ToLower().Contains("battle.cro") && !string.IsNullOrEmpty(selectedXlsxPath))
+            {
+                string fn = Path.GetFileNameWithoutExtension(selectedXlsxPath).ToLower();
+                // 1. Clean the filename to remove prefixes/suffixes like "patch:", numbers, etc.
+                string cleanName = System.Text.RegularExpressions.Regex.Replace(fn, @"^[0-9_\-\s\(\)]+", "").Trim();
+                cleanName = System.Text.RegularExpressions.Regex.Replace(cleanName, @"[0-9_\-\s\(\)]+$", "").Trim();
+                cleanName = cleanName.Replace("'", "").Replace("’", "").Replace(" ", "").ToLower();
+
+                // 2. Fetch the corresponding text list based on target type
+                TextName textName = detectedTypeForOverride switch
+                {
+                    "Ability" => TextName.AbilityNames,
+                    "Item" => TextName.ItemNames,
+                    _ => TextName.MoveNames
+                };
+
+                string[] textList = Main.Config.GetText(textName);
+                
+                // 3. Search for a match in the text list
+                for (int i = 0; i < textList.Length; i++)
+                {
+                    string cleanedListEntry = textList[i].Replace("'", "").Replace("’", "").Replace(" ", "").ToLower();
+                    if (!string.IsNullOrEmpty(cleanedListEntry) && cleanedListEntry == cleanName)
+                    {
+                        overrideVal = i;
+                        break;
+                    }
+                }
+
+                // Fallback: If no text list match, try to parse any integer/hex from the filename
+                if (overrideVal == 0)
+                {
+                    var hexMatch = System.Text.RegularExpressions.Regex.Match(fn, @"0x([0-9a-fA-F]+)");
+                    if (hexMatch.Success && int.TryParse(hexMatch.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out int hexVal))
+                    {
+                        overrideVal = hexVal;
+                    }
+                    else
+                    {
+                        var decMatch = System.Text.RegularExpressions.Regex.Match(fn, @"\b([0-9]+)\b");
+                        if (decMatch.Success && int.TryParse(decMatch.Groups[1].Value, out int decVal))
+                        {
+                            overrideVal = decVal;
+                        }
+                    }
+                }
+            }
+
+            if (overrideVal > 0 && target.ToLower().Contains("battle.cro") && foundFirstAddress)
+            {
+                int b = ResearchEngine.GetRelocationTableBase(bin, detectedTypeForOverride);
+                if (b != -1)
+                {
+                    uint dispatchAddress = (uint)(b + ((int)overrideVal * 4));
+                    // Calculate branch instruction from dispatchAddress to firstAddress
+                    int diff = (int)firstAddress - (int)dispatchAddress - 8;
+                    uint branchVal = 0xEA000000 | (uint)((diff >> 2) & 0xFFFFFF);
+                    byte[] pBranch = BitConverter.GetBytes(branchVal);
+
+                    if (dispatchAddress + 4 <= bin.Length)
+                    {
+                        Array.Copy(pBranch, 0, bin, (int)dispatchAddress, 4);
+                        count += 4;
+                        LogDeployment($"Linked Quick Target ID {overrideVal} (0x{dispatchAddress:X}) -> 0x{firstAddress:X} via Branch 0x{branchVal:X}");
+                    }
+                }
+            }
+
             return count;
         }
 
@@ -914,16 +1101,37 @@ namespace pk3DS.WinForms
                 LogDeployment($"Patches directory not found at {patchesDir}. Creating it...");
                 Directory.CreateDirectory(patchesDir);
                 GenerateSamplePatch(patchesDir);
-                WinFormsUtil.Alert($"Created patches folder at:\n{patchesDir}\n\nA sample patch file has been added. Edit it or add your own .json patches!");
+                WinFormsUtil.Alert($"Created patches folder at:\n{patchesDir}\n\nAdd .json or .xlsx patch files here!");
                 return;
             }
 
-            var files = Directory.GetFiles(patchesDir, "*.json");
+            var jsonFiles = Directory.GetFiles(patchesDir, "*.json");
+            var xlsxFiles = Directory.GetFiles(patchesDir, "*.xlsx");
+
+            if (jsonFiles.Length == 0 && xlsxFiles.Length == 0)
+            {
+                LogDeployment($"No patch files found in {patchesDir}.");
+                GenerateSamplePatch(patchesDir);
+                WinFormsUtil.Alert($"No patches found. A sample .json patch has been created in:\n{patchesDir}\n\nYou can also place .xlsx patch files here.");
+                return;
+            }
+
+            // ── Phase 0: Process XLSX patches first (via the existing pipeline) ──
+            if (xlsxFiles.Length > 0)
+            {
+                LogDeployment($"Found {xlsxFiles.Length} XLSX patch file(s). Processing...");
+                foreach (var xlsxFile in xlsxFiles)
+                {
+                    LogDeployment($"━━━ XLSX: {Path.GetFileName(xlsxFile)} ━━━");
+                    ProcessXlsxPatch(xlsxFile);
+                }
+            }
+
+            // If there are no JSON files, we're done after XLSX processing
+            var files = jsonFiles;
             if (files.Length == 0)
             {
-                LogDeployment($"No JSON patches found in {patchesDir}.");
-                GenerateSamplePatch(patchesDir);
-                WinFormsUtil.Alert($"No patches found. A sample patch has been created in:\n{patchesDir}");
+                LogDeployment($"━━━ All {xlsxFiles.Length} XLSX patches processed. No JSON patches to apply. ━━━");
                 return;
             }
 
@@ -1353,7 +1561,49 @@ namespace pk3DS.WinForms
                         ApplyAnimationRedirectionPatch();
                     } catch (Exception animEx) { LogDeployment($"Animation expansion warning: {animEx.Message}"); }
                 }
-                else if (type == "Item") ResearchEngine.ExpandGARC(Path.Combine(Main.RomFSPath, "a/0/1/9"), lim, 0x30, false);
+                else if (type == "Item") {
+                    ResearchEngine.ExpandGARC(Path.Combine(Main.RomFSPath, Main.Config.GetGARCFileName("item").Replace('/', Path.DirectorySeparatorChar)), lim, Main.Config.USUM ? 84 : 0x30, false);
+
+                    // Expand Pockets (a/1/0/3)
+                    string pocketPath = Path.Combine(Main.RomFSPath, "a", "1", "0", "3");
+                    if (File.Exists(pocketPath)) {
+                        var pocketGarc = new pk3DS.Core.CTR.GARC.MemGARC(File.ReadAllBytes(pocketPath));
+                        if (pocketGarc.Files.Length > 0) {
+                            byte[] pocketFile = pocketGarc.Files[0];
+                            int requiredPocketBytes = (lim + 1) / 2;
+                            if (pocketFile.Length < requiredPocketBytes) {
+                                int addedBytes = requiredPocketBytes - pocketFile.Length;
+                                byte[] newPocketFile = new byte[requiredPocketBytes];
+                                Array.Copy(pocketFile, newPocketFile, pocketFile.Length);
+                                // Assign 0x22 (pocket 2) for the first 14 bytes (28 TMs)
+                                for (int i = 0; i < addedBytes; i++) {
+                                    newPocketFile[pocketFile.Length + i] = (i < 14) ? (byte)0x22 : (byte)0x00;
+                                }
+                                pocketGarc.Files[0] = newPocketFile;
+                                File.WriteAllBytes(pocketPath, pocketGarc.Data);
+                                LogDeployment($"Expanded pocket GARC a/1/0/3 (Added {addedBytes} bytes).");
+                            }
+                        }
+                    }
+
+                    // Expand Battle Bag (a/0/2/0)
+                    string bagPath = Path.Combine(Main.RomFSPath, "a", "0", "2", "0");
+                    if (File.Exists(bagPath)) {
+                        var bagGarc = new pk3DS.Core.CTR.GARC.MemGARC(File.ReadAllBytes(bagPath));
+                        if (bagGarc.Files.Length > 0) {
+                            byte[] bagFile = bagGarc.Files[0];
+                            if (bagFile.Length < lim) {
+                                int addedBytes = lim - bagFile.Length;
+                                byte[] newBagFile = new byte[lim];
+                                Array.Copy(bagFile, newBagFile, bagFile.Length);
+                                // 0x00 for no battle bag
+                                bagGarc.Files[0] = newBagFile;
+                                File.WriteAllBytes(bagPath, bagGarc.Data);
+                                LogDeployment($"Expanded battle bag GARC a/0/2/0 (Added {addedBytes} bytes).");
+                            }
+                        }
+                    }
+                }
                 
                 string textARC = Path.Combine(Main.RomFSPath, Main.Config.GetGARCFileName("gametext").Replace('/', Path.DirectorySeparatorChar));
                 if (File.Exists(textARC)) {
@@ -1413,10 +1663,10 @@ namespace pk3DS.WinForms
                             _ => ""
                         });
                     } else if (type == "Item") {
-                        ExpandTextFile(39, 1, (idx, _) => $"New Item {idx}");
-                        ExpandTextFile(40, 1, (idx, _) => $"New Item {idx}");
-                        ExpandTextFile(41, 1, (idx, _) => "A newly added item.");
-                        ExpandTextFile(42, 1, (idx, _) => "A newly added item.");
+                        int nameIdx = Main.Config.USUM ? 40 : 36;
+                        int flavIdx = Main.Config.USUM ? 39 : 35;
+                        ExpandTextFile(nameIdx, 1, (idx, _) => $"New Item {idx}");
+                        ExpandTextFile(flavIdx, 1, (idx, _) => "A newly added item.");
                     } else if (type == "Ability") {
                         ExpandTextFile(101, 1, (idx, _) => $"New Ability {idx}");
                         ExpandTextFile(102, 1, (idx, _) => "A newly added ability.");

@@ -106,5 +106,17 @@ namespace pk3DS.WinForms.Properties {
                 this["CustomTheme"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowFolderWarning {
+            get {
+                return ((bool)(this["ShowFolderWarning"]));
+            }
+            set {
+                this["ShowFolderWarning"] = value;
+            }
+        }
     }
 }

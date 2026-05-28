@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace pk3DS.Core.CTR;
@@ -16,6 +16,28 @@ public static class LZSS
         using FileStream inStream = new(infile, FileMode.Open),
             outStream = new(outfile, FileMode.Create);
         return Decompress(inStream, inStream.Length, outStream);
+    }
+
+    public static byte[] Decompress(byte[] data)
+    {
+        if (data == null || data.Length < 4) throw new InvalidDataException("Not enough data to decompress.");
+        
+        byte type = data[0];
+        if (type != 0x11)
+            throw new InvalidDataException($"The provided stream is not a valid LZ-0x11 compressed stream (invalid type 0x{type:X})");
+            
+        int decompressedSize = data[1] | (data[2] << 8) | (data[3] << 16);
+        if (decompressedSize == 0)
+        {
+            if (data.Length < 8) throw new InvalidDataException("Not enough data to decompress.");
+            decompressedSize = data[4] | (data[5] << 8) | (data[6] << 16) | (data[7] << 24);
+        }
+
+        byte[] output = new byte[decompressedSize];
+        using var inStream = new MemoryStream(data);
+        using var outStream = new MemoryStream(output);
+        Decompress(inStream, data.Length, outStream);
+        return output;
     }
 
     /// <summary>

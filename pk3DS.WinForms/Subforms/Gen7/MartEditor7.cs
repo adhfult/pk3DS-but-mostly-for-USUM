@@ -96,6 +96,7 @@ public partial class MartEditor7 : Form
     {
         if (entry > -1) SetList();
         if (entryBP > -1) SetListBP();
+        CROUtil.UpdateHashes(data);
         File.WriteAllBytes(CROPath, data);
         SyncMartsToCodeBin();
         Close();

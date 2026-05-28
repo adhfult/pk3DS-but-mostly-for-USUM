@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
@@ -17,61 +17,88 @@ public struct Item
     #region Structure
     private ushort Price;
 
+    private byte _HeldEffect;
     [Category(Battle)]
-    public byte HeldEffect { get; set; }
+        public byte HeldEffect { get => _HeldEffect; set => _HeldEffect = value; }
 
-    public byte HeldArgument { get; set; }
-    public byte NaturalGiftEffect { get; set; }
-    public byte FlingEffect { get; set; }
-    public byte FlingPower { get; set; }
-    public byte NaturalGiftPower { get; set; }
-    public ushort Packed { get; set; }
+    private byte _HeldArgument;
+        public byte HeldArgument { get => _HeldArgument; set => _HeldArgument = value; }
+    private byte _NaturalGiftEffect;
+        public byte NaturalGiftEffect { get => _NaturalGiftEffect; set => _NaturalGiftEffect = value; }
+    private byte _FlingEffect;
+        public byte FlingEffect { get => _FlingEffect; set => _FlingEffect = value; }
+    private byte _FlingPower;
+        public byte FlingPower { get => _FlingPower; set => _FlingPower = value; }
+    private byte _NaturalGiftPower;
+        public byte NaturalGiftPower { get => _NaturalGiftPower; set => _NaturalGiftPower = value; }
+    private ushort _Packed;
+        public ushort Packed { get => _Packed; set => _Packed = value; }
 
+    private byte _EffectField;
     [Category(Field), Description("Routine # to call when used; 0=unusable.")]
-    public byte EffectField { get; set; }
+        public byte EffectField { get => _EffectField; set => _EffectField = value; }
 
+    private byte _EffectBattle;
     [Category(Battle), Description("Routine # to call when used; 0=unusable.")]
-    public byte EffectBattle { get; set; } // Battle Type
+        public byte EffectBattle { get => _EffectBattle; set => _EffectBattle = value; } // Battle Type
 
-    public byte Unk_0xC { get; set; } // 0 or 1
-    public byte Unk_0xD { get; set; } // Classification (0-3 Battle, 4 Balls, 5 Mail)
-    private byte Consumable { get; set; } // 4 bits for use consume, 4 bits for use not consumed
-    public byte SortIndex { get; set; }
-    public BattleStatusFlags CureInflict { get; set; } // Bitflags
+    private byte _Unk_0xC;
+        public byte Unk_0xC { get => _Unk_0xC; set => _Unk_0xC = value; } // 0 or 1
+    private byte _Unk_0xD;
+        public byte Unk_0xD { get => _Unk_0xD; set => _Unk_0xD = value; } // Classification (0-3 Battle, 4 Balls, 5 Mail)
+    private byte _Consumable;
+        private byte Consumable { get => _Consumable; set => _Consumable = value; } // 4 bits for use consume, 4 bits for use not consumed
+    private byte _SortIndex;
+        public byte SortIndex { get => _SortIndex; set => _SortIndex = value; }
+    private BattleStatusFlags _CureInflict;
+        public BattleStatusFlags CureInflict { get => _CureInflict; set => _CureInflict = value; } // Bitflags
     private byte Boost0; // Revive 1, Sacred Ash 3, Rare Candy 5, EvoStone 8, upper4 for BoostAtk
     private byte Boost1; // DEF, SPA
     private byte Boost2; // SPD, SPE
     private byte Boost3; // ACC, CRIT PPUpFlags
-    public ItemFlags1 FunctionFlags0 { get; set; }
-    public ItemFlags2 FunctionFlags1 { get; set; }
+    private ItemFlags1 _FunctionFlags0;
+        public ItemFlags1 FunctionFlags0 { get => _FunctionFlags0; set => _FunctionFlags0 = value; }
+    private ItemFlags2 _FunctionFlags1;
+        public ItemFlags2 FunctionFlags1 { get => _FunctionFlags1; set => _FunctionFlags1 = value; }
 
+    private sbyte _EVHP;
     [Category(Field), Description("Adds EVs to the HP stat.")]
-    public sbyte EVHP { get; set; }
+        public sbyte EVHP { get => _EVHP; set => _EVHP = value; }
 
+    private sbyte _EVATK;
     [Category(Field), Description("Adds EVs to the Attack stat.")]
-    public sbyte EVATK { get; set; }
+        public sbyte EVATK { get => _EVATK; set => _EVATK = value; }
 
+    private sbyte _EVDEF;
     [Category(Field), Description("Adds EVs to the Defense stat.")]
-    public sbyte EVDEF { get; set; }
+        public sbyte EVDEF { get => _EVDEF; set => _EVDEF = value; }
 
+    private sbyte _EVSPE;
     [Category(Field), Description("Adds EVs to the Speed stat.")]
-    public sbyte EVSPE { get; set; }
+        public sbyte EVSPE { get => _EVSPE; set => _EVSPE = value; }
 
+    private sbyte _EVSPA;
     [Category(Field), Description("Adds EVs to the Sp. Attack stat.")]
-    public sbyte EVSPA { get; set; }
+        public sbyte EVSPA { get => _EVSPA; set => _EVSPA = value; }
 
+    private sbyte _EVSPD;
     [Category(Field), Description("Adds EVs to the Sp. Defense stat.")]
-    public sbyte EVSPD { get; set; }
+        public sbyte EVSPD { get => _EVSPD; set => _EVSPD = value; }
 
+    private Heal _HealAmount;
     [Category(Heal), Description("Determines the healing percent, or if a flat value is used."), RefreshProperties(RefreshProperties.All)]
-    public Heal HealAmount { get; set; }
+        public Heal HealAmount { get => _HealAmount; set => _HealAmount = value; }
 
+    private byte _PPGain;
     [Category(Field), Description("PP to be added to the move's current PP if used.")]
-    public byte PPGain { get; set; }
+        public byte PPGain { get => _PPGain; set => _PPGain = value; }
 
-    public sbyte Friendship1 { get; set; }
-    public sbyte Friendship2 { get; set; }
-    public sbyte Friendship3 { get; set; }
+    private sbyte _Friendship1;
+        public sbyte Friendship1 { get => _Friendship1; set => _Friendship1 = value; }
+    private sbyte _Friendship2;
+        public sbyte Friendship2 { get => _Friendship2; set => _Friendship2 = value; }
+    private sbyte _Friendship3;
+        public sbyte Friendship3 { get => _Friendship3; set => _Friendship3 = value; }
     public byte _0x23, _0x24;
     #endregion
 
@@ -91,7 +118,7 @@ public struct Item
     public bool Flag2 { readonly get => ((Packed >> 6) & 1) == 1; set => Packed = (ushort)((Packed & ~(1 << 6)) | ((value ? 1 : 0) << 6)); }
 
     [Category(Field)]
-    public int PocketField { readonly get => (Packed >> 7) & 0xF; set => Packed = (ushort)((Packed & 0xF87F) | ((value & 0xF) << 7)); }
+    public ItemPocket PocketField { readonly get => (ItemPocket)((Packed >> 7) & 0xF); set => Packed = (ushort)((Packed & 0xF87F) | (((int)value & 0xF) << 7)); }
 
     [Category(Battle)]
     public BattlePocket PocketBattle { readonly get => (BattlePocket)(Packed >> 11); set => Packed = (ushort)((Packed & 0x077F) | (((byte)value & 0x1F) << 11)); }
@@ -184,4 +211,17 @@ public enum BattlePocket : byte
     Boosts = 1 << 1,
     Restore = 1 << 2,
     Misc = 1 << 3,
+}
+
+public enum ItemPocket : byte
+{
+    None = 0,
+    Items = 1,
+    TMs = 2,
+    Medicine = 3,
+    Berries = 4,
+    KeyItems = 5,
+    ZCrystals = 6,
+    BattleItems = 7,
+    FreeSpace = 8
 }

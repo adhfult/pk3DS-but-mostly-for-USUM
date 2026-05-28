@@ -1,6 +1,0 @@
-
-The following are the hexadecimal addresses where the value 0x2e 0x2 was found being checked for equality (2 XX 4X E2 2e XX 5X):
-
-D:\Dropbox\ROM\3ds\Modded ROM\Balanced Formed Ultra Sun\ExtractedRomFS\Battle.cro
-
-0xcb6bc

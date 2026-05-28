@@ -136,6 +136,8 @@ partial class PersonalEditor7
         this.CLB_TM = new System.Windows.Forms.CheckedListBox();
         this.B_CopyTMs = new System.Windows.Forms.Button();
         this.B_PasteTMs = new System.Windows.Forms.Button();
+        this.B_ExportTM = new System.Windows.Forms.Button();
+        this.B_ImportTM = new System.Windows.Forms.Button();
         this.TP_Randomizer = new System.Windows.Forms.TabPage();
         this.GB_Modifier = new System.Windows.Forms.GroupBox();
         this.CHK_FullBeachTutorCompatibility = new System.Windows.Forms.CheckBox();
@@ -184,7 +186,6 @@ partial class PersonalEditor7
         this.TP_Changelog = new System.Windows.Forms.TabPage();
         this.RTB_Changelog = new System.Windows.Forms.RichTextBox();
         this.B_GenerateDiff = new System.Windows.Forms.Button();
-        this.B_SortForms = new System.Windows.Forms.Button();
         this.B_InsertForm = new System.Windows.Forms.Button();
         this.B_Import = new System.Windows.Forms.Button();
         this.B_Export = new System.Windows.Forms.Button();
@@ -349,7 +350,6 @@ partial class PersonalEditor7
         this.TP_General.Controls.Add(this.B_Export);
         this.TP_General.Controls.Add(this.B_Import);
         this.TP_General.Controls.Add(this.B_InsertForm);
-        this.TP_General.Controls.Add(this.B_SortForms);
         this.TP_General.Controls.Add(this.PB_MonSprite);
         this.TP_General.Location = new System.Drawing.Point(4, 22);
         this.TP_General.Name = "TP_General";
@@ -738,6 +738,8 @@ partial class PersonalEditor7
         this.B_JumpEggMoves.Click += new System.EventHandler(this.B_JumpEggMoves_Click);
 
         // TP_MoveTutors
+        this.TP_MoveTutors.Controls.Add(this.B_ExportTM);
+        this.TP_MoveTutors.Controls.Add(this.B_ImportTM);
         this.TP_MoveTutors.Controls.Add(this.B_PasteTMs);
         this.TP_MoveTutors.Controls.Add(this.B_CopyTMs);
         this.TP_MoveTutors.Controls.Add(this.L_BeachTutors);
@@ -757,7 +759,7 @@ partial class PersonalEditor7
 
         this.L_BeachTutors.AutoSize = true;
         this.L_BeachTutors.Location = new System.Drawing.Point(480, 5);
-        this.L_BeachTutors.Text = "Beach Tutors:";
+        this.L_BeachTutors.Text = "Tutors:";
 
         this.CLB_BeachTutors.FormattingEnabled = true;
         this.CLB_BeachTutors.Location = new System.Drawing.Point(483, 30);
@@ -802,6 +804,22 @@ partial class PersonalEditor7
         this.B_PasteTMs.Text = "Paste TMs";
         this.B_PasteTMs.UseVisualStyleBackColor = true;
         this.B_PasteTMs.Click += new System.EventHandler(this.B_PasteTMs_Click);
+
+        // B_ExportTM
+        this.B_ExportTM.Location = new System.Drawing.Point(9, 440);
+        this.B_ExportTM.Name = "B_ExportTM";
+        this.B_ExportTM.Size = new System.Drawing.Size(130, 23);
+        this.B_ExportTM.Text = "Export All";
+        this.B_ExportTM.UseVisualStyleBackColor = true;
+        this.B_ExportTM.Click += new System.EventHandler(this.B_ExportTM_Click);
+
+        // B_ImportTM
+        this.B_ImportTM.Location = new System.Drawing.Point(149, 440);
+        this.B_ImportTM.Name = "B_ImportTM";
+        this.B_ImportTM.Size = new System.Drawing.Size(130, 23);
+        this.B_ImportTM.Text = "Import All";
+        this.B_ImportTM.UseVisualStyleBackColor = true;
+        this.B_ImportTM.Click += new System.EventHandler(this.B_ImportTM_Click);
 
         // TP_Randomizer
         this.TP_Randomizer.Controls.Add(this.GB_Modifier);
@@ -1079,13 +1097,6 @@ partial class PersonalEditor7
         this.B_JumpEggMoves.Text = "Jump to Egg Moves";
         this.B_JumpEggMoves.UseVisualStyleBackColor = true;
 
-        this.B_SortForms.Location = new System.Drawing.Point(555, 415);
-        this.B_SortForms.Name = "B_SortForms";
-        this.B_SortForms.Size = new System.Drawing.Size(160, 23);
-        this.B_SortForms.TabIndex = 421;
-        this.B_SortForms.Text = "Sort Forms";
-        this.B_SortForms.UseVisualStyleBackColor = true;
-        this.B_SortForms.Click += new System.EventHandler(this.B_SortForms_Click);
 
         this.B_InsertForm.Location = new System.Drawing.Point(555, 445);
         this.B_InsertForm.Name = "B_InsertForm";
@@ -1099,7 +1110,7 @@ partial class PersonalEditor7
         this.B_Import.Name = "B_Import";
         this.B_Import.Size = new System.Drawing.Size(160, 23);
         this.B_Import.TabIndex = 423;
-        this.B_Import.Text = "Import Learnsets";
+        this.B_Import.Text = "Import Data";
         this.B_Import.UseVisualStyleBackColor = true;
         this.B_Import.Click += new System.EventHandler(this.B_Import_Click);
 
@@ -1107,7 +1118,7 @@ partial class PersonalEditor7
         this.B_Export.Name = "B_Export";
         this.B_Export.Size = new System.Drawing.Size(160, 23);
         this.B_Export.TabIndex = 424;
-        this.B_Export.Text = "Export Learnsets";
+        this.B_Export.Text = "Export Data";
         this.B_Export.UseVisualStyleBackColor = true;
         this.B_Export.Click += new System.EventHandler(this.B_Export_Click);
 
@@ -1210,6 +1221,8 @@ partial class PersonalEditor7
     private System.Windows.Forms.CheckedListBox CLB_TM;
     private System.Windows.Forms.Button B_CopyTMs;
     private System.Windows.Forms.Button B_PasteTMs;
+    private System.Windows.Forms.Button B_ExportTM;
+    private System.Windows.Forms.Button B_ImportTM;
     private System.Windows.Forms.CheckedListBox CLB_MoveTutors;
     private System.Windows.Forms.Label L_Special;
     private System.Windows.Forms.Label L_TM;
@@ -1302,7 +1315,6 @@ partial class PersonalEditor7
     private System.Windows.Forms.RichTextBox RTB_Changelog;
     private System.Windows.Forms.Button B_GenerateDiff;
     private System.Windows.Forms.Button B_SaveCurrent;
-    private System.Windows.Forms.Button B_SortForms;
     private System.Windows.Forms.Button B_InsertForm;
     private System.Windows.Forms.Button B_Import;
     private System.Windows.Forms.Button B_Export;
