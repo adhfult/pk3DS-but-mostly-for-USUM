@@ -105,11 +105,14 @@ public partial class SMTE : Form
         }
 
         Control trainerParent = Tab_Trainer;
-        GB_Difficulty = new GroupBox { Text = "Difficulty Bits", Size = new Size(150, 150), Location = new Point(200, GB_AIBits.Top) };
+        GB_Difficulty = new GroupBox { Text = "Difficulty Bits", Size = new Size(150, 180), Location = new Point(200, GB_AIBits.Top) };
         B_MaxIVsAll = new Button { Text = "Max IVs All", Size = new Size(130, 23), Location = new Point(10, 20) };
         B_DoublesAll = new Button { Text = "Doubles All", Size = new Size(130, 23), Location = new Point(10, 50) };
         B_PokeChangeAll = new Button { Text = "PokeChange All", Size = new Size(130, 23), Location = new Point(10, 80) };
-        
+        Button B_FlagAll = new Button { Text = "Master AI Flag All", Size = new Size(130, 23), Location = new Point(10, 110) };
+        B_FlagAll.Click += (s, e) => { foreach (var t in Trainers) t.Flag = true; LoadEntry(); };
+        CHK_Flag.Text = "Master AI";
+
         B_MaxIVsAll.Click += B_MaxIVsAll_Click;
         B_DoublesAll.Click += B_DoublesAll_Click;
         B_PokeChangeAll.Click += B_PokeChangeAll_Click;
@@ -117,6 +120,7 @@ public partial class SMTE : Form
         GB_Difficulty.Controls.Add(B_MaxIVsAll);
         GB_Difficulty.Controls.Add(B_DoublesAll);
         GB_Difficulty.Controls.Add(B_PokeChangeAll);
+        GB_Difficulty.Controls.Add(B_FlagAll);
         trainerParent.Controls.Add(GB_Difficulty);
 
         Control teamParent = PB_Team6.Parent ?? this;

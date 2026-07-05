@@ -60,6 +60,14 @@ namespace pk3DS.WinForms
             button_dump = new System.Windows.Forms.Button();
             button_Add = new System.Windows.Forms.Button();
             button_Remove = new System.Windows.Forms.Button();
+            tab_Trainers = new System.Windows.Forms.TabPage();
+            dgvTrainers = new System.Windows.Forms.DataGridView();
+            NUD_Area = new System.Windows.Forms.NumericUpDown();
+            L_Area = new System.Windows.Forms.Label();
+            CB_UnusedTrainer = new System.Windows.Forms.ComboBox();
+            B_ConvertTrainer = new System.Windows.Forms.Button();
+            B_SaveTrainers = new System.Windows.Forms.Button();
+            L_ConvertTrainer = new System.Windows.Forms.Label();
             tabControl1.SuspendLayout();
             tab_7_ZS.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)NUD_7_Count).BeginInit();
@@ -68,6 +76,9 @@ namespace pk3DS.WinForms
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgv).BeginInit();
             tabPage2.SuspendLayout();
+            tab_Trainers.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvTrainers).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)NUD_Area).BeginInit();
             SuspendLayout();
             // 
             // L_Location
@@ -99,6 +110,7 @@ namespace pk3DS.WinForms
             tabControl1.Controls.Add(tab_8_ZI);
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tab_Trainers);
             tabControl1.Location = new System.Drawing.Point(18, 38);
             tabControl1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabControl1.Name = "tabControl1";
@@ -430,6 +442,93 @@ namespace pk3DS.WinForms
             button_Remove.UseVisualStyleBackColor = true;
             button_Remove.Click += button_Remove_Click;
             // 
+            // tab_Trainers
+            // 
+            tab_Trainers.Controls.Add(L_ConvertTrainer);
+            tab_Trainers.Controls.Add(B_SaveTrainers);
+            tab_Trainers.Controls.Add(B_ConvertTrainer);
+            tab_Trainers.Controls.Add(CB_UnusedTrainer);
+            tab_Trainers.Controls.Add(L_Area);
+            tab_Trainers.Controls.Add(NUD_Area);
+            tab_Trainers.Controls.Add(dgvTrainers);
+            tab_Trainers.Location = new System.Drawing.Point(4, 24);
+            tab_Trainers.Name = "tab_Trainers";
+            tab_Trainers.Padding = new System.Windows.Forms.Padding(3);
+            tab_Trainers.Size = new System.Drawing.Size(762, 510);
+            tab_Trainers.TabIndex = 4;
+            tab_Trainers.Text = "Trainers";
+            tab_Trainers.UseVisualStyleBackColor = true;
+            // 
+            // dgvTrainers
+            // 
+            dgvTrainers.AllowUserToAddRows = false;
+            dgvTrainers.AllowUserToDeleteRows = false;
+            dgvTrainers.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            dgvTrainers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvTrainers.Location = new System.Drawing.Point(6, 35);
+            dgvTrainers.Name = "dgvTrainers";
+            dgvTrainers.Size = new System.Drawing.Size(750, 429);
+            dgvTrainers.TabIndex = 0;
+            // 
+            // NUD_Area
+            // 
+            NUD_Area.Location = new System.Drawing.Point(45, 6);
+            NUD_Area.Name = "NUD_Area";
+            NUD_Area.Size = new System.Drawing.Size(43, 23);
+            NUD_Area.TabIndex = 1;
+            NUD_Area.ValueChanged += NUD_Area_ValueChanged;
+            // 
+            // L_Area
+            // 
+            L_Area.AutoSize = true;
+            L_Area.Location = new System.Drawing.Point(5, 10);
+            L_Area.Name = "L_Area";
+            L_Area.Size = new System.Drawing.Size(34, 15);
+            L_Area.TabIndex = 2;
+            L_Area.Text = "Area:";
+            // 
+            // CB_UnusedTrainer
+            // 
+            CB_UnusedTrainer.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            CB_UnusedTrainer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            CB_UnusedTrainer.FormattingEnabled = true;
+            CB_UnusedTrainer.Location = new System.Drawing.Point(6, 480);
+            CB_UnusedTrainer.Name = "CB_UnusedTrainer";
+            CB_UnusedTrainer.Size = new System.Drawing.Size(200, 23);
+            CB_UnusedTrainer.TabIndex = 3;
+            // 
+            // B_ConvertTrainer
+            // 
+            B_ConvertTrainer.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            B_ConvertTrainer.Location = new System.Drawing.Point(212, 479);
+            B_ConvertTrainer.Name = "B_ConvertTrainer";
+            B_ConvertTrainer.Size = new System.Drawing.Size(120, 25);
+            B_ConvertTrainer.TabIndex = 4;
+            B_ConvertTrainer.Text = "Convert to Trainer";
+            B_ConvertTrainer.UseVisualStyleBackColor = true;
+            B_ConvertTrainer.Click += B_ConvertTrainer_Click;
+            // 
+            // B_SaveTrainers
+            // 
+            B_SaveTrainers.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            B_SaveTrainers.Location = new System.Drawing.Point(668, 479);
+            B_SaveTrainers.Name = "B_SaveTrainers";
+            B_SaveTrainers.Size = new System.Drawing.Size(88, 25);
+            B_SaveTrainers.TabIndex = 5;
+            B_SaveTrainers.Text = "Save";
+            B_SaveTrainers.UseVisualStyleBackColor = true;
+            B_SaveTrainers.Click += B_SaveTrainers_Click;
+            // 
+            // L_ConvertTrainer
+            // 
+            L_ConvertTrainer.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            L_ConvertTrainer.AutoSize = true;
+            L_ConvertTrainer.Location = new System.Drawing.Point(5, 465);
+            L_ConvertTrainer.Name = "L_ConvertTrainer";
+            L_ConvertTrainer.Size = new System.Drawing.Size(167, 15);
+            L_ConvertTrainer.TabIndex = 6;
+            L_ConvertTrainer.Text = "Select Unused Trainer to Copy:";
+            // 
             // OWSE7
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -453,6 +552,10 @@ namespace pk3DS.WinForms
             ((System.ComponentModel.ISupportInitialize)dgv).EndInit();
             tabPage2.ResumeLayout(false);
             tabPage2.PerformLayout();
+            tab_Trainers.ResumeLayout(false);
+            tab_Trainers.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dgvTrainers).EndInit();
+            ((System.ComponentModel.ISupportInitialize)NUD_Area).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -489,5 +592,13 @@ namespace pk3DS.WinForms
         private System.Windows.Forms.Button button_dump;
         private System.Windows.Forms.Button button_Add;
         private System.Windows.Forms.Button button_Remove;
+        private System.Windows.Forms.TabPage tab_Trainers;
+        private System.Windows.Forms.DataGridView dgvTrainers;
+        private System.Windows.Forms.NumericUpDown NUD_Area;
+        private System.Windows.Forms.Label L_Area;
+        private System.Windows.Forms.ComboBox CB_UnusedTrainer;
+        private System.Windows.Forms.Button B_ConvertTrainer;
+        private System.Windows.Forms.Button B_SaveTrainers;
+        private System.Windows.Forms.Label L_ConvertTrainer;
     }
 }

@@ -118,5 +118,17 @@ namespace pk3DS.WinForms.Properties {
                 this["ShowFolderWarning"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowOWSEWarning {
+            get {
+                return ((bool)(this["ShowOWSEWarning"]));
+            }
+            set {
+                this["ShowOWSEWarning"] = value;
+            }
+        }
     }
 }

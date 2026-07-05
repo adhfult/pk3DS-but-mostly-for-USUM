@@ -7,6 +7,13 @@ public class PersonalInfoSM : PersonalInfoXY
 {
     public new const int SIZE = 0x54;
 
+    public PersonalInfoSM()
+    {
+        Data = new byte[SIZE];
+        TMHM = new bool[128];
+        TutorFlags = new bool[160];
+    }
+
     public PersonalInfoSM(byte[] data)
     {
         Data = new byte[SIZE];

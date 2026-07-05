@@ -821,12 +821,27 @@ public partial class MoveEditor7 : Form
             byte[] templateData = System.IO.File.ReadAllBytes(templatePath);
 
             string extension = System.IO.Path.GetExtension(folderFiles[0]);
+            bool isJson = extension.Equals(".json", StringComparison.OrdinalIgnoreCase);
+            string templateString = isJson ? System.Text.Encoding.UTF8.GetString(templateData) : null;
 
             for (int i = folderFiles.Length; i < targetCount; i++)
             {
-                string newFileName = i.ToString("D3") + extension; 
+                string newFileName = isJson ? (i.ToString() + extension) : (i.ToString("D3") + extension); 
                 string newFilePath = System.IO.Path.Combine(folderPath, newFileName);
-                System.IO.File.WriteAllBytes(newFilePath, templateData);
+                
+                if (isJson)
+                {
+                    string updatedJson = System.Text.RegularExpressions.Regex.Replace(
+                        templateString, 
+                        @"""Name""\s*:\s*""\d+""", 
+                        $"\"Name\": \"{i}\""
+                    );
+                    System.IO.File.WriteAllText(newFilePath, updatedJson, System.Text.Encoding.UTF8);
+                }
+                else
+                {
+                    System.IO.File.WriteAllBytes(newFilePath, templateData);
+                }
             }
         }
     }
@@ -888,18 +903,22 @@ public partial class MoveEditor7 : Form
             
             if (animID < maxProp && i < maxProp)
             {
-                if (!animPropGARC.Files[i].SequenceEqual(animPropGARC.Files[animID]))
+                var fileI = animPropGARC.Files[i] ?? new byte[0];
+                var fileAnimID = animPropGARC.Files[animID] ?? new byte[0];
+                if (!fileI.SequenceEqual(fileAnimID))
                 {
-                    animPropGARC.Files[i] = (byte[])animPropGARC.Files[animID].Clone();
+                    animPropGARC.Files[i] = (byte[])fileAnimID.Clone();
                     propModified = true;
                 }
             }
 
             if (animID < maxVis && i < maxVis)
             {
-                if (!animVisGARC.Files[i].SequenceEqual(animVisGARC.Files[animID]))
+                var fileI = animVisGARC.Files[i] ?? new byte[0];
+                var fileAnimID = animVisGARC.Files[animID] ?? new byte[0];
+                if (!fileI.SequenceEqual(fileAnimID))
                 {
-                    animVisGARC.Files[i] = (byte[])animVisGARC.Files[animID].Clone();
+                    animVisGARC.Files[i] = (byte[])fileAnimID.Clone();
                     visModified = true;
                 }
             }

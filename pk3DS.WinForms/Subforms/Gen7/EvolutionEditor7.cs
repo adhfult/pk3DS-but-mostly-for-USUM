@@ -116,7 +116,14 @@ public partial class EvolutionEditor7 : Form
 
     private void GetList()
     {
-        entry = Array.IndexOf(specieslist, CB_Species.Text);
+        // Use SelectedIndex when it matches the visible text (explicit dropdown selection or form entry).
+        // Fall back to name search when the user typed a species name without selecting from the dropdown,
+        // in which case SelectedIndex still points to the previously selected entry.
+        int idx = CB_Species.SelectedIndex;
+        if (idx < 0 || idx >= specieslist.Length || specieslist[idx] != CB_Species.Text)
+            idx = Array.IndexOf(specieslist, CB_Species.Text);
+        entry = idx;
+        if (entry < 0 || entry >= files.Length) return;
         byte[] input = files[entry];
         if (input.Length != EvolutionSet7.SIZE) return; // error
         evo = new EvolutionSet7(input);
@@ -277,9 +284,9 @@ public partial class EvolutionEditor7 : Form
 
         dumping = true;
         string result = "";
-        for (int i = 0; i < CB_Species.Items.Count; i++)
+        for (int i = 0; i < Math.Min(CB_Species.Items.Count, files.Length); i++)
         {
-            CB_Species.Text = specieslist[i]; // Get new Species
+            CB_Species.SelectedIndex = i; // Get new Species (use index so alt forms select correctly)
             result += "======" + Environment.NewLine + entry + " " + CB_Species.Text + Environment.NewLine + "======" + Environment.NewLine;
             for (int j = 0; j < 8; j++)
             {
@@ -376,7 +383,7 @@ public partial class EvolutionEditor7 : Form
         int species = Array.IndexOf(specieslist, rb[index].Text);
         int form = (int)fb[index].Value;
         if (form == -1)
-            form = baseForms[species];
+            form = formVal[entry];
 
         pic[index].Image = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
     }

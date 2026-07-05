@@ -29,6 +29,27 @@ public sealed partial class ToolsUI : Form
         CB_Repack.Items.Add("DARC Pack (use filenames)");
         CB_Repack.Items.Add("Mini Pack (from Name)");
         CB_Repack.SelectedIndex = 0;
+
+        // Add instructional labels inside each drop zone
+        AddDropLabel(PB_Unpack, "Drop a GARC / DARC / Mini file here\nto unpack it into a folder.\n(Hold CTRL to skip decompression)");
+        AddDropLabel(PB_Repack, "Drop a folder (*_g, *_d, *_WD…)\nhere to repack it into a GARC/DARC/Mini.\nUse the combo box above to override format.");
+        AddDropLabel(PB_BCLIM, "Drop a .bclim / .bflim image file here\nto convert and view it as a bitmap.");
+    }
+
+    private static void AddDropLabel(Control panel, string text)
+    {
+        var lbl = new Label
+        {
+            Text = text,
+            TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+            Dock = DockStyle.Fill,
+            ForeColor = System.Drawing.Color.Gray,
+            BackColor = System.Drawing.Color.Transparent,
+            Font = new System.Drawing.Font("Segoe UI", 7.5f),
+        };
+        // Keep the panel focusable for drag-drop by inserting behind any future controls
+        panel.Controls.Add(lbl);
+        lbl.SendToBack();
     }
 
     private void TabMain_DragEnter(object sender, DragEventArgs e)

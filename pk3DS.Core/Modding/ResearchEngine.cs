@@ -150,7 +150,7 @@ public static class ResearchEngine
         byte[] cro = File.ReadAllBytes(battlePath);
         
         // 1. Locate Table Index Limit Check
-        int idx = -1;
+        List<int> indices = new List<int>();
         uint xMin = 0, xMax = 0;
         
         if (tableType == "Item") { xMin = 800; xMax = 1005; }
@@ -166,22 +166,22 @@ public static class ResearchEngine
                 uint xRot = (xWord >> 8) & 0xF;
                 uint val = (xImm >> (int)(xRot * 2)) | (xImm << (int)(32 - (xRot * 2)));
                 
-                if (val >= xMin && val <= xMax) { idx = i; break; }
+                if (val >= xMin && val <= xMax) { indices.Add(i); }
             }
         }
 
-        if (idx < 0) return false;
+        if (indices.Count == 0) return false;
 
         // 2. Expand code segment for relocation
         int oldLength = cro.Length;
         cro = CROUtil.ExpandSegment(cro, 'c', expansionSize);
 
         // 3. Update the count instruction with a safe high limit (2000)
-        // 2000 = 0x7D0 = 0x7D << 4 (0x7D is 125). Rotate right by 28. (Rotate field = 14)
-        // We preserve the register (R0/R1/R2) from the original instruction.
-        uint rBase = BitConverter.ToUInt32(cro, idx) & 0xFFFF0000;
-        uint expandedLimit = rBase | 0xED7D; // ROR 28 (14*2), Imm 0x7D
-        WriteU32(cro, expandedLimit, idx);
+        foreach (int idx in indices) {
+            uint rBase = BitConverter.ToUInt32(cro, idx) & 0xFFFF0000;
+            uint expandedLimit = rBase | 0xED7D; // ROR 28 (14*2), Imm 0x7D
+            WriteU32(cro, expandedLimit, idx);
+        }
         
         File.WriteAllBytes(battlePath, cro);
         return true;
@@ -760,8 +760,9 @@ public static class ResearchEngine
     /// <summary>
     /// Searches for a contiguous block of zero bytes suitable for code injection.
     /// </summary>
-    public static int FindFreeSpace(byte[] data, int requiredSize, int searchStart = 0x55D000, int alignment = 4)
+    public static int FindFreeSpace(byte[] data, int requiredSize, bool isCro, int alignment = 4)
     {
+        int searchStart = isCro ? 0 : 0x55D000;
         for (int i = searchStart; i < data.Length - requiredSize; i += alignment)
         {
             bool empty = true;
@@ -904,6 +905,52 @@ public static class ResearchEngine
                     }
                     break;
 
+                case "semantic":
+                    // Parse semantic ability from the Code string
+                    try
+                    {
+                        var sem = System.Text.Json.JsonSerializer.Deserialize<SemanticAbility>(entry.Code, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (sem != null && fileData.TryGetValue(entry.TargetFile, out byte[] targetBin))
+                        {
+                            bool isCroSemantic = entry.TargetFile.EndsWith(".cro", StringComparison.OrdinalIgnoreCase);
+                            
+                            // If it's a CRO, expand it to make room for the new master dispatcher and logic.
+                            if (isCroSemantic)
+                            {
+                                int expansionSize = 4000; // Allocate a healthy chunk for ability handlers
+                                targetBin = pk3DS.Core.CTR.CROUtil.ExpandSegment(targetBin, 'c', expansionSize);
+                            }
+                            
+                            int freeSpaceOffset = FindFreeSpace(targetBin, 100, isCroSemantic);
+                            if (freeSpaceOffset < 0)
+                            {
+                                log($"  No free space available for Semantic Ability injection in {entry.TargetFile}.");
+                                allSuccess = false;
+                                continue;
+                            }
+                            
+                            if (AbilityEngine.InjectSemanticAbility(targetBin, sem, ref freeSpaceOffset, entry.TargetFile))
+                            {
+                                log($"  Successfully injected Semantic Ability: {sem.Name} into {entry.TargetFile}");
+                                fileData[entry.TargetFile] = targetBin;
+                                continue; // Skip normal hex injection
+                            }
+                            else
+                            {
+                                log($"  Failed to inject Semantic Ability: {sem.Name} into {entry.TargetFile}");
+                                allSuccess = false;
+                                continue;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log($"  Error parsing semantic ability: {ex.Message}");
+                        allSuccess = false;
+                        continue;
+                    }
+                    break;
+
                 default:
                     log($"  Unknown mode: {entry.Mode}");
                     break;
@@ -917,9 +964,25 @@ public static class ResearchEngine
 
             // Determine injection address
             int injectAt;
+            bool isCro = entry.TargetFile.EndsWith(".cro", StringComparison.OrdinalIgnoreCase);
+
             if (string.IsNullOrEmpty(vOfs.InjectAt) || vOfs.InjectAt.ToLowerInvariant() == "auto")
             {
-                injectAt = FindFreeSpace(targetData, codeBytes.Length);
+                if (isCro)
+                {
+                    // Dynamically expand the CRO file to ensure free space is available
+                    int patchSizeAligned = (codeBytes.Length + 11) & ~3;
+                    targetData = pk3DS.Core.CTR.CROUtil.ExpandSegment(targetData, 'c', patchSizeAligned);
+                    fileData[entry.TargetFile] = targetData; // Update the dictionary with the new expanded array
+                    
+                    // We can inject at the end of the old data, but let's just search it properly
+                    injectAt = FindFreeSpace(targetData, codeBytes.Length, isCro);
+                }
+                else
+                {
+                    injectAt = FindFreeSpace(targetData, codeBytes.Length, isCro);
+                }
+
                 if (injectAt < 0)
                 {
                     log($"  No free space found for {codeBytes.Length} bytes in {entry.TargetFile}");
@@ -931,6 +994,15 @@ public static class ResearchEngine
             else
             {
                 injectAt = Convert.ToInt32(vOfs.InjectAt.Replace("0x", "").Replace("0X", ""), 16);
+                
+                // If manually injecting past the end of a CRO, expand it up to the required offset
+                if (isCro && injectAt + codeBytes.Length > targetData.Length)
+                {
+                    int bytesNeeded = (injectAt + codeBytes.Length) - targetData.Length;
+                    int patchSizeAligned = (bytesNeeded + 11) & ~3;
+                    targetData = pk3DS.Core.CTR.CROUtil.ExpandSegment(targetData, 'c', patchSizeAligned);
+                    fileData[entry.TargetFile] = targetData;
+                }
             }
 
             // Write the code
@@ -1081,13 +1153,22 @@ public static class ResearchEngine
         garc.Files = files;
         System.IO.File.WriteAllBytes(path, garc.Data);
         
-        // Now also modify the actual item attributes file a/0/1/7
-        string itemPath = System.IO.Path.Combine(romfs, "a", "0", "1", "7");
-        if (!System.IO.File.Exists(itemPath)) return;
+        // Now also modify the actual item attributes file a/0/1/7 (SM) and a/0/1/9 (USUM)
+        string[] itemPaths = new string[] {
+            System.IO.Path.Combine(romfs, "a", "0", "1", "7"),
+            System.IO.Path.Combine(romfs, "a", "0", "1", "9")
+        };
         
-        var itemGarc = new pk3DS.Core.CTR.GARC.MemGARC(itemPath);
-        byte[][] itemFiles = itemGarc.Files;
-        if (itemFiles == null || itemFiles.Length == 0) return;
+        foreach (string itemPath in itemPaths) {
+            if (!System.IO.File.Exists(itemPath)) continue;
+            
+            var itemGarc = new pk3DS.Core.CTR.GARC.MemGARC(System.IO.File.ReadAllBytes(itemPath));
+            byte[][] itemFiles = itemGarc.Files;
+            if (itemFiles == null || itemFiles.Length == 0) continue;
+            
+            // Check if this is actually the Item Attributes GARC (items should be 0x24 bytes long).
+            // Do not accidentally modify the Personal GARC (which is 0x54 or 0x40 bytes long).
+            if (itemFiles[0] != null && itemFiles[0].Length != 0x24) continue;
         
         if (maxItemID >= itemFiles.Length)
         {
@@ -1100,11 +1181,39 @@ public static class ResearchEngine
                 itemFiles[i] = tmBase != null ? (byte[])tmBase.Clone() : new byte[structLen];
         }
         
+        // First, clear TM pocket from any items >= 328 that are NOT in our itemlist
+        // This cleans up ghost TM attributes from older patches.
+        var validTMs = new System.Collections.Generic.HashSet<ushort>();
+        foreach (ushort id in itemlist) validTMs.Add(id);
+        
+        for (int i = 328; i <= maxItemID; i++)
+        {
+            if (i < itemFiles.Length && itemFiles[i] != null && itemFiles[i].Length >= 10 && !validTMs.Contains((ushort)i))
+            {
+                // Only clear if it was set to Pocket 2 (TMs) and it's an expanded item (>= 960)
+                // or just clear from any non-vanilla TM. Let's just clear from expanded items.
+                if (i >= 960)
+                {
+                    ushort packed = BitConverter.ToUInt16(itemFiles[i], 8);
+                    int pocket = (packed >> 7) & 0xF;
+                    if (pocket == 2)
+                    {
+                        packed = (ushort)((packed & 0xF87F) | (0 << 7)); // Set pocket to 0
+                        BitConverter.GetBytes(packed).CopyTo(itemFiles[i], 8);
+                    }
+                }
+            }
+        }
+
         for (int i = 0; i < itemlist.Length; i++)
         {
             int target = itemlist[i];
             if (target > 0 && target < itemFiles.Length && itemFiles[target] != null)
             {
+                // CLONE TM01 SO IT HAS ALL THE TM ATTRIBUTES (icon, usage flags, etc)
+                byte[] tmBase = itemFiles.Length > 328 && itemFiles[328] != null ? itemFiles[328] : itemFiles[0];
+                if (tmBase != null) itemFiles[target] = (byte[])tmBase.Clone();
+                
                 // Directly set the pocket bits (bits 7-10 of the ushort at offset 8) to 2 (TMs)
                 if (itemFiles[target].Length >= 10)
                 {
@@ -1117,6 +1226,7 @@ public static class ResearchEngine
         
         itemGarc.Files = itemFiles;
         System.IO.File.WriteAllBytes(itemPath, itemGarc.Data);
+        }
     }
 
     public static void ApplyExpandedTMBattleBagPatch(string romfs, int maxItemID, ushort[] itemlist)
@@ -1185,40 +1295,160 @@ public static class ResearchEngine
         byte[] code = System.IO.File.ReadAllBytes(codePath);
         int patchedCount = 0;
         uint newLimit = (uint)moves.Length;
-        uint cmpMask = 0xFFF000FF;
-        uint addMask = 0xFFF000FF;
-        uint addTarget = 0xE2800029;
 
-        for (int i = 0; i < code.Length - 4; i += 4)
+        // ── Step 1: Find the real tutor check function ──
+        // The function has a very specific structure:
+        //   0x3AAF80: ldr r2, [pc, #imm]       ; load tutor move table pointer
+        //   0x3AAF84: push {r4, r5, r6, lr}
+        //   ...
+        //   0x3AAFAC: add r0, r0, #1            ; increment loop counter
+        //   0x3AAFB0: cmp r0, #0x43             ; *** THE LOOP LIMIT (67) ***
+        //   0x3AAFB4: blo <loop>                ; continue if below limit
+        //   ...
+        //   0x3AAFD8: mov r0, #0x29             ; tutor flag base block index
+        //   0x3AAFDC: add r0, r0, r1, asr #5    ; add (index / 32) for block
+        //   0x3AAFE0: and r4, r0, #0xFF
+        //   0x3AAFE4: cmp r4, #0x2B             ; *** BLOCK INDEX LIMIT ***
+        //
+        // We identify the function by searching for the unique signature:
+        //   MOV rX, #0x29 followed shortly by CMP rY, #0x2B
+        // Then walk backwards to find the loop's CMP #0x43.
+
+                // Collect all matching functions instead of breaking on the first one
+        var instances = new List<(int funcOfs, int loopOfs, int blockOfs, int ptrOfs)>();
+
+        for (int i = 0; i < code.Length - 0x80; i += 4)
         {
             uint w = BitConverter.ToUInt32(code, i);
-            if ((w & cmpMask) == 0xE3500043 || (w & cmpMask) == 0xE3500042 || (w & cmpMask) == 0xE3500044)
+
+            // Look for: MOV rX, #0x29 (E3A0N029 where N is dest register)
+            if ((w & 0xFFF00FFF) != 0xE3A00029) continue;
+
+            // Check for: ADD rX, rX, rY, ASR #5 within next 4 instructions
+            bool hasBlockCalc = false;
+            for (int k = i + 4; k <= i + 16 && k + 4 <= code.Length; k += 4)
             {
-                bool isTargetFunction = false;
-                int start = System.Math.Max(0, i - 0x200);
-                int end = System.Math.Min(code.Length - 4, i + 0x200);
-                for (int j = start; j < end; j += 4)
+                uint wk = BitConverter.ToUInt32(code, k);
+                // ADD rD, rN, rM, ASR #5 = E08DN2CM  (with various register choices)
+                if ((wk & 0xFFF00FF0) == 0xE08002C0 || // common form
+                    (wk & 0x0FF00FF0) == 0x008002C0)    // any condition
                 {
-                    uint w2 = BitConverter.ToUInt32(code, j);
-                    if ((w2 & addMask) == addTarget)
-                    {
-                        isTargetFunction = true;
-                        break;
-                    }
+                    hasBlockCalc = true;
+                    break;
                 }
-                
-                if (isTargetFunction)
+            }
+            if (!hasBlockCalc) continue;
+
+            // Check for: CMP rX, #0x2B within next 12 instructions (block limit)
+            int foundBlockLimit = -1;
+            for (int k = i + 4; k <= i + 48 && k + 4 <= code.Length; k += 4)
+            {
+                uint wk = BitConverter.ToUInt32(code, k);
+                if ((wk & 0x0FF00FFF) == 0x0350002B) // CMP rX, #0x2B
                 {
-                    uint newWord = (w & 0xFFFFFF00) | newLimit;
-                    if (w != newWord)
+                    foundBlockLimit = k;
+                    break;
+                }
+            }
+            if (foundBlockLimit < 0) continue;
+
+            // Walk backwards from MOV #0x29 to find CMP rX, #0x43 (loop limit)
+            int foundLoopLimit = -1;
+            for (int k = i - 4; k >= i - 0x60 && k >= 0; k -= 4)
+            {
+                uint wk = BitConverter.ToUInt32(code, k);
+                // CMP rX, #0x43 (any register) = E35N0043
+                if ((wk & 0x0FF00FFF) == 0x03500043)
+                {
+                    // Extra validation: next instruction should be BLO (branch if lower)
+                    if (k + 4 < code.Length)
                     {
-                        BitConverter.GetBytes(newWord).CopyTo(code, i);
-                        patchedCount++;
+                        uint next = BitConverter.ToUInt32(code, k + 4);
+                        if ((next & 0xFF000000) == 0x3A000000) // BLO/BCC
+                        {
+                            foundLoopLimit = k;
+                            break;
+                        }
                     }
                 }
             }
+            if (foundLoopLimit < 0) continue;
+
+            // Find the table pointer: walk backwards to find the function prologue
+            int tablePtrOfs = -1;
+            for (int k = foundLoopLimit - 4; k >= foundLoopLimit - 0x40 && k >= 4; k -= 4)
+            {
+                uint wk = BitConverter.ToUInt32(code, k);
+                // Look for PUSH {reglist} = E92D0000 | reglist
+                if ((wk & 0xFFFF0000) == 0xE92D0000)
+                {
+                    // Check if previous instruction is LDR rX, [PC, #imm]
+                    uint prev = BitConverter.ToUInt32(code, k - 4);
+                    // Mask 0x0FFF0000: ignores condition (31-28) and Rd (15-12) and offset (11-0)
+                    if ((prev & 0x0FFF0000) == 0x059F0000)
+                    {
+                        tablePtrOfs = k - 4; // The LDR is the table pointer load
+                        break;
+                    }
+                }
+            }
+
+            // Found an instance, ADD to list and keep searching!
+            instances.Add((i, foundLoopLimit, foundBlockLimit, tablePtrOfs));
         }
-        
+
+        if (instances.Count == 0) return 0;
+
+        foreach (var inst in instances)
+        {
+            // ── Step 2: Patch the loop limit (CMP rX, #0x43 → CMP rX, #newLimit) ──
+            if (newLimit <= 0xFF) // ARM immediate fits in 8 bits
+            {
+                uint oldCmp = BitConverter.ToUInt32(code, inst.loopOfs);
+                uint newCmp = (oldCmp & 0xFFFFFF00) | newLimit;
+                if (oldCmp != newCmp)
+                {
+                    BitConverter.GetBytes(newCmp).CopyTo(code, inst.loopOfs);
+                    patchedCount++;
+                }
+            }
+
+            // ── Step 3: Patch the block index limit if needed ──
+            if (inst.blockOfs >= 0 && newLimit > 0)
+            {
+                int neededBlocks = (int)((newLimit + 31) / 32); // how many 32-bit blocks
+                int newMaxBlock = 0x28 + neededBlocks; // 0x29 base, but starts from 0x29
+                if (newMaxBlock > 0x2C) newMaxBlock = 0x2C; // Cap at personal data boundary
+
+                uint oldBlockCmp = BitConverter.ToUInt32(code, inst.blockOfs);
+                uint newBlockCmp = (oldBlockCmp & 0xFFFFFF00) | (uint)newMaxBlock;
+                if (oldBlockCmp != newBlockCmp)
+                {
+                    BitConverter.GetBytes(newBlockCmp).CopyTo(code, inst.blockOfs);
+                    patchedCount++;
+                }
+            }
+
+            // ── Step 4: Update the tutor move table in code.bin ──
+            if (inst.ptrOfs >= 0 && moves.Length > 0)
+            {
+                // Read the PC-relative pointer to find the table location
+                uint ldrWord = BitConverter.ToUInt32(code, inst.ptrOfs);
+                int pcOffset = (int)(ldrWord & 0xFFF);
+                uint tableRAM = BitConverter.ToUInt32(code, inst.ptrOfs + 8 + pcOffset);
+                int tableFileOfs = (int)(tableRAM - 0x100000);
+
+                if (tableFileOfs > 0 && tableFileOfs + moves.Length * 2 <= code.Length)
+                {
+                    for (int m = 0; m < moves.Length && m < 96; m++) // Cap at max bits
+                    {
+                        BitConverter.GetBytes((ushort)moves[m]).CopyTo(code, tableFileOfs + m * 2);
+                    }
+                    patchedCount++;
+                }
+            }
+        }
+
         if (patchedCount > 0)
         {
             System.IO.File.WriteAllBytes(codePath, code);
@@ -1251,9 +1481,9 @@ public static class ResearchEngine
                 for (int i = 0; i < vanillaTMs; i++)
                     readMoves[i] = BitConverter.ToUInt16(code, moveFileOfs + i * 2);
                 
-                // Skip 80 Z-Crystals
-                for (int i = 100; i < count; i++)
-                    readMoves[i] = BitConverter.ToUInt16(code, moveFileOfs + (i + 80) * 2);
+                // Read remaining directly, no Z-Crystal gap!
+                for (int i = vanillaTMs; i < count; i++)
+                    readMoves[i] = BitConverter.ToUInt16(code, moveFileOfs + i * 2);
 
                 return readMoves;
             }
@@ -1283,9 +1513,8 @@ public static class ResearchEngine
                 for (int i = 0; i < vanillaTMs; i++)
                     readItems[i] = BitConverter.ToUInt16(code, itemFileOfs + i * 2);
                 
-                // Skip 80 Z-Crystals
-                for (int i = 100; i < count; i++)
-                    readItems[i] = BitConverter.ToUInt16(code, itemFileOfs + (i + 80) * 2);
+                for (int i = vanillaTMs; i < count; i++)
+                    readItems[i] = BitConverter.ToUInt16(code, itemFileOfs + i * 2);
 
                 return readItems;
             }
@@ -1306,13 +1535,16 @@ public static class ResearchEngine
     }
 
 
+
+
     public static void ApplyExpandedTMCodePatch(byte[] code, ushort[] moves, ushort[] items)
     {
         if (moves.Length <= 100) return;
 
         int extraTMs = moves.Length - 100;
-        int count = 180 + extraTMs; // 0-99 TMs, 100-179 Z-Crystals, 180+ New TMs
-        int MAX_ENTRIES = 335; // 80 Z-Crystals + 255 TMs max
+
+        int count = moves.Length; // Just TMs
+        int MAX_ENTRIES = 255; // Up to 255 TMs max
         
         int itemTableRAM = 0;
         int moveTableRAM = 0;
@@ -1322,7 +1554,7 @@ public static class ResearchEngine
 
         // We need this later to hook the original function.
         byte[] itemToMoveSig = [0x04, 0x40, 0x2D, 0xE5, 0xAC, 0x40, 0x9F, 0xE5, 0xAC, 0x20, 0x9F, 0xE5];
-        byte[] itemToMoveMask = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        byte[] itemToMoveMask = [0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
         int itemToMoveOfs = IndexOfBytesMasked(code, itemToMoveSig, itemToMoveMask, 0);
 
         // Try to find if already patched with our custom generic patch
@@ -1370,10 +1602,10 @@ public static class ResearchEngine
         else
         {
             // Clean ROM. Find free space and allocate enough room for the MAXIMUM possible TMs (255)
-            // 80 Z-Crystals + 255 TMs = 335 entries max.
-            // 335 * 2 * 2 = 1340 bytes for tables. Plus 500 for ASM = 1840 bytes. Let's ask for 2000.
-            int spaceNeeded = 2000;
-            int freeSpace = FindFreeSpace(code, spaceNeeded, 0x550000);
+            // Z-Crystals + 255 TMs = MAX_ENTRIES entries max.
+            // MAX_ENTRIES * 2 * 2 bytes for tables. Plus 500 for ASM.
+            int spaceNeeded = (MAX_ENTRIES * 2 * 2) + 500;
+            int freeSpace = FindFreeSpace(code, spaceNeeded, false);
             if (freeSpace < 0) return;
 
             // Align to 4 bytes for ARM assembly (CRITICAL FIX FOR CRASHES)
@@ -1394,16 +1626,11 @@ public static class ResearchEngine
 
         // Build Unified Item Table
         ushort[] unifiedItems = new ushort[count];
-        Array.Copy(items, 0, unifiedItems, 0, 100);
-        // Copy Z-Crystals (80 elements)
-        for (int i = 0; i < 80; i++)
-            unifiedItems[100 + i] = BitConverter.ToUInt16(code, 0x4BB924 + i * 2);
-        Array.Copy(items, 100, unifiedItems, 180, extraTMs);
+        Array.Copy(items, 0, unifiedItems, 0, count);
 
         // Build Unified Move Table
         ushort[] unifiedMoves = new ushort[count];
-        Array.Copy(moves, 0, unifiedMoves, 0, 100);
-        Array.Copy(moves, 100, unifiedMoves, 180, extraTMs);
+        Array.Copy(moves, 0, unifiedMoves, 0, count);
 
         // Write Tables
         for (int i = 0; i < count; i++)
@@ -1433,7 +1660,7 @@ public static class ResearchEngine
             0x81, 0x20, 0x84, 0xE0, // Loop: add r2, r4, r1, lsl #1
             0xB0, 0x20, 0xD2, 0xE1, // ldrh r2, [r2]
             0x00, 0x00, 0x52, 0xE1, // cmp r2, r0
-            0x03, 0x00, 0x00, 0x0A, // beq Match
+            0x04, 0x00, 0x00, 0x0A, // beq Match
             0x01, 0x10, 0x81, 0xE2, // add r1, r1, #1
             0x06, 0x00, 0x51, 0xE1, // cmp r1, r6
             0xF8, 0xFF, 0xFF, 0x3A, // bcc Loop
@@ -1456,7 +1683,7 @@ public static class ResearchEngine
             0x81, 0x20, 0x84, 0xE0, // Loop: add r2, r4, r1, lsl #1
             0xB0, 0x20, 0xD2, 0xE1, // ldrh r2, [r2]
             0x00, 0x00, 0x52, 0xE1, // cmp r2, r0
-            0x03, 0x00, 0x00, 0x0A, // beq Match
+            0x04, 0x00, 0x00, 0x0A, // beq Match
             0x01, 0x10, 0x81, 0xE2, // add r1, r1, #1
             0x06, 0x00, 0x51, 0xE1, // cmp r1, r6
             0xF8, 0xFF, 0xFF, 0x3A, // bcc Loop
@@ -1498,26 +1725,46 @@ public static class ResearchEngine
         ];
         writeAsm(orderToItemAssm);
 
+        // We must find where ItemToMove does the Z-Crystal check (after checking TMs)
+        int fallbackAddress = 0;
+        if (itemToMoveOfs > 0)
+        {
+            int zCrystalCheckOfs = itemToMoveOfs + 4;
+            while (zCrystalCheckOfs < itemToMoveOfs + 0x100)
+            {
+                if (code[zCrystalCheckOfs] == 0x64 && code[zCrystalCheckOfs + 1] == 0x00 && code[zCrystalCheckOfs + 2] == 0x51 && code[zCrystalCheckOfs + 3] == 0xE3) // cmp r1, #100
+                {
+                    zCrystalCheckOfs += 8; // skip cmp and bcc
+                    fallbackAddress = zCrystalCheckOfs + 0x100000;
+                    break;
+                }
+                zCrystalCheckOfs += 4;
+            }
+        }
+
         // 5. ItemToMove_Assm
         int new_itemToMoveEntry = currentAsmOffset + 0x100000;
         byte[] new_itemToMoveAssm = [
-            0x70, 0x40, 0x2D, 0xE9,
-            0x38, 0x40, 0x9F, 0xE5,
-            0x38, 0x50, 0x9F, 0xE5,
-            0x00, 0x10, 0xA0, 0xE3,
-            0x34, 0x60, 0x9F, 0xE5,
+            0x70, 0x40, 0x2D, 0xE9, // push {r4, r5, r6, lr}
+            0x40, 0x40, 0x9F, 0xE5, // ldr r4, [pc, #64] -> uItemRAM
+            0x40, 0x50, 0x9F, 0xE5, // ldr r5, [pc, #64] -> uMoveRAM
+            0x00, 0x10, 0xA0, 0xE3, // mov r1, #0
+            0x3C, 0x60, 0x9F, 0xE5, // ldr r6, [pc, #60] -> uCount
             0x81, 0x20, 0x84, 0xE0, // Loop: add r2, r4, r1, lsl #1
-            0xB0, 0x30, 0xD2, 0xE1,
-            0x00, 0x00, 0x53, 0xE1,
-            0x03, 0x00, 0x00, 0x0A,
-            0x01, 0x10, 0x81, 0xE2,
-            0x06, 0x00, 0x51, 0xE1,
-            0xF8, 0xFF, 0xFF, 0x3A,
-            0x00, 0x00, 0xA0, 0xE3,
-            0x70, 0x80, 0xBD, 0xE8,
+            0xB0, 0x30, 0xD2, 0xE1, // ldrh r3, [r2]
+            0x00, 0x00, 0x53, 0xE1, // cmp r3, r0
+            0x06, 0x00, 0x00, 0x0A, // beq Match
+            0x01, 0x10, 0x81, 0xE2, // add r1, r1, #1
+            0x06, 0x00, 0x51, 0xE1, // cmp r1, r6
+            0xF8, 0xFF, 0xFF, 0x3A, // bcc Loop
+            // No match. Restore registers and fallback to Z-Crystal check!
+            0x70, 0x40, 0xBD, 0xE8, // pop {r4, r5, r6, lr}
+            0x04, 0x40, 0x2D, 0xE5, // push {r4} (Must execute the instruction we skipped!)
+            0x04, 0xF0, 0x1F, 0xE5, // ldr pc, [pc, #-4]
+            (byte)(fallbackAddress & 0xFF), (byte)((fallbackAddress >> 8) & 0xFF), (byte)((fallbackAddress >> 16) & 0xFF), (byte)((fallbackAddress >> 24) & 0xFF), // fallbackAddress
             0x81, 0x00, 0x85, 0xE0, // Match: add r0, r5, r1, lsl #1
-            0xB0, 0x00, 0xD0, 0xE1,
-            0x70, 0x80, 0xBD, 0xE8,
+            0xB0, 0x00, 0xD0, 0xE1, // ldrh r0, [r0]
+            0x70, 0x80, 0xBD, 0xE8, // pop {r4, r5, r6, pc}
             (byte)(uItemRAM & 0xFF), (byte)((uItemRAM >> 8) & 0xFF), (byte)((uItemRAM >> 16) & 0xFF), (byte)((uItemRAM >> 24) & 0xFF),
             (byte)(uMoveRAM & 0xFF), (byte)((uMoveRAM >> 8) & 0xFF), (byte)((uMoveRAM >> 16) & 0xFF), (byte)((uMoveRAM >> 24) & 0xFF),
             (byte)(uCount & 0xFF), (byte)((uCount >> 8) & 0xFF), (byte)((uCount >> 16) & 0xFF), (byte)((uCount >> 24) & 0xFF)
@@ -1529,8 +1776,8 @@ public static class ResearchEngine
         int offset = 0;
 
         // Hook IsTmHm
-        byte[] isTmHmSig = [0xA4, 0x20, 0x9F, 0xE5, 0x64, 0xC0, 0xA0, 0xE3, 0x00, 0x10, 0xA0, 0xE3];
-        byte[] isTmHmMask = [0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        byte[] isTmHmSig = [0xA4, 0x20, 0x9F, 0xE5, 0x64, 0xC0, 0xA0, 0xE3, 0x00, 0x10, 0xA0, 0xE3, 0x04, 0x40, 0x2D, 0xE5];
+        byte[] isTmHmMask = [0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
         offset = IndexOfBytesMasked(code, isTmHmSig, isTmHmMask, 0);
         if (offset > 0 && offset < 0x500000)
         {
@@ -1539,8 +1786,8 @@ public static class ResearchEngine
         }
 
         // Hook ItemToOrder
-        byte[] itemToOrderSig2 = [0xA4, 0x20, 0x9F, 0xE5, 0x00, 0x10, 0xA0, 0xE1, 0x64, 0xC0, 0xA0, 0xE3, 0x00, 0x00, 0xA0, 0xE3];
-        byte[] itemToOrderMask2 = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        byte[] itemToOrderSig2 = [0xA4, 0x20, 0x9F, 0xE5, 0x00, 0x10, 0xA0, 0xE1, 0x64, 0xC0, 0xA0, 0xE3, 0x00, 0x00, 0xA0, 0xE3, 0x04, 0x40, 0x2D, 0xE5];
+        byte[] itemToOrderMask2 = [0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
         offset = IndexOfBytesMasked(code, itemToOrderSig2, itemToOrderMask2, 0);
         if (offset > 0 && offset < 0x500000)
         {
@@ -1557,7 +1804,7 @@ public static class ResearchEngine
 
         // Hook vanilla orderToMove AND orderToItem dynamically!
         byte[] vanillaOrderSig = [0x10, 0x40, 0x2D, 0xE9, 0x00, 0x00, 0x50, 0xE3, 0x00, 0x40, 0xA0, 0xE1, 0x04, 0x00, 0x00, 0x3A, 0x00, 0x30, 0xA0, 0xE3];
-        byte[] vanillaOrderMask = [0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
+        byte[] vanillaOrderMask = [0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
         offset = 0;
         
         // Find the vanilla RAM addresses by inspecting the first matched vanilla function

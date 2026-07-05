@@ -98,14 +98,27 @@ namespace pk3DS.Core.CTR
                 Array.Copy(data, skip + del, newData, skip, fileSize - skip - del);
             }
 
+            int freePaddingBytes = 0;
+            if (section == 'd')
+            {
+                freePaddingBytes = (int)(ReadU32(data, 0x90) - (dataStart + dataSize));
+                if (freePaddingBytes < 0) freePaddingBytes = 0;
+            }
+
             // 1. Update inline segment fields in the header
             if (section == 'c') UpdateOffsetPointer(newData, 0xB4, bytesToAdd); // Code size
             else if (section == 'r') { /* rodata size not stored inline; skip */ }
-            else if (section == 'd') UpdateOffsetPointer(newData, 0xBC, bytesToAdd); // Data size
+            else if (section == 'd') UpdateOffsetPointer(newData, 0xBC, bytesToAdd + freePaddingBytes); // Data size includes padding
 
             // Update segment table pointer and other header offsets that shifted
             uint segmentTableOffset = ReadU32(newData, 0xC8);
             if (segmentTableOffset >= (uint)skip) { segmentTableOffset += (uint)bytesToAdd; WriteU32(newData, segmentTableOffset, 0xC8); }
+
+            // Update .data size in segment table itself (0x1C after segment table start)
+            if (section == 'd') {
+                UpdateOffsetPointer(newData, (int)(segmentTableOffset + 0x1C), bytesToAdd + freePaddingBytes, 0, false);
+            }
+
 
             // Update inline segment start offsets that shifted
             UpdateOffsetPointer(newData, 0xB0, bytesToAdd, skipCheck); // Code start
@@ -202,12 +215,16 @@ namespace pk3DS.Core.CTR
 
         private static byte[] RecalculateSegmentHashes(byte[] data)
         {
-            uint segmentTableOffset = ReadU32(data, 0xC8);
+            // In USUM Battle.cro, 0xC8 is string data. Use inline headers instead.
+            uint codeStart = ReadU32(data, 0xB0);
+            uint dataStart = ReadU32(data, 0xB8);
+            uint codeSize  = ReadU32(data, 0xB4);
+            uint dataSize  = ReadU32(data, 0xBC);
+
             byte[] hashes = new byte[0x20 * 4];
             using (var sha = SHA256.Create())
             {
-                // Slot 0: CRO0 header block (0x80 to start of .code, typically 0x180)
-                uint codeStart = ReadU32(data, (int)segmentTableOffset);
+                // Slot 0: CRO0 header block (0x80 to start of .code)
                 uint headerEnd = codeStart > 0x80 ? codeStart : 0x180;
                 if (headerEnd <= data.Length)
                 {
@@ -215,15 +232,27 @@ namespace pk3DS.Core.CTR
                     Array.Copy(h, 0, hashes, 0 * 0x20, 0x20);
                 }
 
-                // Slots 1-3: .code, .rodata, .data segments
-                for (int i = 0; i < 3; i++)
+                // Slot 1: .code
+                if (codeSize > 0 && codeStart + codeSize <= data.Length)
                 {
-                    uint off  = ReadU32(data, (int)(segmentTableOffset + i * 0x0C));
-                    uint size = ReadU32(data, (int)(segmentTableOffset + i * 0x0C + 4));
-                    if (size == 0) continue;
-                    if (off + size > (uint)data.Length) continue;
-                    byte[] h = sha.ComputeHash(data, (int)off, (int)size);
-                    Array.Copy(h, 0, hashes, (i + 1) * 0x20, 0x20);
+                    byte[] h = sha.ComputeHash(data, (int)codeStart, (int)codeSize);
+                    Array.Copy(h, 0, hashes, 1 * 0x20, 0x20);
+                }
+                
+                // Slot 2: .rodata (between code and data)
+                uint rodataStart = codeStart + codeSize;
+                uint rodataSize = dataStart > rodataStart ? dataStart - rodataStart : 0;
+                if (rodataSize > 0 && rodataStart + rodataSize <= data.Length)
+                {
+                    byte[] h = sha.ComputeHash(data, (int)rodataStart, (int)rodataSize);
+                    Array.Copy(h, 0, hashes, 2 * 0x20, 0x20);
+                }
+                
+                // Slot 3: .data
+                if (dataSize > 0 && dataStart + dataSize <= data.Length)
+                {
+                    byte[] h = sha.ComputeHash(data, (int)dataStart, (int)dataSize);
+                    Array.Copy(h, 0, hashes, 3 * 0x20, 0x20);
                 }
             }
             return hashes;

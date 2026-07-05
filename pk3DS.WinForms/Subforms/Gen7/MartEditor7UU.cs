@@ -203,20 +203,22 @@ public partial class MartEditor7UU : Form
         "Thrifty Megamart, Left [Poké Balls]",
         "Thrifty Megamart, Middle [Misc]",
         "Thrifty Megamart, Right [Strange Souvenir]",
-        "Route 3 [X Items]",
+        "Route 5 [X Items]",
         "Konikoni City [X Items]",
         "Tapu Village [X Items]",
         "Mount Lanakila [X Items]",
     ];
 
-    private readonly string[] locationsBP = {
+    private readonly string[] locationsBP =
+    [
         "Battle Royale (Left)",
         "Battle Royale (Middle)",
         "Battle Royale (Right)",
         "Battle Tree (Left)",
         "Battle Tree (Middle)",
         "Battle Tree (Right)",
-    };
+        "Beach BP Items (All Beaches)",
+    ];
 
     #endregion
 
@@ -263,19 +265,19 @@ public partial class MartEditor7UU : Form
         0x3F0, // Konikoni Herb (9)
         0x42C, // Hau'oli X Items (10)
         0x438, // Route 2 Misc (11)
-        0x434, // Heahea TM (12)
+        0x444, // Heahea TM (12)
         0x450, // Royal Avenue TMs (13)
         0x45C, // Route 8 (14)
         0x474, // Paniola Town (15)
         0x48C, // Malie City [TMs] (16)
         0x4B0, // Mount Hokulani (17)
         0x4BC, // Seafolk Village [TMs] (18)
-        0x3FC, // Konikoni City [TMs] (19)
+        0x4F8, // Konikoni City [TMs] (19)
         0x3FC, // Konikoni City [Stones] (20)
         0x408, // Thrifty Megamart, Left (21)
         0x414, // Thrifty Megamart, Middle (22)
         0x420, // Thrifty Megamart, Right (23)
-        0x480, // Route 3 [X Items] (24)
+        0x480, // Route 5 [X Items] (24)
         0x468, // Konikoni City [X Items] (25)
         0x498, // Tapu Village [X Items] (26)
         0x4A4, // Mount Lanakila [X Items] (27)
@@ -288,15 +290,20 @@ public partial class MartEditor7UU : Form
         0x528, // Tree Left (3)
         0x534, // Tree Middle (4)
         0x540, // Tree Right (5)
+        0x54C, // Big Wave Beach (6)
     };
 
     private int GetShopOffset(int shopIdx, bool isBP = false)
     {
         if (isBP)
         {
-            if (shopIdx >= BPPatchAddrs.Length) return -1;
-            int rptOfs = ResearchEngine.GetRelocationPatchTarget(data, BPPatchAddrs[shopIdx]);
-            return rptOfs;
+            if (shopIdx < BPPatchAddrs.Length && BPPatchAddrs[shopIdx] != 0xFFFFFFFF)
+            {
+                int rptOfs = ResearchEngine.GetRelocationPatchTarget(data, BPPatchAddrs[shopIdx]);
+                if (rptOfs > 0) return rptOfs;
+            }
+            // Fallback for BP items (0x52FA is the physical start of BP items in USUM Shop.cro)
+            return 0x52FA + (len_BPItem.Take(shopIdx).Sum(z => z) * 4);
         }
         else
         {
@@ -451,6 +458,12 @@ public partial class MartEditor7UU : Form
 
         if (count > len_BPItem[entryBPItem])
         {
+            if (BPPatchAddrs[entryBPItem] == 0xFFFFFFFF)
+            {
+                WinFormsUtil.Alert("This shop cannot be expanded because it lacks a Relocation Patch Target in the game code.");
+                return;
+            }
+
             // Expansion into Mega Safe Zone
             int required = (count + 1) * entrySize;
             int freeOfs = FindSafeSpace(required);

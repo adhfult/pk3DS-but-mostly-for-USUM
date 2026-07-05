@@ -246,6 +246,13 @@ public class GameConfig
         return true;
     }
 
+    public void SaveText(TextName file)
+    {
+        int index = GetGameText(file).Index;
+        GARCGameText.Files[index] = TextFile.GetBytes(this, GameTextStrings[index]);
+        GARCGameText.Save();
+    }
+
     public string GetGARCFileName(string requestedGARC)
     {
         // Hardcoded overrides for Gen 7 detection stability (verified for USUM/SM)

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 using pk3DS.Core;
 using pk3DS.Core.CTR;
+using pk3DS.Core.Structures;
 using pk3DS.Core.Structures.PersonalInfo;
 
 namespace pk3DS.WinForms;
@@ -165,7 +166,7 @@ public partial class FormInsertion : Form
         List<byte[]> newEggMoves = [.. eggmoveFilesList];
 
         // 1b. Synchronize list lengths (Padding)
-        while (newEvolution.Count < newPersonal.Count) newEvolution.Add(new byte[8]);
+        while (newEvolution.Count < newPersonal.Count) newEvolution.Add(new byte[EvolutionSet7.SIZE]);
         while (newLevelUp.Count < newPersonal.Count) newLevelUp.Add(new byte[0]);
         bool eggMovesHasForms = newEggMoves.Count >= newPersonal.Count;
         if (eggMovesHasForms)
@@ -227,7 +228,7 @@ public partial class FormInsertion : Form
         for (int i = 0; i < count; i++)
         {
             newPersonal.Insert(insertionIndex + i, (byte[])personalTemplate.Clone());
-            byte[] evoClone = templateID < newEvolution.Count ? (byte[])newEvolution[templateID].Clone() : new byte[8];
+            byte[] evoClone = templateID < newEvolution.Count ? (byte[])newEvolution[templateID].Clone() : new byte[EvolutionSet7.SIZE];
             newEvolution.Insert(insertionIndex + i, evoClone);
             
             byte[] lvlClone = templateID < newLevelUp.Count ? (byte[])newLevelUp[templateID].Clone() : new byte[0];
@@ -526,9 +527,6 @@ public partial class FormInsertion : Form
         {
             GARC.PackGARC(provider, tempPath, garc.garc.Version, (int)garc.garc.ContentPadToNearest);
         }
-
-        long tempSize = new FileInfo(tempPath).Length;
-        File.AppendAllText(@"C:\Users\fulto\Desktop\pk3ds_log.txt", $"PackGARC finished. tempPath size: {tempSize}\n");
 
         File.Copy(tempPath, path, true);
         File.Delete(tempPath);

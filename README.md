@@ -1,118 +1,120 @@
+<p align="center">
+  <img src="https://i.imgur.com/eB3U8q6.png" alt="pk3DS Logo"/>
 </p>
 
 <h1 align="center">pk3DS (But Extremely Catered Towards USUM) </h1>
 
 <br />
 
-pk3DS is a ROM editor for all 3DS Pokémon games that utilizes a variety of tools developed by a large group of contributors. pk3DS was created 
-using C# and primarily focuses on its randomizer to provide users with a fresh and new experience in the beloved Pokémon games. 
-
-This is a fork of pk3DS that is extremely catered towards USUM. It has a lot of features that the original pk3DS does not have to support and foster a better environment for hacking the games. Full credits to the original developers, and to ABZB for his ARM research.
+pk3DS is a ROM editor for all 3DS Pokémon games that utilizes a variety of tools developed by a large group of contributors. This is a fork of pk3DS that is extremely catered towards USUM. It has a lot of features that the original pk3DS does not have to support and foster a better environment for hacking the games. Full credits to the original developers, and to ABZB for his ARM research.
 
 ## Table of contents
 
-- [Features](#features)
+- [Features Overview](#features-overview)
+- [Detailed Tool & Button Guide](#detailed-tool--button-guide)
+  - [Main UI & Themes](#main-ui--themes)
+  - [RomFS Editors](#romfs-editors)
+  - [ExeFS & CRO Editors](#exefs--cro-editors)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Support](#support)
+- [Support & Credits](#support--credits)
 
-## Features
+## Features Overview
 
-Our editor features a vast variety of randomizers to make every run as unique as possible. The Randomizers currently available are:
-
+Our editor features a vast variety of randomizers and editors to make every run as unique as possible. The tools currently available are:
 - Trainer Battles (Pokemon / Items / Moves / Abilities / Difficulty / Classes)
 - Wild Encounters (Species, Level, Gen/Legend Specific, ORAS DexNav won't crash!)
 - Personal Data (Pokemon Types / Stats / Abilities / TM Learnset)
 - Move Randomizer (Type / Damage Category)
 - Move Learnset (Level Up / Egg Move)
-- Evolutions
-- TM Moves
-- Special Mart Inventory
+- Evolutions & Mega Evolutions
+- TM Moves, Special Mart Inventory, Move Tutors
+- Game Text and Story Text editing
 
-## Newer Features
+---
 
-Here are the newer features present in this specific fork of pk3DS:
+## Detailed Tool & Button Guide
 
-# Main Menu and Color Modes
-- The program is no longer in Light Mode only, with Dark and Grey Mode being the two options usable for now.
-- However, there are gradients that can be chosen as well to mix up the style! So far, the mascots from XY, ORAS, SM, USUM, and others like Rayquaza, Deoxys, and Zygarde have their own respective gradients, and even have a little interactive sprite in the Main menu to play with!
+This section breaks down the function of **every single button and program** available within this custom pk3DS build.
 
-## Game Text and Story Text
-- Support for adding new lines, and removing new lines. Makes things much easier for adjusting custom and existing elements in the game.
-- A New Move Handler button that adjusts the respective text files of the game to make room for new moves. This does only make the text of new moves exist in the files, but other parts of the program support move additions as well, and all work together to make them function.
-- Everytime you press Shift in the "In-Game Text Visualizer", a new line (\n) is added to the text file. This is used to simplify the proccess of changing text without having to look back and forth at how to properly format things.
-- Find Next / Find Before / Replace All are new functions that make finding things and replacing things easier. Replace All works best if you add a new move and want to change the name of it.
+### Main UI & Themes
+- **Visual Mode Dropdown (Options Menu)**: Allows you to switch the application's aesthetic between Dark, Grey, Light, and Galaxy Purple modes on the fly. 
+- **Mascot Sprites**: The sidebar includes interactive mascot sprites (XY, ORAS, SM, USUM, Zygarde, Rayquaza). Clicking on the mascot will change it!
 
-# Personal Stats 
-- "Copy Moves" and "Paste Moves" buttons that allow you to copy and paste moves from one Pokemon's learnset in Personal Data (i.e. TMs and Tutor Moves) to another. 
-- Visible stat changes and comparisons when editing a Pokemon's stats; note for this to function properly, you must load a vanilla file of either Ultra Sun or Ultra Moon first for the program to generate a .txt to reference as you change stats. This does come with a vanilla .txt of stat files, so if you want to replace that just delete the file and it'll generate a new one based on the personal data of your game's files.
-- "Copy Set" and "Paste Set" buttons that allow you to copy and paste the entire first tab of personal data from one Pokemon to another; this is convinient when you want to add new forms to the game.
-- "Set Catch" and "Set Hatch" functions to make Pokemon always be caught instantly (255) for the former, and for making it hatch instantly for the latter (0).
-- "Jump to Level Up" and "Jump to Egg Moves" buttons for ease of editing movepools.
-- The Form Insertion Tool has been added into the tab as well, but its function is not completely set in stone yet, as it may need some adjustments to make it fully functional. 
-- Pokedex Entries are readable at the bottom left of the Pokemon that you choose to edit!
+### RomFS Editors
 
-# Level Up Moves and Egg Moves
-- "Copy" and "Paste" functions to copy and paste moves from one Pokemon's learnset in Level Up Moves and Egg Moves to another.
-- "Add Move" and "Remove Move" buttons to make things easier for editing.
-- "Import TSV" and "Apply Modern Sets" buttons to make it easier to apply modern movepools to Pokemon; for both of them, you will need either a custom TSV file of your custom movepools or a TSV of modern movepools; for the latter, a Google Spreadsheet called [Multiversal Movepool (v. 2.1.0)](https://docs.google.com/spreadsheets/d/14E8juaMuYBsqHX_0HnxwDt7StoBHUVFW7z6KtW_a9yY/edit?gid=1412121923#gid=1412121923) is highly reccomended to use, as you can copy and paste a tab from the sheet into a .txt to have it completely functional.
+#### Game Text and Story Text
+- **Add Line / Remove Line**: Supports adding or removing new lines (`\n`) for custom text formatting. Use the `Shift` key while in the text visualizer to instantly insert a new line.
+- **New Move Handler**: Automatically adjusts the respective text files to make room for entirely new moves.
+- **Find Next / Find Before / Replace All**: Standard search utilities. *Replace All* is heavily recommended when renaming existing moves.
 
-# Wild Encounters
-- "Import TSV" and "Export TSV" to convert the tables into TSV files, which can make it more convinient to edit in Google Sheets, along with Import / Export tables.
-- A Version Exclusives tab has been made to show what isn't present or available in the game you edit.
-- A "Fill" button has been made to fill in the SOS part of a Pokemon with what is in the first encounterable slot.
+#### Personal Stats Editor
+- **Copy Moves / Paste Moves**: Copies/Pastes TM/Tutor compatibilities from one Pokémon to another.
+- **Copy Set / Paste Set**: Copies all base stats, typings, and basic personal data from one Pokémon to another (extremely useful when adding new custom forms).
+- **Set Catch / Set Hatch**: Instantly sets the catch rate to 255 (always catch) or hatch cycle to 0 (instant hatch).
+- **Jump to Level Up / Jump to Egg Moves**: Shortcuts to instantly open the learnset editors for the current Pokémon.
+- **Form Insertion Tool**: Advanced tool to inject new alternate forms for existing Pokémon.
+- **Stat Visualizer**: When a vanilla USUM file is loaded, this generates a `.txt` baseline to visually compare your custom stat changes against vanilla stats.
 
-# Mega Evolutions
-- Alternate forms are toggleable in the Mega Evolutions tab; this was done for new alternate forms that could be added, but you can do whatever you want with it!
+#### Level Up & Egg Moves
+- **Copy / Paste**: Move learnsets can be copied and pasted across different Pokémon.
+- **Add Move / Remove Move**: Granular control over the learnset lists.
+- **Import TSV / Apply Modern Sets**: Allows bulk-importing modern Generation 8/9 movepools via TSV files (compatible with the Multiversal Movepool spreadsheet).
 
-# Trainers
-- Revamped UI, changing most of the positioning while still maintaining its effectiveness.
-- More adjustable stats tab, with Hidden Power configuration and Happiness configuration.
-- "Master / Master All" buttons to make all of the trainers have the best AI in the game. This is best for difficulty hacks!
-- Import / Export / Import Team buttons that go with Pokemon Showdown! for ease of adding teams without having to do much in the program.
-- Max IVs All / Doubles All / PokeChange All for more difficulty options.
+#### Wild Encounters
+- **Import TSV / Export TSV**: Mass edit wild encounter tables in Google Sheets or Excel by exporting and importing tab-separated values.
+- **Version Exclusives**: A toggle tab that displays which Pokémon are missing from the current game version.
+- **Fill SOS**: Automatically fills all SOS call slots with the Pokémon in the primary encounter slot.
 
-# Showdown Set Storage System
-- A new function has been added that stores sets you import from Pokemon Showdown into the program itself. It's meant to be convinient for people to easily access sets they want to use for their game without having to go back and forth trying to think about what could be done. This function exists for both the Trainer Editor and the Maison Editor.
+#### Mega Evolutions
+- **Alternate Forms Toggle**: Allows you to configure new alternate forms as Mega Evolutions or primal reversions.
 
-# Items
-- Import / Export .txt of the item data in the game.
-- Everytime you press Shift on the Item Editor for the description of an item, a new line (\n) is added to the text file. This is used to simplify the proccess of changing text without having to look back and forth at how to properly format things.
+#### Trainer Editor
+- **Master / Master All**: Automatically assigns the highest level AI (Master) to a specific trainer or all trainers. Ideal for difficulty hacks.
+- **Import / Export / Import Team**: Fully compatible with Pokémon Showdown! sets. Paste a Showdown team directly to overwrite a trainer's roster.
+- **Max IVs All / Doubles All / PokeChange All**: Global difficulty modifiers to make all trainers have max IVs, force Double Battles, or randomize their Pokémon.
+- **Showdown Set Storage**: A built-in repository to save and store commonly used Showdown sets within the program for easy access later.
 
-# Move Editor
-- Revamped UI, catered towards editing moves to the best of the program's ability.
-- A Pokemon Champions PP setting to make the PP of moves match Pokemon Champions, if you don't want to rely on PP Maxes for moves being the best they can be in game.
-- "Add New Moveslot" button to support new moves being added; note that this is supposed to be used in tandem with the "New Move Handler" in the Game Text.
-- Sync Animations / BSEQs are buttons that are related to animation, but probably don't need to be messed with unless you know what you're doing with them. For all new moves added, they have the animation of Pound.
-- Export / Import .txt of moves.
-- "Load Vanilla Baseline" and "Changes Log" go hand in hand; the Changes Log is a log of what you change about moves and the Vanilla Baseline, which comes from a vanilla GARC being uploaded, is what it goes off of.
-- Everytime you press Shift on the Move Editor for the description of an move, a new line (\n) is added to the text file. This is used to simplify the proccess of changing text without having to look back and forth at how to properly format things.
+#### Items Editor
+- **Import / Export .txt**: Mass edit item data externally.
+- **Shift to newline**: Pressing `Shift` in the item description box instantly adds a `\n` to simplify text formatting.
 
-# Battle Royale / Tree
-- Import / Export Showdown sets for ease of adding sets. Even comes with an Import Box option to just get a lot more sets added at once!
-- Dump / Import PKMs if you would like to edit the Pokemon in a .txt file.
-- A "Set List" option for Pokemon you want to set to a trainer; you will have to type in each Pokemon you want, so have a list ready!
+#### Move Editor
+- **Add New Moveslot**: Creates a completely new move index (Must be used alongside the *New Move Handler* in Game Text).
+- **Pokemon Champions PP**: Standardizes the PP of moves to match Pokémon Champions conventions.
+- **Sync Animations / BSEQs**: Advanced tool to tie move animations. (Note: Newly added moves default to the *Pound* animation).
+- **Load Vanilla Baseline / Changes Log**: Tracks your custom move modifications against a vanilla GARC baseline.
+- **Shift to newline**: Pressing `Shift` in the move description box instantly adds a `\n`.
 
-# OWSE
-- Added [Stracker's version of OWSE](https://github.com/Strackeror/pk3DS/releases/tag/stracker-1.0) to have Items and more editable.
+#### Battle Royale / Battle Tree
+- **Showdown Import / Export / Import Box**: Bulk import Showdown sets for Battle Tree NPCs.
+- **Dump / Import PKMs**: Edit NPC Pokémon externally via .txt files.
+- **Set List**: Assign specific Pokémon indices to specific Battle Tree trainers.
 
-# TMs
-- An Update Description button has been added to update the description of a TM that has the move it teaches changed.
-- An Export / Import .txt option if you want to edit in a .txt file instead.
-- If you expanded the amount of TMs to 128, it can now edit them! But you must have the patch for it applied to your game's files in order for it to work.
+#### OWSE (Overworld Script Editor)
+- Utilizes Stracker's OWSE to edit overworld item locations, scripts, and interactables.
 
-# Type Chart
-- Has sprites of types shown across the column and row of the chart, with numberical representations of interactions as well.
+#### TMs Editor
+- **Update Description**: Automatically updates the TM's text description to match the newly assigned move.
+- **Export / Import .txt**: Mass edit TMs.
+- **128 TM Support**: The editor can natively edit expanded 128 TM lists (Requires the 128 TM game patch to be applied first).
 
-# Poke Mart and Move Tutor
-- Both of these are lumped together as they both had the same function added to them; an Add and Delete button. However, do not be fooled and think that they will work immediately. The respective .cro files for each will have to be adjusted in order for that to work.
-- The Move Tutor bug that was present in the old pk3DS does not exist anymore, meaning that if you change a tutorable move into a new move, it will work!
+#### Type Chart
+- Interactive visual grid with sprites to adjust type effectiveness (0x, 0.5x, 1x, 2x).
 
-# CRO Expander
-- An Expander for .cro files; this is only for if you want to do more advanced hacking of your game. For more information, please join the [3DS Hacking Discord](https://discord.gg/UzNWRRFdRC)!
+### ExeFS & CRO Editors
 
-# Research Center
-- A massive work-in-progress, which if completely properly can have a lot of positive ramifications for USUM hacking. Stay tuned, and just admire from a distance!
+#### Poke Mart & Move Tutor (Shop.cro)
+- **Add / Delete**: Allows adding or removing items from Marts and moves from Tutors. *(Note: Requires corresponding manual .cro structure adjustments if expanding limits).*
+- **Tutor Bug Fix**: The legacy pk3DS bug where replacing a tutor move failed to work has been completely resolved.
+
+#### CRO Expander 4.0
+- **Advanced CRO Modification**: Integrates CRO Expander 4.0 natively. Allows for expanding `.data`, `.bss`, and `.code` segments inside CRO files (like `Shop.cro` and `Bag.cro`) to add entirely new assembly logic, tables, and pointers.
+
+#### Research Center
+- **Dynamic Hex / Assembly IDE**: An advanced work-in-progress tool for analyzing `.cro` and `.bin` files, testing ARM assembly via Keystone/Capstone, and dynamically applying assembly patches for engine modifications.
+
+---
 
 ## Installation
 
@@ -120,22 +122,13 @@ To download pk3DS, all you need to do is go into our [forum page](https://projec
 
 ## Usage
 
-To begin using pk3DS you must first download the pk3DS editor zip file. Once you've downloaded the zip file for the editor, dump your ROM from the 3DS Pokémon game of your choosing.
+To begin using pk3DS you must first download the pk3DS editor zip file. Once you've downloaded the zip file for the editor, dump your ROM from the 3DS Pokémon game of your choosing. Place the files in the same folder then simply run the pk3DS.exe file.
 
-Place the files in the same folder then simply run the pk3DS.exe file.
-Once you open up the executable you can begin having fun with our editor and randomizing all the attributes and characteristics of the game to your liking.
-Below are some images of how the editor should look when you run it.
-![RomFS Editing Tools](https://i.imgur.com/PEbkjld.png)
-![ExeFS Editing Tools](https://i.imgur.com/LYd2am9.png)
-![CRO Editing Tools](https://i.imgur.com/q14xfum.png)
+## Support & Credits
 
-## Support
+If any bugs or errors are caught or experienced come to our [forum page](https://projectpokemon.org/home/forums/topic/34377-pk3ds-pok%C3%A9mon-3ds-rom-editor-and-randomizer/) and communicate with us.
 
-If any bugs or errors are caught or experienced come to our [forum page](https://projectpokemon.org/home/forums/topic/34377-pk3ds-pok%C3%A9mon-3ds-rom-editor-and-randomizer/) and communicate with us on what the issue is.
-Many community members as well as contributors are active and can be found there. 
-
-# CREDITS
-- Kaphotics for pk3DS
-- ABZB for ARM research, along with massive helpfulness related to editing .cro files
-- [InfinityPlus05](https://www.pokecommunity.com/threads/averaged-movesets-for-pokemon-across-generations.530142/) for the Multiversal Movepool
-- Stracker for his [OWSE editor](https://github.com/Strackeror/pk3DS/releases/tag/stracker-1.0)
+- **Kaphotics** for pk3DS
+- **ABZB** for ARM research, along with massive helpfulness related to editing .cro files
+- **[InfinityPlus05](https://www.pokecommunity.com/threads/averaged-movesets-for-pokemon-across-generations.530142/)** for the Multiversal Movepool
+- **Stracker** for his [OWSE editor](https://github.com/Strackeror/pk3DS/releases/tag/stracker-1.0)

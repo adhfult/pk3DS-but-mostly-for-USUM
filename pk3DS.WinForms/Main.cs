@@ -109,13 +109,21 @@ namespace pk3DS.WinForms;
         var themeToggle = new ToolStripMenuItem("Visual Mode");
         var darkItem = new ToolStripMenuItem("Dark") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Dark };
         var greyItem = new ToolStripMenuItem("Grey") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Grey };
+        var lightItem = new ToolStripMenuItem("Light") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Light };
+        var purpleItem = new ToolStripMenuItem("Galaxy Purple") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.GalaxyPurple };
         
-        darkItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Dark; greyItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
-        greyItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Grey; darkItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        darkItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Dark; greyItem.Checked = lightItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        greyItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Grey; darkItem.Checked = lightItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        lightItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Light; darkItem.Checked = greyItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        purpleItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.GalaxyPurple; darkItem.Checked = greyItem.Checked = lightItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
         
         themeToggle.DropDownItems.Add(darkItem);
         themeToggle.DropDownItems.Add(greyItem);
+        themeToggle.DropDownItems.Add(lightItem);
+        themeToggle.DropDownItems.Add(purpleItem);
         Menu_Options.DropDownItems.Add(themeToggle);
+
+        WinFormsUtil.ApplyThemeToMenuItem(themeToggle, WinFormsUtil.CurrentTheme);
 
         LoadQuotes();
         InitializeMascotUI();
@@ -594,6 +602,23 @@ namespace pk3DS.WinForms;
         new About().ShowDialog();
     }
 
+    private void Menu_CustomSprites_Click(object sender, EventArgs e)
+    {
+        if (Config == null) return;
+        var ed = new CustomSpriteEditor();
+        WinFormsUtil.ApplyTheme(ed);
+        ed.ShowDialog();
+        UpdateMascot(); // Refresh main menu sprite if we edited the mascot's sprite
+    }
+
+    private void Menu_CustomNames_Click(object sender, EventArgs e)
+    {
+        if (Config == null) return;
+        var ed = new CustomNameEditor();
+        WinFormsUtil.ApplyTheme(ed);
+        ed.ShowDialog();
+    }
+
     private void L_GARCInfo_Click(object sender, EventArgs e)
     {
         if (RomFSPath == null)
@@ -871,7 +896,7 @@ namespace pk3DS.WinForms;
         // Enable Rebuilding options if all files have been found
         CheckIfExHeader(path);
         Menu_ExeFS.Enabled = ExeFSPath != null;
-        Menu_RomFS.Enabled = Menu_Restore.Enabled = Menu_GARCs.Enabled = RomFSPath != null;
+        Menu_RomFS.Enabled = Menu_Restore.Enabled = Menu_GARCs.Enabled = Menu_CustomSprites.Enabled = Menu_CustomNames.Enabled = RomFSPath != null;
         Menu_Patch.Enabled = RomFSPath != null && ExeFSPath != null;
         Menu_3DS.Enabled = RomFSPath != null && ExeFSPath != null && ExHeaderPath != null;
         Menu_Trimmed3DS.Enabled = RomFSPath != null && ExeFSPath != null && ExHeaderPath != null;
@@ -1476,8 +1501,20 @@ namespace pk3DS.WinForms;
     {
         if (ThreadActive())
             return;
-        if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "The OverWorld/Script Editor is not recommended for most users and is still a work-in-progress.", "Continue anyway?"))
-            return;
+        if (Properties.Settings.Default.ShowOWSEWarning)
+        {
+            var msg = "The OverWorld/ScriptEditor handles things more advanced that basic data editing; make sure you know what you're doing if you want to edit anything (besides items)!\n\nDo you want to disable this notification in the future?";
+            var result = MessageBox.Show(msg, "Prompt", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+            if (result == DialogResult.Yes)
+            {
+                Properties.Settings.Default.ShowOWSEWarning = false;
+                Properties.Settings.Default.Save();
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+        }
         switch (Config.Generation)
         {
             case 6:
@@ -1603,6 +1640,8 @@ namespace pk3DS.WinForms;
         {
             var g = Config.GetGARCData("item");
             byte[][] d = g.Files;
+            int oldLen = d.Length;
+            
             switch (Config.Generation)
             {
                 case 6:
@@ -1616,6 +1655,14 @@ namespace pk3DS.WinForms;
             }
             g.Files = d;
             g.Save();
+            
+            if (Config.Generation == 7 && d.Length > oldLen)
+            {
+                int maxItemID = d.Length - 1;
+                ushort[] emptyItemList = new ushort[0];
+                pk3DS.Core.Modding.ResearchEngine.ApplyExpandedTMBattleBagPatch(Config.RomFS, maxItemID, emptyItemList);
+                pk3DS.Core.Modding.ResearchEngine.ApplyExpandedTMItemAttributesPatch(Config.RomFS, maxItemID, emptyItemList);
+            }
 
             // Persist any game text changes made by the item editor (item names/flavor)
             var gt = Config.GARCGameText;

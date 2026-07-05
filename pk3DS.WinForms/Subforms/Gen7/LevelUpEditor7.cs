@@ -247,6 +247,9 @@ private int PromptFormMapping(string formName)
     private void SetList()
     {
         if (entry < 1 || pkm == null) return;
+        // Force any in-progress cell edit to commit before reading values
+        dgv.EndEdit();
+        dgv.CommitEdit(DataGridViewDataErrorContexts.Commit);
         var levels = new List<int>();
         var moves = new List<int>();
         for (int i = 0; i < dgv.Rows.Count; i++)
@@ -613,9 +616,13 @@ private int PromptFormMapping(string formName)
         for (int i = 0; i < files.Length; i++)
         {
             var p = new Learnset6(files[i]);
-            sb.AppendLine($"{i:000} {specieslist[i]}");
+            string speciesName = i < specieslist.Length ? specieslist[i] : $"Species {i}";
+            sb.AppendLine($"{i:000} {speciesName}");
             for (int j = 0; j < p.Count; j++)
-                sb.AppendLine($"{p.Levels[j]} - {movelist[p.Moves[j]]}");
+            {
+                string moveName = p.Moves[j] < movelist.Length ? movelist[p.Moves[j]] : $"Move {p.Moves[j]}";
+                sb.AppendLine($"{p.Levels[j]} - {moveName}");
+            }
             sb.AppendLine();
         }
         File.WriteAllText(sfd.FileName, sb.ToString());

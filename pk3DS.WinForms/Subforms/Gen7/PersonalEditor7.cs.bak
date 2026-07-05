@@ -58,13 +58,6 @@ public partial class PersonalEditor7 : Form
         TB_BaseSPD.TextChanged += UpdateDynamicDiff;
         TB_BaseSPE.TextChanged += UpdateDynamicDiff;
 
-        TB_BaseHP.TextChanged += (s, e) => { if (int.TryParse(TB_BaseHP.Text, out int v)) StatBar_HP.Value = v; };
-        TB_BaseATK.TextChanged += (s, e) => { if (int.TryParse(TB_BaseATK.Text, out int v)) StatBar_ATK.Value = v; };
-        TB_BaseDEF.TextChanged += (s, e) => { if (int.TryParse(TB_BaseDEF.Text, out int v)) StatBar_DEF.Value = v; };
-        TB_BaseSPA.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPA.Text, out int v)) StatBar_SPA.Value = v; };
-        TB_BaseSPD.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPD.Text, out int v)) StatBar_SPD.Value = v; };
-        TB_BaseSPE.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPE.Text, out int v)) StatBar_SPE.Value = v; };
-
         species[0] = "---";
         abilities[0] = items[0] = moves[0] = "";
         var altForms = Main.Config.Personal.GetFormList(species, Main.Config.MaxSpeciesID);
@@ -108,8 +101,6 @@ public partial class PersonalEditor7 : Form
         B_SaveCurrent.Click += (s, e) => { SaveEntry(); WinFormsUtil.Alert("Current Pokémon saved to internal buffer."); };
 
         RegisterAutosave(TP_General.Controls);
-        CB_Type1.SelectedIndexChanged += UpdateTypeIcons;
-        CB_Type2.SelectedIndexChanged += UpdateTypeIcons;
         NUD_TutorBase = new NumericUpDown
         {
             Minimum = 0x28, Maximum = 0x2F, Hexadecimal = true, 
@@ -292,46 +283,11 @@ public partial class PersonalEditor7 : Form
     private static bool[] ClipboardBeachTutors;
     private readonly byte[][] originalFiles;
     #endregion
-    
-    private Image typeSprites;
-    private void LoadTypeSprites()
-    {
-        string path = Path.Combine(Application.StartupPath, "Resources", "img", "type_sprites.png");
-        if (!File.Exists(path))
-            path = Path.Combine(Application.StartupPath, "type_sprites.png");
-        if (File.Exists(path)) 
-            typeSprites = Image.FromFile(path);
-    }
-    
-    private Image GetTypeImage(int typeId)
-    {
-        if (typeSprites == null) return null;
-        Rectangle src;
-        if (typeSprites.Width >= 576) src = new Rectangle(typeId * 32, 0, 32, 14);
-        else if (typeSprites.Width == 192) src = new Rectangle((typeId % 6) * 32, (typeId / 6) * 14, 32, 14);
-        else src = new Rectangle(0, typeId * 14, 32, 14);
-        
-        Bitmap bmp = new Bitmap(32, 14);
-        using (Graphics g = Graphics.FromImage(bmp))
-            g.DrawImage(typeSprites, new Rectangle(0, 0, 32, 14), src, GraphicsUnit.Pixel);
-        return bmp;
-    }
-    
-    private void UpdateTypeIcons(object sender, EventArgs e)
-    {
-        if (reading) return;
-        if (PB_Type1.Image != null) { PB_Type1.Image.Dispose(); }
-        if (PB_Type2.Image != null) { PB_Type2.Image.Dispose(); }
-        PB_Type1.Image = GetTypeImage(CB_Type1.SelectedIndex);
-        PB_Type2.Image = GetTypeImage(CB_Type2.SelectedIndex);
-    }
-
     private bool reading;
     private int tutorBase = 0x29;
     private void Setup()
     {
         reading = true;
-        if (typeSprites == null) LoadTypeSprites();
         if (Main.Config.USUM)
         {
             tutorBase = 0x29;
@@ -359,12 +315,8 @@ public partial class PersonalEditor7 : Form
         foreach (ushort m in tutormoves)
             CLB_MoveTutors.Items.Add(moves[m]);
 
-        var _customNames = CustomNameEditor.LoadCustomNames();
         for (int i = 0; i < entryNames.Length; i++)
-        {
-            string displayName = _customNames.TryGetValue(i, out string cn) ? cn : entryNames[i];
-            CB_Species.Items.Add($"{displayName} - {i:000}");
-        }
+            CB_Species.Items.Add($"{entryNames[i]} - {i:000}");
 
         CB_Species.AutoCompleteMode = AutoCompleteMode.Suggest;
         CB_Species.AutoCompleteSource = AutoCompleteSource.ListItems;
@@ -525,12 +477,8 @@ public partial class PersonalEditor7 : Form
         var altForms = Main.Config.Personal.GetFormList(species, Main.Config.MaxSpeciesID);
         var res = Main.Config.Personal.GetPersonalEntryList(altForms, species, Main.Config.MaxSpeciesID, out var bf, out var fv);
         
-        var _customNames2 = CustomNameEditor.LoadCustomNames();
         CB_Species.Items.Clear();
-        CB_Species.Items.AddRange(res.Select((n, i) => {
-            string displayName = _customNames2.TryGetValue(i, out string cn) ? cn : n;
-            return $"{displayName} - {i:000}";
-        }).ToArray());
+        CB_Species.Items.AddRange(res.Select((n, i) => $"{n} - {i:000}").ToArray());
         CB_Species.SelectedIndex = entry;
     }
 
@@ -670,13 +618,6 @@ public partial class PersonalEditor7 : Form
         TB_BaseSPE.Text = pkm.SPE.ToString("000");
         TB_BaseSPA.Text = pkm.SPA.ToString("000");
         TB_BaseSPD.Text = pkm.SPD.ToString("000");
-
-        StatBar_HP.Value = pkm.HP;
-        StatBar_ATK.Value = pkm.ATK;
-        StatBar_DEF.Value = pkm.DEF;
-        StatBar_SPE.Value = pkm.SPE;
-        StatBar_SPA.Value = pkm.SPA;
-        StatBar_SPD.Value = pkm.SPD;
         TB_HPEVs.Text = pkm.EV_HP.ToString("0");
         TB_ATKEVs.Text = pkm.EV_ATK.ToString("0");
         TB_DEFEVs.Text = pkm.EV_DEF.ToString("0");
@@ -743,7 +684,6 @@ public partial class PersonalEditor7 : Form
         ReadDexEntry();
         UpdateDebugLabel(sm);
         reading = false;
-        UpdateTypeIcons(null, null);
     }
 
     private void UpdateDebugLabel(PersonalInfoSM sm)
@@ -786,7 +726,6 @@ public partial class PersonalEditor7 : Form
             }
         }
         reading = false;
-        UpdateTypeIcons(null, null);
     }
 
     private void ReadEntry()
@@ -798,11 +737,6 @@ public partial class PersonalEditor7 : Form
         int f = formVal[entry];
         if (entry <= Main.Config.MaxSpeciesID)
             s = entry;
-            
-        // Use custom name for the header if one has been set
-        var _customNames = CustomNameEditor.LoadCustomNames();
-        L_SpeciesName.Text = _customNames.TryGetValue(entry, out string cn) ? cn : species[s];
-            
         var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
         var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
         for (int x = 0; x < rawImg.Width; x++)
@@ -873,12 +807,6 @@ public partial class PersonalEditor7 : Form
             if (bitPos >= 0 && bitPos < sm.TutorFlags.Length) 
                 sm.TutorFlags[bitPos] = CLB_BeachTutors.GetItemChecked(i);
         }
-
-        // Save Z-Move data
-        sm.SpecialZ_Item = CB_ZItem.SelectedIndex;
-        sm.SpecialZ_BaseMove = CB_ZBaseMove.SelectedIndex;
-        sm.SpecialZ_ZMove = CB_ZMove.SelectedIndex;
-
         UpdateDebugLabel(sm);
 
         // Log significant changes

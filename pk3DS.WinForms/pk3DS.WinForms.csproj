@@ -47,10 +47,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="..\move_modernization.json">
-      <Link>move_modernization.json</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+
   </ItemGroup>
   
   <ItemGroup>
