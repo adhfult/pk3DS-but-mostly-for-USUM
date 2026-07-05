@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using pk3DS.Core.CTR;
+using System.Drawing;
 
 namespace pk3DS.WinForms;
 
@@ -117,16 +118,33 @@ public partial class TutorEditor7 : Form
 
     private void SyncTutorsToCodeBin()
     {
-        string fullCodePath = Path.Combine(Main.ExeFSPath, ".code.bin");
+        string exePath = Main.ExeFSPath;
+        if (string.IsNullOrEmpty(exePath))
+        {
+            // Try to find it relative to RomFS (common in many extractions)
+            string parent = Path.GetDirectoryName(Main.RomFSPath);
+            if (parent != null)
+            {
+                string candidate = Path.Combine(parent, "ExeFS");
+                if (Directory.Exists(candidate)) exePath = candidate;
+            }
+        }
+        if (string.IsNullOrEmpty(exePath))
+        {
+            WinFormsUtil.Alert("Automatic code.bin detection failed. Make sure your ExeFS folder is in the same directory as RomFS.");
+            return;
+        }
+
+        string binName = File.Exists(Path.Combine(exePath, ".code.bin")) ? ".code.bin" : "code.bin";
+        string fullCodePath = Path.Combine(exePath, binName);
         if (!File.Exists(fullCodePath)) return;
 
-        // Use the IN-MEMORY data instead of reading from disk to avoid race conditions
-        var tutorData = GetUSUMTutorData(CROPath, Tutors_USUM, data);
-        var moves = tutorData.moves;
+        var moves = GetUSUMTutorData(CROPath, Tutors_USUM).moves;
         int count = ResearchEngine.ApplyExpandedTutorCodePatch(fullCodePath, moves);
-        
         if (count > 0)
-            WinFormsUtil.Alert($"Synchronized {count} patches to .code.bin (Moves: {moves.Length})");
+            WinFormsUtil.Alert($"Code.bin patched automatically! ({count} locations updated)");
+        else
+            WinFormsUtil.Alert("Found code.bin, but failed to identify the tutor logic pattern. Are you using a custom or already-patched binary?");
     }
 
     private void B_Cancel_Click(object sender, EventArgs e) => Close();
@@ -231,13 +249,6 @@ public partial class TutorEditor7 : Form
 
         data[ofs_counts + entryBPMove] = (byte)count;
         len_BPTutor[entryBPMove] = (byte)count;
-
-        // Apply automatic expansion patch to Shop.cro if moves > 67
-        // We check if the total count exceeds vanilla limits or if any group is expanded.
-        if (len_BPTutor.Sum(z => z) > 60 || count > 15)
-        {
-            ResearchEngine.PatchLimitCheck(data, 67, 127);
-        }
     }
 
     private void B_Randomize_Click(object sender, EventArgs e)
@@ -289,14 +300,14 @@ public partial class TutorEditor7 : Form
         if (c_ofs != -1)
         {
             lengths = d.Skip(c_ofs).Take(16).Select(b => (int)b).ToArray();
-            // Filter out 0 lengths or stop if we hit 0 after some valid ones
-            List<int> validLengths = [];
-            foreach (var l in lengths)
+            List<int> validLengths = new List<int>();
+            for (int i = 0; i < 5; i++) // Always exactly 5 groups
             {
-                if (l > 0 && l < 64) validLengths.Add(l);
-                else if (validLengths.Count > 0) break;
+                int l = lengths[i];
+                if (l >= 0 && l < 255) validLengths.Add(l);
+                else validLengths.Add(defaultLengths[i]); // Fallback per-group
             }
-            lengths = validLengths.Count > 0 ? validLengths.ToArray() : defaultLengths;
+            lengths = validLengths.ToArray();
         }
         else
         {

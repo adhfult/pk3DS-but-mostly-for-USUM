@@ -1361,23 +1361,17 @@ namespace pk3DS.WinForms;
                     break;
             }
 
-            // Set Master Table back (Safely reconstruct to avoid length mismatches)
+            // Set Master Table back (Safely resize if needed)
             if (d.Length > 1)
             {
-                int entryLen = d[0].Length;
-                // In Gen 7, all personal entries are the same size. 
-                // The Master Table is the last entry and is much larger.
-                var actualEntries = d.Where(f => f != null && f.Length == entryLen).ToList();
-                int tableSize = actualEntries.Count * entryLen;
-                byte[] masterTable = new byte[tableSize];
-                for (int i = 0; i < actualEntries.Count; i++)
-                    actualEntries[i].CopyTo(masterTable, i * entryLen);
-
-                // Re-assemble the file list: [Entries...] + [MasterTable]
-                var finalFiles = actualEntries.ToArray();
-                Array.Resize(ref finalFiles, finalFiles.Length + 1);
-                finalFiles[^1] = masterTable;
-                d = finalFiles;
+                int len = d[0].Length;
+                int tableSize = (d.Length - 1) * len;
+                if (d[^1].Length != tableSize)
+                {
+                    d[^1] = new byte[tableSize];
+                }
+                for (int i = 0; i < d.Length - 1; i++)
+                    d[i].CopyTo(d[^1], i * len);
             }
 
             Config.GARCPersonal.Files = d;

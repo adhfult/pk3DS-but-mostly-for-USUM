@@ -56,6 +56,20 @@ public partial class TMEditor7 : Form
         }
 
         SetupDGV();
+        
+        // Auto-detect TM count from code.bin once on load
+        if (File.Exists(codebin))
+        {
+            byte[] codeData = File.ReadAllBytes(codebin);
+            int detectedCount = DetectTMCount(codeData);
+            if (detectedCount > 0)
+            {
+                skipUpdate = true;
+                NUD_TMCount.Value = Math.Min(detectedCount, NUD_TMCount.Maximum);
+                skipUpdate = false;
+            }
+        }
+        
         GetList();
         TB_Offset.Text = offset.ToString("X");
         
@@ -144,26 +158,17 @@ public partial class TMEditor7 : Form
             dgvIndex.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             dgvIndex.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
-        var dgvItem = new DataGridViewTextBoxColumn();
-        {
-            dgvItem.HeaderText = "Item ID";
-            dgvItem.DisplayIndex = 1;
-            dgvItem.Width = 55;
-            dgvItem.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvItem.SortMode = DataGridViewColumnSortMode.NotSortable;
-        }
         var dgvMove = new DataGridViewComboBoxColumn();
         {
             dgvMove.HeaderText = "Move";
-            dgvMove.DisplayIndex = 2;
-            dgvMove.Items.AddRange(movelist);
+            dgvMove.DisplayIndex = 1;
+            dgvMove.Items.AddRange(movelist); // add only the Names
 
             dgvMove.Width = 133;
             dgvMove.FlatStyle = FlatStyle.Flat;
             dgvMove.SortMode = DataGridViewColumnSortMode.NotSortable;
         }
         dgvTM.Columns.Add(dgvIndex);
-        dgvTM.Columns.Add(dgvItem);
         dgvTM.Columns.Add(dgvMove);
     }
 
@@ -196,86 +201,17 @@ public partial class TMEditor7 : Form
         ushort[] tmlist = ResearchEngine.GetTMMoveArray(data, count, defaultTMs);
         tms.AddRange(tmlist);
 
-        ushort[] defaultItems = GetDefaultTMItems();
-        ushort[] itemIDs = ResearchEngine.GetTMItemArray(data, count, defaultItems);
+        ushort[] tmlist = [.. tms];
         for (int i = 0; i < tmlist.Length; i++)
-        {
-            dgvTM.Rows.Add();
-            dgvTM.Rows[i].Cells[0].Value = (i + 1).ToString();
-
-            ushort itemID = i < itemIDs.Length ? itemIDs[i] : (ushort)0;
-            if (i >= 107 && (itemID == 0 || IsProtectedItemID((int)itemID) || itemID >= 960)) itemID = GetUnusedItemID(i - 107);
-            dgvTM.Rows[i].Cells[1].Value = itemID.ToString();
-            // Lock vanilla item IDs (TMs 1-100 and HMs 101-107) to prevent breaking standard compatibility
-            if (i < 107) dgvTM.Rows[i].Cells[1].ReadOnly = true;
-
+        { 
+            dgvTM.Rows.Add(); 
+            dgvTM.Rows[i].Cells[0].Value = (i + 1).ToString(); 
+            
             ushort moveId = tmlist[i];
-            if (moveId >= movelist.Length) moveId = 0;
-
-            dgvTM.Rows[i].Cells[2].Value = movelist[moveId];
+            if (moveId >= movelist.Length) moveId = 0; 
+            
+            dgvTM.Rows[i].Cells[1].Value = movelist[moveId]; 
         }
-    }
-
-    // ── Protected Item ID Ranges (USUM) ───────────────────────────────────────
-    // These item IDs must NEVER be assigned to expanded TMs. Each range is
-    // documented with its contents so future edits know exactly what is protected.
-    //
-    //  328– 419  TM01–TM92  (standard disc TMs)
-    //  420– 425  HM01–HM06
-    //  618– 620  TM93–TM95  (was Cut/Fly/Surf in XY)
-    //  690– 694  TM96–TM100 (extra TM block)
-    //  737       HM07 Dive
-    //  798– 920  Vanilla Z-Crystals (Normalium Z → Steelium Z and more)
-    //  921– 927  Exclusive Z-Crystals added in USUM:
-    //              921 Pikashunium Z
-    //              922 Solganium Z
-    //              923 Lunalium Z
-    //              924 Ultranecrozium Z
-    //              925 Mimikium Z
-    //              926 Lycanium Z
-    //              927 Kommonium Z
-    //  928– 937  Reserved / event items
-    //  938– 949  Roto Powers (Roto Boost → Roto Stealth)
-    // ─────────────────────────────────────────────────────────────────────────
-    private static bool IsProtectedItemID(int id)
-    {
-        return (id >= 328 && id <= 419)   // TM01–TM92
-            || (id >= 420 && id <= 425)   // HM01–HM06
-            || id == 737                  // HM07 Dive
-            || (id >= 618 && id <= 620)   // TM93–TM95
-            || (id >= 690 && id <= 694)   // TM96–TM100
-            || (id >= 798 && id <= 920)   // Vanilla Z-Crystals
-            || (id >= 921 && id <= 927)   // Exclusive Z-Crystals (USUM)
-            || (id >= 928 && id <= 937)   // Reserved / event items
-            || (id >= 938 && id <= 949);  // Roto Powers
-    }
-
-    private ushort GetUnusedItemID(int expandedIndex)
-    {
-        string[] itemNames = Main.Config.GetText(TextName.ItemNames);
-        var unused = new System.Collections.Generic.List<int>();
-        for (int i = 894; i < itemNames.Length; i++)
-        {
-            // Never assign a protected ID to an expanded TM slot
-            if (IsProtectedItemID(i)) continue;
-
-            string name = itemNames[i];
-            if (name != null && (name.StartsWith("???") || name.Contains("Teru-sama") || string.IsNullOrWhiteSpace(name)))
-                unused.Add(i);
-        }
-        if (expandedIndex < unused.Count) return (ushort)unused[expandedIndex];
-        return (ushort)(960 + expandedIndex); // fallback
-    }
-
-    private ushort[] GetDefaultTMItems()
-    {
-        ushort[] items = new ushort[107];
-        for (int i = 0; i < 92; i++) items[i] = (ushort)(328 + i);
-        for (int i = 92; i < 95; i++) items[i] = (ushort)(618 + (i - 92));
-        for (int i = 95; i < 100; i++) items[i] = (ushort)(690 + (i - 95));
-        for (int i = 100; i < 106; i++) items[i] = (ushort)(420 + (i - 100));
-        items[106] = 737;
-        return items;
     }
 
     /// <summary>
@@ -285,18 +221,8 @@ public partial class TMEditor7 : Form
     /// </summary>
     private int DetectTMCount(byte[] codeData)
     {
-        // Try to find if already patched with our custom generic patch
-        byte[] customSig = [0x10, 0x40, 0x2D, 0xE9, 0x00, 0x00, 0x50, 0xE3, 0x0C, 0x40, 0x9F, 0x35, 0x00, 0x00, 0xA0, 0x23];
-        byte[] mask = [0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
-        int customOfs = ResearchEngine.IndexOfBytesMasked(codeData, customSig, mask, 0);
-
-        if (customOfs >= 0)
-        {
-            return codeData[customOfs + 4]; // Extract count from CMP instruction directly
-        }
-
         // The original instruction is CMP R0, #0x64 (100) => E3 50 00 64
-        // After a TM expansion patch (legacy layout), this immediate is changed to the new count.
+        // After a TM expansion patch, this immediate is changed to the new count.
         // We ONLY search near the TM table region to avoid matching random CMP instructions
         // elsewhere in the binary (which was causing false positive 128-slot detection).
         
@@ -310,17 +236,9 @@ public partial class TMEditor7 : Form
             uint word = BitConverter.ToUInt32(codeData, i);
             if (word == 0xE3500064) // CMP R0, #0x64 (exactly 100, unpatched)
                 return 100; // Original game, no expansion
-            
-            // Check for TM HM Expansion patch (CMP R0, 0x5B) 
-            // The logic splits up TMs, meaning the patch is applied.
-            if (word == 0xE350005B)
-            {
-                isSplitTablePatchApplied = true;
-                return 128; // TM HM Expansion patch implies 128 TMs
-            }
         }
         
-        // Second pass: the CMP was patched  find the new value
+        // Second pass: the CMP was patched — find the new value
         int bestCount = 0;
         for (int i = searchStart; i < searchEnd; i += 4)
         {
@@ -337,6 +255,7 @@ public partial class TMEditor7 : Form
             if (value > 100 && value <= 128 && (int)value > bestCount)
                 bestCount = (int)value;
         }
+        
         return bestCount > 0 ? bestCount : 100;
     }
 
@@ -357,84 +276,13 @@ public partial class TMEditor7 : Form
         }
 
         ushort[] tmlist = [.. tms];
-        ushort[] itemlist = [.. items];
-
-        // ── Protected ID collision check ──────────────────────────────────────
-        // Warn if any manually-entered TM item ID would stomp on a protected range.
-        var collisions = new System.Collections.Generic.List<string>();
-        for (int i = 0; i < itemlist.Length; i++)
-        {
-            int id = itemlist[i];
-            if (id == 0) continue;
-            if (!IsProtectedItemID(id)) continue;
-
-            string category =
-                (id >= 328 && id <= 419) ? "TM01–TM92" :
-                (id >= 420 && id <= 425) ? "HM01–HM06" :
-                id == 737               ? "HM07 (Dive)" :
-                (id >= 618 && id <= 620) ? "TM93–TM95" :
-                (id >= 690 && id <= 694) ? "TM96–TM100" :
-                (id >= 798 && id <= 920) ? "Vanilla Z-Crystal" :
-                (id >= 921 && id <= 927) ? "Exclusive Z-Crystal (USUM)" :
-                (id >= 928 && id <= 937) ? "Reserved/Event item" :
-                (id >= 938 && id <= 949) ? "Roto Power" : "Protected";
-
-            collisions.Add($"  TM{i + 1:D3}  →  Item ID {id}  ({category})");
-        }
-        if (collisions.Count > 0)
-        {
-            string msg = "WARNING: The following TM slots are assigned to protected item IDs.\n"
-                + "Saving will overwrite those items' names/attributes in the ROM.\n"
-                + "Please change these Item IDs to unused slots (960+) before saving.\n\n"
-                + "Protected Item ID Ranges:\n"
-                + "  328–419  TM01–TM92\n"
-                + "  420–425  HM01–HM06\n"
-                + "  618–620  TM93–TM95\n"
-                + "  690–694  TM96–TM100\n"
-                + "  737      HM07 (Dive)\n"
-                + "  798–920  Vanilla Z-Crystals\n"
-                + "  921      Pikashunium Z\n"
-                + "  922      Solganium Z\n"
-                + "  923      Lunalium Z\n"
-                + "  924      Ultranecrozium Z\n"
-                + "  925      Mimikium Z\n"
-                + "  926      Lycanium Z\n"
-                + "  927      Kommonium Z\n"
-                + "  928–937  Reserved / Event items\n"
-                + "  938–949  Roto Powers\n\n"
-                + "Colliding entries:\n"
-                + string.Join("\n", collisions);
-
-            if (WinFormsUtil.Prompt(MessageBoxButtons.OKCancel, msg, "Proceed anyway? (Not recommended)") != DialogResult.OK)
-                return; // Abort save
-        }
 
         if (!int.TryParse(TB_Offset.Text, System.Globalization.NumberStyles.HexNumber, null, out int currentOffset))
             currentOffset = offset;
 
         int count = Math.Min(tmlist.Length, (int)NUD_TMCount.Value);
-
-        // Pass the expansion to ResearchEngine which handles Assembly patching
-        if (isSplitTablePatchApplied)
-        {
-            // Write directly to the split tables instead of running C# code patcher
-            for (int i = 0; i < tmlist.Length; i++)
-            {
-                int destOffset = GetTMOffset(i);
-                if (destOffset >= 0 && destOffset + 1 < data.Length)
-                {
-                    data[destOffset] = (byte)(tmlist[i] & 0xFF);
-                    data[destOffset + 1] = (byte)(tmlist[i] >> 8);
-                }
-            }
-        }
-        else
-        {
-            ResearchEngine.ApplyExpandedTMCodePatch(data, tmlist, itemlist);
-        }
-        int maxItemID = 0; for (int i = 0; i < itemlist.Length; i++) { if (itemlist[i] > maxItemID) maxItemID = itemlist[i]; } 
-        ResearchEngine.ApplyExpandedTMItemAttributesPatch(Main.Config.RomFS, maxItemID, itemlist); 
-        ResearchEngine.ApplyExpandedTMBattleBagPatch(Main.Config.RomFS, maxItemID, itemlist);
+        for (int i = 0; i < count; i++) 
+            Array.Copy(BitConverter.GetBytes(tmlist[i]), 0, data, GetTMOffset(i), 2);
 
         // Update descriptions
         string[] itemNames = Main.Config.GetText(TextName.ItemNames);
@@ -490,11 +338,11 @@ public partial class TMEditor7 : Form
 
         for (int i = 0; i < dgvTM.Rows.Count; i++)
         {
-            int val = Array.IndexOf(movelist, dgvTM.Rows[i].Cells[1].Value);
+            int val = Array.IndexOf(movelist, dgvTM.Rows[i].Cells[2].Value);
             if (banned.Contains(val)) continue;
             while (banned.Contains(randomMoves[ctr])) ctr++;
 
-            dgvTM.Rows[i].Cells[1].Value = movelist[randomMoves[ctr++]];
+            dgvTM.Rows[i].Cells[2].Value = movelist[randomMoves[ctr++]];
         }
         WinFormsUtil.Alert("Randomized!");
     }
@@ -541,7 +389,7 @@ public partial class TMEditor7 : Form
         var lines = new List<string>();
         for (int i = 0; i < dgvTM.Rows.Count; i++)
         {
-            string moveName = dgvTM.Rows[i].Cells[1].Value?.ToString() ?? "";
+            string moveName = dgvTM.Rows[i].Cells[2].Value?.ToString() ?? "";
             lines.Add($"TM{i + 1:00}: {moveName}");
         }
         File.WriteAllLines(sfd.FileName, lines);
@@ -578,7 +426,7 @@ public partial class TMEditor7 : Form
                 moveIdx = moveId;
             if (moveIdx < 0) continue;
 
-            dgvTM.Rows[rowIdx].Cells[1].Value = movelist[moveIdx];
+            dgvTM.Rows[rowIdx].Cells[2].Value = movelist[moveIdx];
             updated++;
         }
         WinFormsUtil.Alert($"Imported {updated} TM entries!");
@@ -595,16 +443,7 @@ public partial class TMEditor7 : Form
         List<ushort> tms = [];
         List<ushort> items = [];
         for (int i = 0; i < dgvTM.Rows.Count; i++)
-        {
-            if (ushort.TryParse(dgvTM.Rows[i].Cells[1].Value?.ToString(), out ushort itemID))
-                items.Add(itemID);
-            else
-                items.Add(0);
-
-            var val = dgvTM.Rows[i].Cells[2].Value;
-            if (val == null) tms.Add(0);
-            else tms.Add((ushort)Array.IndexOf(movelist, val.ToString()));
-        }
+            currentTMs.Add((ushort)Array.IndexOf(movelist, dgvTM.Rows[i].Cells[1].Value));
 
         ushort[] tmlist = [.. tms];
         ushort[] itemlist = [.. items];
