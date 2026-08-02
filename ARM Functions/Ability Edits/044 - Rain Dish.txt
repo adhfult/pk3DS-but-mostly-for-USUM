@@ -1,0 +1,52 @@
+Ability: Rain Dish (ID: 44)
+==================================================
+
+Effect:
+Heals for 1/16 max HP after each turn during rain.
+
+Dynamic ARM Mechanic:
+- **Fractional Math (Healing):** The ARM code loads the Max HP from the Pokémon's stat struct. It then uses a logical shift right (`lsr`) instruction (`lsr #4` for 1/16th, `lsr #3` for 1/8th) to efficiently divide the Max HP by a power of 2.
+- **Subroutine:** It calls the global healing subroutine (`bl`), passing the shifted value as the heal amount.
+- **Weather Check:** The code reads the global battle state struct and compares the active Weather ID byte (`cmp rX, #WeatherID`). If the weather doesn't match the required state, it uses a `bne` (branch if not equal) to skip the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x0001DAE0 (ARM)
+Raw Assembly:
+0x1DAE0: 2C0051E3  cmp	r1, #0x2c
+0x1DAE4: 0500A0E1  mov	r0, r5
+0x1DAE8: 1500000A  beq	#0x1db44
+0x1DAEC: DBD301EB  bl	#0x92a60
+
+Logic Translation:
+- `0x1DAE0`: Compares the loaded ability ID against 0x2c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1DAE4`: Loads literal `r5` into `r0`.
+- `0x1DAE8`: If it matches, branches to `0x0x1db44` to apply the effect.
+- `0x1DAEC`: Calls the engine subroutine at `#0x92a60` to commit the math.
+--------------------
+Address: 0x0002AB78 (ARM)
+Raw Assembly:
+0x2AB78: 2C0050E3  cmp	r0, #0x2c
+0x2AB7C: 6301000A  beq	#0x2b110
+0x2AB80: 320050E3  cmp	r0, #0x32
+0x2AB84: E9FFFF1A  bne	#0x2ab30
+
+Logic Translation:
+- `0x2AB78`: Compares the loaded ability ID against 0x2c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AB7C`: If it matches, branches to `0x0x2b110` to apply the effect.
+- `0x2AB80`: Compares the loaded ability ID against 0x32. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AB84`: If it doesn't match, branches to `0x0x2ab30`.
+--------------------
+Address: 0x00060DB0 (ARM)
+Raw Assembly:
+0x60DB0: 2C0055E3  cmp	r5, #0x2c
+0x60DB4: 2000000A  beq	#0x60e3c
+0x60DB8: 0510A0E1  mov	r1, r5
+0x60DBC: 27C700EB  bl	#0x92a60
+
+Logic Translation:
+- `0x60DB0`: Compares the loaded ability ID against 0x2c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x60DB4`: If it matches, branches to `0x0x60e3c` to apply the effect.
+- `0x60DB8`: Loads literal `r5` into `r1`.
+- `0x60DBC`: Calls the engine subroutine at `#0x92a60` to commit the math.
+--------------------

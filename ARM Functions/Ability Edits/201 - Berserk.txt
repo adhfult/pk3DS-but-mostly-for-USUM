@@ -1,0 +1,48 @@
+Ability: Berserk (ID: 201)
+==================================================
+
+Effect:
+Raises this Pokémon's Special Attack by one stage every time its HP drops below half.
+
+Dynamic ARM Mechanic:
+- **Negative Stat Modifier:** The code loads a negative integer (e.g., `mov rX, #-1`) into the stat stage parameter register.
+- **Targeting:** It calls the stat-modifier subroutine (`bl`), applying the negative stage to the target's stat array.
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x000765CC (ARM)
+Raw Assembly:
+0x765CC: C90053E3  cmp	r3, #0xc9
+0x765D0: 9200001A  bne	#0x76820
+0x765D4: 8C0000EA  b	#0x7680c
+0x765D8: C800D5E5  ldrb	r0, [r5, #0xc8]
+
+Logic Translation:
+- `0x765CC`: Compares the loaded ability ID against 0xc9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x765D0`: If it doesn't match, branches to `0x0x76820`.
+- `0x765D4`: Executes `b #0x7680c`.
+- `0x765D8`: Loads memory data into `r0`.
+--------------------
+Address: 0x0002DA20 (THUMB)
+Raw Assembly:
+0x2DA20: C92B      cmp	r3, #0xc9
+
+Logic Translation:
+- `0x2DA20`: Compares the loaded ability ID against 0xc9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000AE580 (THUMB)
+Raw Assembly:
+0xAE580: C92F      cmp	r7, #0xc9
+0xAE582: 85E2      b	#0xaea90
+0xAE584: 0C10      asrs	r4, r1, #0x20
+0xAE586: 8DE2      b	#0xaeaa4
+0xAE588: 0E4E      ldr	r6, [pc, #0x38]
+
+Logic Translation:
+- `0xAE580`: Compares the loaded ability ID against 0xc9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xAE582`: Executes `b #0xaea90`.
+- `0xAE584`: Executes `asrs r4, r1, #0x20`.
+- `0xAE586`: Executes `b #0xaeaa4`.
+- `0xAE588`: Loads memory data into `r6`.
+--------------------

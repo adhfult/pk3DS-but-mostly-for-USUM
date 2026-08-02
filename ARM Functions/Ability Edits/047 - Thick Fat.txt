@@ -1,0 +1,56 @@
+Ability: Thick Fat (ID: 47)
+==================================================
+
+Effect:
+Halves damage from Fire and Ice moves.
+
+Dynamic ARM Mechanic:
+- **Multiplier Injection:** The engine loads `0x800` (0.5x fixed-point) to reduce the incoming damage via multiplication.
+
+Execution Hooks:
+--------------------
+Address: 0x00047204 (THUMB)
+Raw Assembly:
+0x47204: 2F2E      cmp	r6, #0x2f
+0x47206: 01EB0910  add.w	r0, r1, sb, lsl #4
+0x4720A: D8E5      b	#0x46dbe
+0x4720C: 0050      str	r0, [r0, r0]
+0x4720E: A0E1      b	#0x47552
+
+Logic Translation:
+- `0x47204`: Compares the loaded ability ID against 0x2f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x47206`: Adds `r0, r1, sb, lsl #4` to calculate the modifier.
+- `0x4720A`: Executes `b #0x46dbe`.
+- `0x4720C`: Stores `r0` into memory.
+- `0x4720E`: Executes `b #0x47552`.
+--------------------
+Address: 0x00072004 (THUMB)
+Raw Assembly:
+0x72004: 2F2C      cmp	r4, #0x2f
+0x72006: A0E3      b	#0x7274a
+0x72008: 5E0D      lsrs	r6, r3, #0x15
+0x7200A: 40E2      b	#0x7248e
+0x7200C: 0010      asrs	r0, r0, #0x20
+
+Logic Translation:
+- `0x72004`: Compares the loaded ability ID against 0x2f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x72006`: Executes `b #0x7274a`.
+- `0x72008`: Logical shift right by `0x15` (division by 2^N).
+- `0x7200A`: Executes `b #0x7248e`.
+- `0x7200C`: Executes `asrs r0, r0, #0x20`.
+--------------------
+Address: 0x000B6F44 (THUMB)
+Raw Assembly:
+0xB6F44: 2F2C      cmp	r4, #0x2f
+0xB6F46: 80E2      b	#0xb744a
+0xB6F48: 0220      movs	r0, #2
+0xB6F4A: 82E2      b	#0xb7452
+0xB6F4C: 2F3C      subs	r4, #0x2f
+
+Logic Translation:
+- `0xB6F44`: Compares the loaded ability ID against 0x2f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xB6F46`: Executes `b #0xb744a`.
+- `0xB6F48`: Loads literal `#2` into `r0`.
+- `0xB6F4A`: Executes `b #0xb7452`.
+- `0xB6F4C`: Executes `subs r4, #0x2f`.
+--------------------

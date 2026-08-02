@@ -1,0 +1,50 @@
+Ability: Stall (ID: 100)
+==================================================
+
+Effect:
+Makes the Pokémon move last within its move's priority bracket.
+
+Dynamic ARM Mechanic:
+- **Priority Tier Check/Override:** The code reads the priority integer from the move struct. It may compare it (`cmp rX, #0`) to see if it's a priority move, or use an `add` instruction to artificially increase the priority integer before execution order is sorted.
+
+Execution Hooks:
+--------------------
+Address: 0x00015AD4 (ARM)
+Raw Assembly:
+0x15AD4: 640050E3  cmp	r0, #0x64
+0x15AD8: 00F020E3  nop	
+0x15ADC: 040000AA  bge	#0x15af4
+0x15AE0: 0C10D7E5  ldrb	r1, [r7, #0xc]
+
+Logic Translation:
+- `0x15AD4`: Compares the loaded ability ID against 0x64. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x15AD8`: Executes `nop `.
+- `0x15ADC`: Executes `bge #0x15af4`.
+- `0x15AE0`: Loads memory data into `r1`.
+--------------------
+Address: 0x00015C90 (ARM)
+Raw Assembly:
+0x15C90: 640050E3  cmp	r0, #0x64
+0x15C94: 00F020E3  nop	
+0x15C98: 3E0000AA  bge	#0x15d98
+0x15C9C: 0C00D8E5  ldrb	r0, [r8, #0xc]
+
+Logic Translation:
+- `0x15C90`: Compares the loaded ability ID against 0x64. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x15C94`: Executes `nop `.
+- `0x15C98`: Executes `bge #0x15d98`.
+- `0x15C9C`: Loads memory data into `r0`.
+--------------------
+Address: 0x00016B1C (ARM)
+Raw Assembly:
+0x16B1C: 640050E3  cmp	r0, #0x64
+0x16B20: 0040A0E1  mov	r4, r0
+0x16B24: 040096E5  ldr	r0, [r6, #4]
+0x16B28: 6440A083  movhi	r4, #0x64
+
+Logic Translation:
+- `0x16B1C`: Compares the loaded ability ID against 0x64. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x16B20`: Loads literal `r0` into `r4`.
+- `0x16B24`: Loads memory data into `r0`.
+- `0x16B28`: Loads literal `#0x64` into `r4`.
+--------------------

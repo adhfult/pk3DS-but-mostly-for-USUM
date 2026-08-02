@@ -1,0 +1,32 @@
+Ability: Fur Coat (ID: 169)
+==================================================
+
+Effect:
+Halves damage from physical attacks.
+
+Dynamic ARM Mechanic:
+- **Multiplier Injection:** The engine loads `0x800` (0.5x fixed-point) to reduce the incoming damage via multiplication.
+
+Execution Hooks:
+--------------------
+Address: 0x000B5C24 (THUMB)
+Raw Assembly:
+0xB5C24: A92A      cmp	r2, #0xa9
+
+Logic Translation:
+- `0xB5C24`: Compares the loaded ability ID against 0xa9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000E6088 (THUMB)
+Raw Assembly:
+0xE6088: A928      cmp	r0, #0xa9
+
+Logic Translation:
+- `0xE6088`: Compares the loaded ability ID against 0xa9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000F4EAC (THUMB)
+Raw Assembly:
+0xF4EAC: A92E      cmp	r6, #0xa9
+
+Logic Translation:
+- `0xF4EAC`: Compares the loaded ability ID against 0xa9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

@@ -9,6 +9,7 @@ namespace pk3DS.Core;
 
 public class GameConfig
 {
+    public static bool ExpandedAbilities { get; set; } = false;
     private const int FILECOUNT_XY = 271;
     private const int FILECOUNT_ORASDEMO = 301;
     private const int FILECOUNT_ORAS = 299;
@@ -237,13 +238,47 @@ public class GameConfig
 
     public string[] GetText(TextName file)
     {
-        return (string[])GameTextStrings[GetGameText(file).Index].Clone();
+        var textRef = GetGameText(file);
+        if (textRef == null || textRef.Index >= GameTextStrings.Length) return Array.Empty<string>();
+        string[] raw = (string[])GameTextStrings[textRef.Index].Clone();
+
+        if (file == TextName.SpeciesNames && Info != null && Info.MaxSpeciesID > 807)
+        {
+            int targetLen = Math.Max(raw.Length, Info.MaxSpeciesID + 1);
+            if (raw.Length < targetLen)
+            {
+                Array.Resize(ref raw, targetLen);
+            }
+            for (int i = 808; i < raw.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(raw[i]))
+                {
+                    int gen8Index = i - 808;
+                    if (gen8Index >= 0 && gen8Index < Gen89SpeciesNames.Names808_1025.Length)
+                        raw[i] = Gen89SpeciesNames.Names808_1025[gen8Index];
+                    else
+                        raw[i] = $"Species {i}";
+                }
+            }
+        }
+
+        for (int i = 0; i < raw.Length; i++)
+            raw[i] ??= "";
+
+        return raw;
     }
 
     public bool SetText(TextName file, string[] strings)
     {
         GameTextStrings[GetGameText(file).Index] = strings;
         return true;
+    }
+
+    public void SaveText(TextName file)
+    {
+        int index = GetGameText(file).Index;
+        GARCGameText.Files[index] = TextFile.GetBytes(this, GameTextStrings[index]);
+        GARCGameText.Save();
     }
 
     public string GetGARCFileName(string requestedGARC)
@@ -296,7 +331,7 @@ public class GameConfig
 
     public int VersionID => (int)Version;
 
-    public int MaxSpeciesID => XY || ORAS ? Legal.MaxSpeciesID_6 : SM ? Legal.MaxSpeciesID_7_SM : Legal.MaxSpeciesID_7_USUM;
+    public int MaxSpeciesID => (Info != null && Info.MaxSpeciesID > 0) ? Info.MaxSpeciesID : (XY || ORAS ? Legal.MaxSpeciesID_6 : SM ? Legal.MaxSpeciesID_7_SM : Legal.MaxSpeciesID_7_USUM);
     public int GARCVersion => XY || ORAS ? GARC.VER_4 : GARC.VER_6;
 
     public int Generation

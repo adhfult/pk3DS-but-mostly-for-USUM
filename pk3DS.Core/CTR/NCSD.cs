@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -63,8 +63,8 @@ public class NCSD
     public ulong GetWritableAddress()
     {
         return Card2
-            ? Align((Header.OffsetSizeTable[NCCH_Array.Count - 1].Offset * NCCH.MEDIA_UNIT_SIZE)
-                    + (Header.OffsetSizeTable[NCCH_Array.Count - 1].Size * NCCH.MEDIA_UNIT_SIZE) + 0x1000, 0x10000) / MEDIA_UNIT_SIZE
+            ? Align(((ulong)Header.OffsetSizeTable[NCCH_Array.Count - 1].Offset * NCCH.MEDIA_UNIT_SIZE)
+                    + ((ulong)Header.OffsetSizeTable[NCCH_Array.Count - 1].Size * NCCH.MEDIA_UNIT_SIZE) + 0x1000, 0x10000) / MEDIA_UNIT_SIZE
             : 0x00000000FFFFFFFF;
     }
 

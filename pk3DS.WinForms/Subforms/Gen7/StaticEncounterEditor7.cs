@@ -493,6 +493,8 @@ public partial class StaticEncounterEditor7 : Form
             G5 = CHK_G5.Checked,
             G6 = CHK_G6.Checked,
             G7 = CHK_G7.Checked,
+            G8 = CHK_G8.Checked,
+            G9 = CHK_G9.Checked,
 
             E = CHK_E.Checked,
             L = CHK_L.Checked,
@@ -526,17 +528,31 @@ public partial class StaticEncounterEditor7 : Form
         int randFinalEvo() => (int)(Util.Random32() % FinalEvo.Length);
         int randLegend() => (int)(Util.Random32() % ReplaceLegend.Length);
 
-        for (int i = 3; i < Gifts.Length; i++) // Skip Starters
+        for (int i = 0; i < Gifts.Length; i++) // Including Starters
         {
             var t = Gifts[i];
-
-            // Legendary-for-Legendary
-            if ((CHK_ReplaceLegend.Checked && ReplaceLegend.Contains(t.Species)) || UnevolvedLegend.Contains(t.Species))
-                t.Species = ReplaceLegend[randLegend()];
-
-            // every other entry
-            else
+            
+            // If it's a starter (0, 1, 2) and Basic Starter is requested
+            if (i < 3 && CHK_BasicStarter.Checked)
+            {
+                t.Species = Legal.BasicStarters_7[Util.Random32() % Legal.BasicStarters_7.Length];
+            }
+            // If it's a starter (0, 1, 2) and Basic Starter is not requested, or it's not a starter
+            else if (i < 3 && !CHK_BasicStarter.Checked)
+            {
                 t.Species = specrand.GetRandomSpecies(t.Species);
+            }
+            // Skip original starter skip check
+            else if (i >= 3)
+            {
+                // Legendary-for-Legendary
+                if ((CHK_ReplaceLegend.Checked && ReplaceLegend.Contains(t.Species)) || UnevolvedLegend.Contains(t.Species))
+                    t.Species = ReplaceLegend[randLegend()];
+
+                // every other entry
+                else
+                    t.Species = specrand.GetRandomSpecies(t.Species);
+            }
 
             if (CHK_AllowMega.Checked)
                 formrand.AllowMega = true;

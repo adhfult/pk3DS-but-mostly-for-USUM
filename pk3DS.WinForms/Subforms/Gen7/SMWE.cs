@@ -284,6 +284,11 @@ public partial class SMWE : Form
         AddFamily("Generation 4", new[] { "Bidoof", "Bibarel", "Kricketot", "Kricketune", "Shinx", "Luxio", "Luxray", "Burmy", "Wormadam", "Mothim", "Combee", "Vespiquen", "Pachirisu", "Cherubi", "Cherrim", "Glameow", "Purugly", "Stunky", "Skuntank", "Bronzor", "Bronzong", "Chatot", "Spiritomb", "Croagunk", "Toxicroak", "Carnivine" });
         AddFamily("Generation 5", new[] { "Patrat", "Watchog", "Purrloin", "Liepard", "Pansage", "Simisage", "Pansear", "Simisear", "Panpour", "Simipour", "Munna", "Musharna", "Pidove", "Tranquill", "Unfezant", "Blitzle", "Zebstrika", "Woobat", "Swoobat", "Drilbur", "Excadrill", "Timburr", "Gurdurr", "Conkeldurr", "Tympole", "Palpitoad", "Seismitoad", "Throh", "Sawk", "Venipede", "Whirlipede", "Scolipede", "Darumaka", "Darmanitan", "Maractus", "Yamask", "Cofagrigus", "Deerling", "Sawsbuck", "Karrablast", "Escavalier", "Foongus", "Amoonguss", "Joltik", "Galvantula", "Ferroseed", "Ferrothorn", "Cubchoo", "Beartic", "Cryogonal", "Shelmet", "Accelgor", "Bouffalant", "Heatmor", "Durant" });
         AddFamily("Generation 6", new[] { "Bunnelby", "Diggersby", "Skiddo", "Gogoat", "Espurr", "Meowstic", "Spritzee", "Aromatisse", "Swirlix", "Slurpuff", "Pumpkaboo", "Gourgeist", "Bergmite", "Avalugg" });
+        string[] speciesNames = Main.Config.GetText(TextName.SpeciesNames);
+        if (Main.Config.MaxSpeciesID >= 905)
+            AddFamily("Generation 8", Enumerable.Range(808, 905 - 808 + 1).Where(i => i < speciesNames.Length).Select(i => speciesNames[i]).ToArray());
+        if (Main.Config.MaxSpeciesID >= 1025)
+            AddFamily("Generation 9", Enumerable.Range(906, 1025 - 906 + 1).Where(i => i < speciesNames.Length).Select(i => speciesNames[i]).ToArray());
 
         f.Controls.Add(mainScroll);
         f.ShowDialog();
@@ -652,6 +657,8 @@ private void B_PasteAll_Click(object sender, EventArgs e)
             G5 = CHK_G5.Checked,
             G6 = CHK_G6.Checked,
             G7 = CHK_G7.Checked,
+            G8 = CHK_G8.Checked,
+            G9 = CHK_G9.Checked,
 
             E = CHK_E.Checked,
             L = CHK_L.Checked,

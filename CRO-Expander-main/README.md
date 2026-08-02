@@ -1,0 +1,5 @@
+This program various sections of a .cro file so that custom code can be added.
+
+To use, simply select the .cro file you wish to expand, choose the section to exapnd, then enter the number of pages (0x1000 bytes per page) to add (except .bss, that can be any number of bytes). .code and .data insert the new allocated space at the end, .bss will have the freshly allocated space at the end when the game loads the .cro, and final option, arbitrary insertion, is intended to expand tables located in .rodata, and requires the user to specify the exact address (in either hexadecimal or decimal, the program will assume decimal entry unless it contains a non-decimal digit or is prefixed by '0x')
+
+The new space will be located at the very end of the existing code section, and will be filled with 0xFF (.code and .data) and 0xCC (arbitrary insertion) to make it easy to see where the new space is (the region immediately prior to the newly allocated space is used for writing values to once the CRO is loaded, and the region afterward is not allocated to _anything_ and will result in a crash if referenced).

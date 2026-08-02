@@ -1,0 +1,48 @@
+Ability: Weak Armor (ID: 133)
+==================================================
+
+Effect:
+Raises Speed and lowers Defense by one stage each upon being hit by a physical move.
+
+Dynamic ARM Mechanic:
+- **Negative Stat Modifier:** The code loads a negative integer (e.g., `mov rX, #-1`) into the stat stage parameter register.
+- **Targeting:** It calls the stat-modifier subroutine (`bl`), applying the negative stage to the target's stat array.
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x0002ACC4 (ARM)
+Raw Assembly:
+0x2ACC4: 850050E3  cmp	r0, #0x85
+0x2ACC8: E100000A  beq	#0x2b054
+0x2ACCC: 260000CA  bgt	#0x2ad6c
+0x2ACD0: 5C0050E3  cmp	r0, #0x5c
+
+Logic Translation:
+- `0x2ACC4`: Compares the loaded ability ID against 0x85. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2ACC8`: If it matches, branches to `0x0x2b054` to apply the effect.
+- `0x2ACCC`: Executes `bgt #0x2ad6c`.
+- `0x2ACD0`: Compares the loaded ability ID against 0x5c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00020EE4 (THUMB)
+Raw Assembly:
+0x20EE4: 852F      cmp	r7, #0x85
+0x20EE6: A0E3      b	#0x2162a
+0x20EE8: 0210      asrs	r2, r0, #0x20
+0x20EEA: A0E3      b	#0x2162e
+0x20EEC: 0060      str	r0, [r0]
+
+Logic Translation:
+- `0x20EE4`: Compares the loaded ability ID against 0x85. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x20EE6`: Executes `b #0x2162a`.
+- `0x20EE8`: Executes `asrs r2, r0, #0x20`.
+- `0x20EEA`: Executes `b #0x2162e`.
+- `0x20EEC`: Stores `r0` into memory.
+--------------------
+Address: 0x00075B64 (THUMB)
+Raw Assembly:
+0x75B64: 852D      cmp	r5, #0x85
+
+Logic Translation:
+- `0x75B64`: Compares the loaded ability ID against 0x85. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

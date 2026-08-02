@@ -1,0 +1,50 @@
+Ability: Color Change (ID: 16)
+==================================================
+
+Effect:
+Changes type to match when hit by a damaging move.
+
+Dynamic ARM Mechanic:
+- **Elemental Type Override:** The code loads the hex ID of the specific elemental type (e.g., `0x0` for Normal, `0x2` for Flying) and overwrites the Type 1 / Type 2 bytes in the active Pokémon's battle struct, temporarily changing its typing.
+
+Execution Hooks:
+--------------------
+Address: 0x0001D288 (ARM)
+Raw Assembly:
+0x1D288: 100054E3  cmp	r4, #0x10
+0x1D28C: 4400000A  beq	#0x1d3a4
+0x1D290: 4E0000EA  b	#0x1d3d0
+0x1D294: 0500A0E1  mov	r0, r5
+
+Logic Translation:
+- `0x1D288`: Compares the loaded ability ID against 0x10. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1D28C`: If it matches, branches to `0x0x1d3a4` to apply the effect.
+- `0x1D290`: Executes `b #0x1d3d0`.
+- `0x1D294`: Loads literal `r5` into `r0`.
+--------------------
+Address: 0x0002AA74 (ARM)
+Raw Assembly:
+0x2AA74: 100050E3  cmp	r0, #0x10
+0x2AA78: 0501000A  beq	#0x2ae94
+0x2AA7C: 120050E3  cmp	r0, #0x12
+0x2AA80: 2A00001A  bne	#0x2ab30
+
+Logic Translation:
+- `0x2AA74`: Compares the loaded ability ID against 0x10. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AA78`: If it matches, branches to `0x0x2ae94` to apply the effect.
+- `0x2AA7C`: Compares the loaded ability ID against 0x12. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AA80`: If it doesn't match, branches to `0x0x2ab30`.
+--------------------
+Address: 0x00049CE0 (ARM)
+Raw Assembly:
+0x49CE0: 100050E3  cmp	r0, #0x10
+0x49CE4: 0700000A  beq	#0x49d08
+0x49CE8: 110050E3  cmp	r0, #0x11
+0x49CEC: 0160A003  moveq	r6, #1
+
+Logic Translation:
+- `0x49CE0`: Compares the loaded ability ID against 0x10. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x49CE4`: If it matches, branches to `0x0x49d08` to apply the effect.
+- `0x49CE8`: Compares the loaded ability ID against 0x11. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x49CEC`: Loads literal `#1` into `r6`.
+--------------------

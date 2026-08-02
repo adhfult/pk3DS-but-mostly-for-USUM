@@ -1,0 +1,50 @@
+Ability: Drizzle (ID: 2)
+==================================================
+
+Effect:
+Summons rain that lasts indefinitely upon entering battle.
+
+Dynamic ARM Mechanic:
+- **Weather Check:** The code reads the global battle state struct and compares the active Weather ID byte (`cmp rX, #WeatherID`). If the weather doesn't match the required state, it uses a `bne` (branch if not equal) to skip the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x000102A4 (ARM)
+Raw Assembly:
+0x102A4: 020050E3  cmp	r0, #2
+0x102A8: 0400001A  bne	#0x102c0
+0x102AC: 823AD5E5  ldrb	r3, [r5, #0xa82]
+0x102B0: 0C0095E5  ldr	r0, [r5, #0xc]
+
+Logic Translation:
+- `0x102A4`: Compares the loaded ability ID against 2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x102A8`: If it doesn't match, branches to `0x0x102c0`.
+- `0x102AC`: Loads memory data into `r3`.
+- `0x102B0`: Loads memory data into `r0`.
+--------------------
+Address: 0x00010330 (ARM)
+Raw Assembly:
+0x10330: 020056E3  cmp	r6, #2
+0x10334: 0200001A  bne	#0x10344
+0x10338: 740A95E5  ldr	r0, [r5, #0xa74]
+0x1033C: 000060E2  rsb	r0, r0, #0
+
+Logic Translation:
+- `0x10330`: Compares the loaded ability ID against 2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x10334`: If it doesn't match, branches to `0x0x10344`.
+- `0x10338`: Loads memory data into `r0`.
+- `0x1033C`: Executes `rsb r0, r0, #0`.
+--------------------
+Address: 0x00010614 (ARM)
+Raw Assembly:
+0x10614: 020050E3  cmp	r0, #2
+0x10618: 2200000A  beq	#0x106a8
+0x1061C: 050000EA  b	#0x10638
+0x10620: 000050E3  cmp	r0, #0
+
+Logic Translation:
+- `0x10614`: Compares the loaded ability ID against 2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x10618`: If it matches, branches to `0x0x106a8` to apply the effect.
+- `0x1061C`: Executes `b #0x10638`.
+- `0x10620`: Compares the loaded ability ID against 0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

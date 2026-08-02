@@ -1,0 +1,51 @@
+Ability: Solid Rock (ID: 116)
+==================================================
+
+Effect:
+Decreases damage taken from super-effective moves by 1/4.
+
+Dynamic ARM Mechanic:
+- **Negative Stat Modifier:** The code loads a negative integer (e.g., `mov rX, #-1`) into the stat stage parameter register.
+- **Targeting:** It calls the stat-modifier subroutine (`bl`), applying the negative stage to the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x00065028 (ARM)
+Raw Assembly:
+0x65028: 740057E3  cmp	r7, #0x74
+0x6502C: CC01000A  beq	#0x65764
+0x65030: 1CD08DE2  add	sp, sp, #0x1c
+0x65034: 0030A0E3  mov	r3, #0
+
+Logic Translation:
+- `0x65028`: Compares the loaded ability ID against 0x74. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x6502C`: If it matches, branches to `0x0x65764` to apply the effect.
+- `0x65030`: Adds `sp, sp, #0x1c` to calculate the modifier.
+- `0x65034`: Loads literal `#0` into `r3`.
+--------------------
+Address: 0x000B10E8 (ARM)
+Raw Assembly:
+0xB10E8: 740051E3  cmp	r1, #0x74
+0xB10EC: 0B02000A  beq	#0xb1920
+0xB10F0: 14D08DE2  add	sp, sp, #0x14
+0xB10F4: 0030A0E3  mov	r3, #0
+
+Logic Translation:
+- `0xB10E8`: Compares the loaded ability ID against 0x74. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xB10EC`: If it matches, branches to `0x0xb1920` to apply the effect.
+- `0xB10F0`: Adds `sp, sp, #0x14` to calculate the modifier.
+- `0xB10F4`: Loads literal `#0` into `r3`.
+--------------------
+Address: 0x000CB1FC (ARM)
+Raw Assembly:
+0xCB1FC: 740050E3  cmp	r0, #0x74
+0xCB200: 0140A0E1  mov	r4, r1
+0xCB204: 0A10A003  moveq	r1, #0xa
+0xCB208: 0140A003  moveq	r4, #1
+
+Logic Translation:
+- `0xCB1FC`: Compares the loaded ability ID against 0x74. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xCB200`: Loads literal `r1` into `r4`.
+- `0xCB204`: Loads literal `#0xa` into `r1`.
+- `0xCB208`: Loads literal `#1` into `r4`.
+--------------------

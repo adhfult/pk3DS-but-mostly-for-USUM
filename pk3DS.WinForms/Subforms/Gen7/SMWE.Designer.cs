@@ -53,6 +53,8 @@ partial class SMWE
         this.CB_SlotRand = new System.Windows.Forms.ComboBox();
         this.L_SOS = new System.Windows.Forms.Label();
         this.CHK_G7 = new System.Windows.Forms.CheckBox();
+        this.CHK_G8 = new System.Windows.Forms.CheckBox();
+        this.CHK_G9 = new System.Windows.Forms.CheckBox();
         this.CHK_MegaForm = new System.Windows.Forms.CheckBox();
         this.L_RandOpt = new System.Windows.Forms.Label();
         this.CHK_BST = new System.Windows.Forms.CheckBox();
@@ -905,6 +907,8 @@ partial class SMWE
         // 
         this.GB_Tweak.Controls.Add(this.CB_SlotRand);
         this.GB_Tweak.Controls.Add(this.L_SOS);
+        this.GB_Tweak.Controls.Add(this.CHK_G9);
+        this.GB_Tweak.Controls.Add(this.CHK_G8);
         this.GB_Tweak.Controls.Add(this.CHK_G7);
         this.GB_Tweak.Controls.Add(this.CHK_MegaForm);
         this.GB_Tweak.Controls.Add(this.L_RandOpt);
@@ -920,12 +924,221 @@ partial class SMWE
         this.GB_Tweak.Controls.Add(this.B_LevelPlus);
         this.GB_Tweak.Controls.Add(this.NUD_LevelAmp);
         this.GB_Tweak.Controls.Add(this.CHK_Level);
-        this.GB_Tweak.Location = new System.Drawing.Point(14, 405);
+        this.GB_Tweak.Location = new System.Drawing.Point(14, 400);
         this.GB_Tweak.Name = "GB_Tweak";
-        this.GB_Tweak.Size = new System.Drawing.Size(282, 150);
+        this.GB_Tweak.Size = new System.Drawing.Size(365, 165);
         this.GB_Tweak.TabIndex = 507;
         this.GB_Tweak.TabStop = false;
         this.GB_Tweak.Text = "Extra Randomization Tweaks";
+        // 
+        // CHK_Level
+        // 
+        this.CHK_Level.AutoSize = true;
+        this.CHK_Level.Location = new System.Drawing.Point(12, 20);
+        this.CHK_Level.Name = "CHK_Level";
+        this.CHK_Level.Size = new System.Drawing.Size(132, 17);
+        this.CHK_Level.TabIndex = 279;
+        this.CHK_Level.Text = "Multiply PKM Level by";
+        this.CHK_Level.UseVisualStyleBackColor = true;
+        // 
+        // NUD_LevelAmp
+        // 
+        this.NUD_LevelAmp.DecimalPlaces = 2;
+        this.NUD_LevelAmp.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            131072});
+        this.NUD_LevelAmp.Location = new System.Drawing.Point(146, 18);
+        this.NUD_LevelAmp.Maximum = new decimal(new int[] {
+            2000,
+            0,
+            0,
+            0});
+        this.NUD_LevelAmp.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
+        this.NUD_LevelAmp.Name = "NUD_LevelAmp";
+        this.NUD_LevelAmp.Size = new System.Drawing.Size(48, 20);
+        this.NUD_LevelAmp.TabIndex = 276;
+        this.NUD_LevelAmp.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+        // 
+        // B_LevelPlus
+        // 
+        this.B_LevelPlus.Location = new System.Drawing.Point(198, 16);
+        this.B_LevelPlus.Name = "B_LevelPlus";
+        this.B_LevelPlus.Size = new System.Drawing.Size(72, 23);
+        this.B_LevelPlus.TabIndex = 277;
+        this.B_LevelPlus.Text = "x Current";
+        this.B_LevelPlus.UseVisualStyleBackColor = true;
+        this.B_LevelPlus.Click += new System.EventHandler(this.ModifyAllLevelRanges);
+        // 
+        // L_RandOpt
+        // 
+        this.L_RandOpt.AutoSize = true;
+        this.L_RandOpt.Location = new System.Drawing.Point(12, 45);
+        this.L_RandOpt.Name = "L_RandOpt";
+        this.L_RandOpt.Size = new System.Drawing.Size(105, 13);
+        this.L_RandOpt.TabIndex = 294;
+        this.L_RandOpt.Text = "Randomizer Options:";
+        // 
+        // CHK_G1
+        // 
+        this.CHK_G1.AutoSize = true;
+        this.CHK_G1.Checked = true;
+        this.CHK_G1.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G1.Location = new System.Drawing.Point(12, 63);
+        this.CHK_G1.Name = "CHK_G1";
+        this.CHK_G1.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G1.TabIndex = 280;
+        this.CHK_G1.Text = "Gen 1";
+        this.CHK_G1.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G2
+        // 
+        this.CHK_G2.AutoSize = true;
+        this.CHK_G2.Checked = true;
+        this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G2.Location = new System.Drawing.Point(12, 81);
+        this.CHK_G2.Name = "CHK_G2";
+        this.CHK_G2.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G2.TabIndex = 281;
+        this.CHK_G2.Text = "Gen 2";
+        this.CHK_G2.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G3
+        // 
+        this.CHK_G3.AutoSize = true;
+        this.CHK_G3.Checked = true;
+        this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G3.Location = new System.Drawing.Point(12, 99);
+        this.CHK_G3.Name = "CHK_G3";
+        this.CHK_G3.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G3.TabIndex = 282;
+        this.CHK_G3.Text = "Gen 3";
+        this.CHK_G3.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G4
+        // 
+        this.CHK_G4.AutoSize = true;
+        this.CHK_G4.Checked = true;
+        this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G4.Location = new System.Drawing.Point(68, 63);
+        this.CHK_G4.Name = "CHK_G4";
+        this.CHK_G4.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G4.TabIndex = 283;
+        this.CHK_G4.Text = "Gen 4";
+        this.CHK_G4.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G5
+        // 
+        this.CHK_G5.AutoSize = true;
+        this.CHK_G5.Checked = true;
+        this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G5.Location = new System.Drawing.Point(68, 81);
+        this.CHK_G5.Name = "CHK_G5";
+        this.CHK_G5.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G5.TabIndex = 284;
+        this.CHK_G5.Text = "Gen 5";
+        this.CHK_G5.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G6
+        // 
+        this.CHK_G6.AutoSize = true;
+        this.CHK_G6.Checked = true;
+        this.CHK_G6.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G6.Location = new System.Drawing.Point(68, 99);
+        this.CHK_G6.Name = "CHK_G6";
+        this.CHK_G6.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G6.TabIndex = 285;
+        this.CHK_G6.Text = "Gen 6";
+        this.CHK_G6.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G7
+        // 
+        this.CHK_G7.AutoSize = true;
+        this.CHK_G7.Checked = true;
+        this.CHK_G7.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G7.Location = new System.Drawing.Point(124, 63);
+        this.CHK_G7.Name = "CHK_G7";
+        this.CHK_G7.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G7.TabIndex = 296;
+        this.CHK_G7.Text = "Gen 7";
+        this.CHK_G7.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G8
+        // 
+        this.CHK_G8.AutoSize = true;
+        this.CHK_G8.Checked = true;
+        this.CHK_G8.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G8.Location = new System.Drawing.Point(124, 81);
+        this.CHK_G8.Name = "CHK_G8";
+        this.CHK_G8.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G8.TabIndex = 297;
+        this.CHK_G8.Text = "Gen 8";
+        this.CHK_G8.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G9
+        // 
+        this.CHK_G9.AutoSize = true;
+        this.CHK_G9.Checked = true;
+        this.CHK_G9.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G9.Location = new System.Drawing.Point(124, 99);
+        this.CHK_G9.Name = "CHK_G9";
+        this.CHK_G9.Size = new System.Drawing.Size(55, 17);
+        this.CHK_G9.TabIndex = 298;
+        this.CHK_G9.Text = "Gen 9";
+        this.CHK_G9.UseVisualStyleBackColor = true;
+        // 
+        // CHK_L
+        // 
+        this.CHK_L.AutoSize = true;
+        this.CHK_L.Checked = true;
+        this.CHK_L.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_L.Location = new System.Drawing.Point(184, 63);
+        this.CHK_L.Name = "CHK_L";
+        this.CHK_L.Size = new System.Drawing.Size(98, 17);
+        this.CHK_L.TabIndex = 286;
+        this.CHK_L.Text = "Game Legends";
+        this.CHK_L.UseVisualStyleBackColor = true;
+        // 
+        // CHK_E
+        // 
+        this.CHK_E.AutoSize = true;
+        this.CHK_E.Checked = true;
+        this.CHK_E.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_E.Location = new System.Drawing.Point(184, 81);
+        this.CHK_E.Name = "CHK_E";
+        this.CHK_E.Size = new System.Drawing.Size(98, 17);
+        this.CHK_E.TabIndex = 287;
+        this.CHK_E.Text = "Event Legends";
+        this.CHK_E.UseVisualStyleBackColor = true;
+        // 
+        // CHK_BST
+        // 
+        this.CHK_BST.AutoSize = true;
+        this.CHK_BST.Location = new System.Drawing.Point(184, 99);
+        this.CHK_BST.Name = "CHK_BST";
+        this.CHK_BST.Size = new System.Drawing.Size(117, 17);
+        this.CHK_BST.TabIndex = 288;
+        this.CHK_BST.Text = "Randomize by BST";
+        this.CHK_BST.UseVisualStyleBackColor = true;
+        // 
+        // CHK_MegaForm
+        // 
+        this.CHK_MegaForm.AutoSize = true;
+        this.CHK_MegaForm.Location = new System.Drawing.Point(184, 117);
+        this.CHK_MegaForm.Name = "CHK_MegaForm";
+        this.CHK_MegaForm.Size = new System.Drawing.Size(127, 17);
+        this.CHK_MegaForm.TabIndex = 295;
+        this.CHK_MegaForm.Text = "Random Mega Forms";
+        this.CHK_MegaForm.UseVisualStyleBackColor = true;
         // 
         // CB_SlotRand
         // 
@@ -937,117 +1150,19 @@ partial class SMWE
             "Randomize Regular Only",
             "Randomize SOS Only",
             "Randomize Regular, Copy to SOS"});
-        this.CB_SlotRand.Location = new System.Drawing.Point(124, 120);
+        this.CB_SlotRand.Location = new System.Drawing.Point(124, 137);
         this.CB_SlotRand.Name = "CB_SlotRand";
-        this.CB_SlotRand.Size = new System.Drawing.Size(121, 21);
+        this.CB_SlotRand.Size = new System.Drawing.Size(225, 21);
         this.CB_SlotRand.TabIndex = 299;
         // 
         // L_SOS
         // 
-        this.L_SOS.Location = new System.Drawing.Point(-9, 117);
+        this.L_SOS.Location = new System.Drawing.Point(5, 139);
         this.L_SOS.Name = "L_SOS";
-        this.L_SOS.Size = new System.Drawing.Size(130, 23);
+        this.L_SOS.Size = new System.Drawing.Size(118, 23);
         this.L_SOS.TabIndex = 298;
         this.L_SOS.Text = "Slot Randomization:";
         this.L_SOS.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // CHK_G7
-        // 
-        this.CHK_G7.AutoSize = true;
-        this.CHK_G7.Checked = true;
-        this.CHK_G7.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G7.Location = new System.Drawing.Point(19, 97);
-        this.CHK_G7.Name = "CHK_G7";
-        this.CHK_G7.Size = new System.Drawing.Size(55, 17);
-        this.CHK_G7.TabIndex = 296;
-        this.CHK_G7.Text = "Gen 7";
-        this.CHK_G7.UseVisualStyleBackColor = true;
-        // 
-        // CHK_MegaForm
-        // 
-        this.CHK_MegaForm.AutoSize = true;
-        this.CHK_MegaForm.Location = new System.Drawing.Point(138, 97);
-        this.CHK_MegaForm.Name = "CHK_MegaForm";
-        this.CHK_MegaForm.Size = new System.Drawing.Size(127, 17);
-        this.CHK_MegaForm.TabIndex = 295;
-        this.CHK_MegaForm.Text = "Random Mega Forms";
-        this.CHK_MegaForm.UseVisualStyleBackColor = true;
-        // 
-        // L_RandOpt
-        // 
-        this.L_RandOpt.AutoSize = true;
-        this.L_RandOpt.Location = new System.Drawing.Point(16, 34);
-        this.L_RandOpt.Name = "L_RandOpt";
-        this.L_RandOpt.Size = new System.Drawing.Size(105, 13);
-        this.L_RandOpt.TabIndex = 294;
-        this.L_RandOpt.Text = "Randomizer Options:";
-        // 
-        // CHK_BST
-        // 
-        this.CHK_BST.AutoSize = true;
-        this.CHK_BST.Location = new System.Drawing.Point(138, 82);
-        this.CHK_BST.Name = "CHK_BST";
-        this.CHK_BST.Size = new System.Drawing.Size(117, 17);
-        this.CHK_BST.TabIndex = 288;
-        this.CHK_BST.Text = "Randomize by BST";
-        this.CHK_BST.UseVisualStyleBackColor = true;
-        // 
-        // CHK_E
-        // 
-        this.CHK_E.AutoSize = true;
-        this.CHK_E.Checked = true;
-        this.CHK_E.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_E.Location = new System.Drawing.Point(138, 67);
-        this.CHK_E.Name = "CHK_E";
-        this.CHK_E.Size = new System.Drawing.Size(98, 17);
-        this.CHK_E.TabIndex = 287;
-        this.CHK_E.Text = "Event Legends";
-        this.CHK_E.UseVisualStyleBackColor = true;
-        // 
-        // CHK_L
-        // 
-        this.CHK_L.AutoSize = true;
-        this.CHK_L.Checked = true;
-        this.CHK_L.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_L.Location = new System.Drawing.Point(138, 52);
-        this.CHK_L.Name = "CHK_L";
-        this.CHK_L.Size = new System.Drawing.Size(98, 17);
-        this.CHK_L.TabIndex = 286;
-        this.CHK_L.Text = "Game Legends";
-        this.CHK_L.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G6
-        // 
-        this.CHK_G6.AutoSize = true;
-        this.CHK_G6.Checked = true;
-        this.CHK_G6.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G6.Location = new System.Drawing.Point(77, 82);
-        this.CHK_G6.Name = "CHK_G6";
-        this.CHK_G6.Size = new System.Drawing.Size(55, 17);
-        this.CHK_G6.TabIndex = 285;
-        this.CHK_G6.Text = "Gen 6";
-        this.CHK_G6.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G5
-        // 
-        this.CHK_G5.AutoSize = true;
-        this.CHK_G5.Checked = true;
-        this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G5.Location = new System.Drawing.Point(77, 67);
-        this.CHK_G5.Name = "CHK_G5";
-        this.CHK_G5.Size = new System.Drawing.Size(55, 17);
-        this.CHK_G5.TabIndex = 284;
-        this.CHK_G5.Text = "Gen 5";
-        this.CHK_G5.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G4
-        // 
-        this.CHK_G4.AutoSize = true;
-        this.CHK_G4.Checked = true;
-        this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G4.Location = new System.Drawing.Point(77, 52);
-        this.CHK_G4.Name = "CHK_G4";
-        this.CHK_G4.Size = new System.Drawing.Size(55, 17);
         this.CHK_G4.TabIndex = 283;
         this.CHK_G4.Text = "Gen 4";
         this.CHK_G4.UseVisualStyleBackColor = true;
@@ -3648,6 +3763,8 @@ partial class SMWE
     private System.Windows.Forms.PictureBox PB_DayIcon;
     private System.Windows.Forms.GroupBox GB_Tweak;
     private System.Windows.Forms.CheckBox CHK_G7;
+    private System.Windows.Forms.CheckBox CHK_G8;
+    private System.Windows.Forms.CheckBox CHK_G9;
     private System.Windows.Forms.CheckBox CHK_MegaForm;
     private System.Windows.Forms.Label L_RandOpt;
     private System.Windows.Forms.CheckBox CHK_BST;

@@ -20,7 +20,16 @@ public class ProjectState
 
     public Dictionary<string, int> RelocatedOffsets { get; set; } = new();
     public List<string> AppliedPatches { get; set; } = new();
+    public HashSet<string> ModifiedFiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public ModdingProject CurrentModdingProject { get; set; } = new();
+
+    public void RecordModifiedFile(string relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath)) return;
+        string normalized = relativePath.Replace('\\', '/').TrimStart('/');
+        ModifiedFiles.Add(normalized);
+        Save();
+    }
 
     private static string GetConfigPath()
     {

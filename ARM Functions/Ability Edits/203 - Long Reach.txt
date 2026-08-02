@@ -1,0 +1,38 @@
+Ability: Long Reach (ID: 203)
+==================================================
+
+Effect:
+This Pokémon's moves do not make contact.
+
+Dynamic ARM Mechanic:
+- **Contact Flag Check:** Before applying the effect, the code loads the move data struct of the incoming attack and performs a bitwise check (`tst` or `and`) against the 'Makes Contact' bitflag. If the flag is 0, it skips the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x000E022C (ARM)
+Raw Assembly:
+0xE022C: CB0059E3  cmp	sb, #0xcb
+0xE0230: 1300000A  beq	#0xe0284
+0xE0234: 08009DE5  ldr	r0, [sp, #8]
+0xE0238: 0710A0E3  mov	r1, #7
+
+Logic Translation:
+- `0xE022C`: Compares the loaded ability ID against 0xcb. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xE0230`: If it matches, branches to `0x0xe0284` to apply the effect.
+- `0xE0234`: Loads memory data into `r0`.
+- `0xE0238`: Loads literal `#7` into `r1`.
+--------------------
+Address: 0x000BC3C4 (THUMB)
+Raw Assembly:
+0xBC3C4: CB2C      cmp	r4, #0xcb
+
+Logic Translation:
+- `0xBC3C4`: Compares the loaded ability ID against 0xcb. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000BC424 (THUMB)
+Raw Assembly:
+0xBC424: CB2D      cmp	r5, #0xcb
+
+Logic Translation:
+- `0xBC424`: Compares the loaded ability ID against 0xcb. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

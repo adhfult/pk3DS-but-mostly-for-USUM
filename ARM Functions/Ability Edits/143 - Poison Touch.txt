@@ -1,0 +1,55 @@
+Ability: Poison Touch (ID: 143)
+==================================================
+
+Effect:
+Has a 30% chance of poisoning target Pokémon upon contact.
+
+Dynamic ARM Mechanic:
+- **Status Affliction/Check:** The code loads the specific bitflag representing the status condition (e.g., `0x8` for Poison, `0x10` for Burn) into a register. It either bitwise-ANDs (`and`) it to check for the status, or bitwise-ORs (`orr`) it into the target's volatile status memory block to inflict it.
+- **Contact Flag Check:** Before applying the effect, the code loads the move data struct of the incoming attack and performs a bitwise check (`tst` or `and`) against the 'Makes Contact' bitflag. If the flag is 0, it skips the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x00077760 (ARM)
+Raw Assembly:
+0x77760: 8F0050E3  cmp	r0, #0x8f
+0x77764: 00039F05  ldreq	r0, [pc, #0x300]
+0x77768: B5FFFF0A  beq	#0x77644
+0x7776C: 990050E3  cmp	r0, #0x99
+
+Logic Translation:
+- `0x77760`: Compares the loaded ability ID against 0x8f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77764`: Loads memory data into `r0`.
+- `0x77768`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x7776C`: Compares the loaded ability ID against 0x99. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00030444 (THUMB)
+Raw Assembly:
+0x30444: 8F2D      cmp	r5, #0x8f
+0x30446: 01EB0000  add.w	r0, r1, r0
+0x3044A: 54E1      b	#0x306f6
+0x3044C: 0190      str	r0, [sp, #4]
+0x3044E: A0D3      blo	#0x30392
+
+Logic Translation:
+- `0x30444`: Compares the loaded ability ID against 0x8f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x30446`: Adds `r0, r1, r0` to calculate the modifier.
+- `0x3044A`: Executes `b #0x306f6`.
+- `0x3044C`: Stores `r0` into memory.
+- `0x3044E`: Calls the engine subroutine at `#0x30392` to commit the math.
+--------------------
+Address: 0x0007CCB4 (THUMB)
+Raw Assembly:
+0x7CCB4: 8F2A      cmp	r2, #0x8f
+0x7CCB6: 00EB0040  add.w	r0, r0, r0, lsl #16
+0x7CCBA: A0E1      b	#0x7cffe
+0x7CCBC: 462F      cmp	r7, #0x46
+0x7CCBE: A0E3      b	#0x7d402
+
+Logic Translation:
+- `0x7CCB4`: Compares the loaded ability ID against 0x8f. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x7CCB6`: Adds `r0, r0, r0, lsl #16` to calculate the modifier.
+- `0x7CCBA`: Executes `b #0x7cffe`.
+- `0x7CCBC`: Compares the loaded ability ID against 0x46. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x7CCBE`: Executes `b #0x7d402`.
+--------------------

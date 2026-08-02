@@ -1,0 +1,45 @@
+Ability: Prankster (ID: 158)
+==================================================
+
+Effect:
+Raises non-damaging moves' priority by one stage.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+- **Priority Tier Check/Override:** The code reads the priority integer from the move struct. It may compare it (`cmp rX, #0`) to see if it's a priority move, or use an `add` instruction to artificially increase the priority integer before execution order is sorted.
+
+Execution Hooks:
+--------------------
+Address: 0x000661FC (ARM)
+Raw Assembly:
+0x661FC: 9E0050E3  cmp	r0, #0x9e
+0x66200: 0200000A  beq	#0x66210
+0x66204: B00050E3  cmp	r0, #0xb0
+0x66208: D000001A  bne	#0x66550
+
+Logic Translation:
+- `0x661FC`: Compares the loaded ability ID against 0x9e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x66200`: If it matches, branches to `0x0x66210` to apply the effect.
+- `0x66204`: Compares the loaded ability ID against 0xb0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x66208`: If it doesn't match, branches to `0x0x66550`.
+--------------------
+Address: 0x000AFBF4 (ARM)
+Raw Assembly:
+0xAFBF4: 9E0050E3  cmp	r0, #0x9e
+0xAFBF8: 00F020E3  nop	
+0xAFBFC: 0400001A  bne	#0xafc14
+0xAFC00: 0020A0E3  mov	r2, #0
+
+Logic Translation:
+- `0xAFBF4`: Compares the loaded ability ID against 0x9e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xAFBF8`: Executes `nop `.
+- `0xAFBFC`: If it doesn't match, branches to `0x0xafc14`.
+- `0xAFC00`: Loads literal `#0` into `r2`.
+--------------------
+Address: 0x00035788 (THUMB)
+Raw Assembly:
+0x35788: 9E2A      cmp	r2, #0x9e
+
+Logic Translation:
+- `0x35788`: Compares the loaded ability ID against 0x9e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

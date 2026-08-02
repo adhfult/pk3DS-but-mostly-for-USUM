@@ -13,7 +13,7 @@ namespace pk3DS.WinForms;
 
 public static class WinFormsUtil
 {
-    public enum VisualTheme { Dark, Grey }
+    public enum VisualTheme { Dark, Grey, Light, GalaxyPurple }
     public static VisualTheme CurrentTheme { get; set; } = VisualTheme.Dark;
     public static bool IsCyberSlate => CurrentTheme == VisualTheme.Dark;
     public static bool ShowExtendedLogic { get; set; } = false;
@@ -81,15 +81,113 @@ public static class WinFormsUtil
         if (species == 0)
             return Resources._0;
         
-        // Resilience: Handle cases where config isn't loaded yet
-        if (config != null && species > config.MaxSpeciesID)
+        // Resilience: Allow expanded species up to 1025 or config limit
+        int maxSp = Math.Max(1025, config?.MaxSpeciesID ?? 1025);
+        if (species > maxSp)
             return Resources.unknown;
+
+        // Calculate personal entry index for forms (e.g. Mega Venusaur -> 1026 in expansion, 808 in vanilla)
+        int formIdx = species;
+        if (form > 0 && config?.Personal != null && species < config.Personal.Table.Length)
+        {
+            try
+            {
+                int pIdx = config.Personal.GetFormIndex(species, form);
+                if (pIdx > 0 && pIdx < config.Personal.Table.Length)
+                    formIdx = pIdx;
+            }
+            catch { }
+        }
 
         var file = GetResourceStringSprite(species, form, gender, config?.Generation ?? 7);
 
-        // Redrawing logic
-        // Redrawing logic
-        Bitmap baseImage = (Bitmap)Resources.ResourceManager.GetObject(file);
+        Bitmap baseImage = null;
+
+        // 1. Check extracted_sprites directory for Gen 8/9 expansion species (808 to 1025)
+        string extractedFolder = @"C:\Users\fulto\Downloads\Sprites\extracted_sprites";
+        if (Directory.Exists(extractedFolder))
+        {
+            string spritePath = null;
+            int targetIdx = (species >= 808 && species <= 1025) ? species : ((formIdx >= 808 && formIdx <= 1025) ? formIdx : 0);
+            if (targetIdx >= 808 && targetIdx <= 1025)
+            {
+                string sPadded = Path.Combine(extractedFolder, $"sprite_{targetIdx:D5}.png");
+                string sDirect = Path.Combine(extractedFolder, $"sprite_{targetIdx}.png");
+                if (File.Exists(sPadded)) spritePath = sPadded;
+                else if (File.Exists(sDirect)) spritePath = sDirect;
+            }
+
+            if (spritePath != null)
+            {
+                try
+                {
+                    using (var tempImg = Image.FromFile(spritePath))
+                    {
+                        baseImage = new Bitmap(tempImg);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // 2. Check CustomSprites directory
+        if (baseImage == null)
+        {
+            List<string> customPaths = new List<string>();
+            if (formIdx > species)
+                customPaths.Add(Path.Combine(Application.StartupPath, "CustomSprites", $"_{formIdx}.png"));
+            customPaths.Add(Path.Combine(Application.StartupPath, "CustomSprites", file + ".png"));
+
+            foreach (var customPath in customPaths)
+            {
+                if (File.Exists(customPath))
+                {
+                    try
+                    {
+                        using (var tempImg = Image.FromFile(customPath))
+                        {
+                            baseImage = new Bitmap(tempImg);
+                            break;
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        // 3. Check Assembly Manifest Embedded Resources
+        if (baseImage == null)
+        {
+            try
+            {
+                var asm = typeof(WinFormsUtil).Assembly;
+                List<string> searchNames = new List<string>();
+                if (formIdx > species)
+                    searchNames.Add($"_{formIdx}.png");
+                searchNames.Add($"{file}.png");
+
+                var allRes = asm.GetManifestResourceNames();
+                foreach (var searchName in searchNames)
+                {
+                    string targetRes = allRes.FirstOrDefault(r => r.EndsWith(searchName, StringComparison.OrdinalIgnoreCase));
+                    if (targetRes != null)
+                    {
+                        using var stream = asm.GetManifestResourceStream(targetRes);
+                        if (stream != null)
+                        {
+                            using var tempImg = Image.FromStream(stream);
+                            baseImage = new Bitmap(tempImg);
+                            break;
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        // 4. Redrawing & Totem logic fallback
+        if (baseImage == null)
+            baseImage = (Bitmap)Resources.ResourceManager.GetObject(file);
         if (IsTotemForm(species, form))
         {
             form = GetTotemBaseForm(species, form);
@@ -99,24 +197,21 @@ public static class WinFormsUtil
         }
         if (baseImage == null)
         {
-            // Try to find the resource directly if the logic fails
-            baseImage = Resources.ResourceManager.GetObject(file) as Bitmap;
-
-            if (baseImage == null)
+            Bitmap baseSprite = Resources._800 ?? Resources.unknown;
+            baseImage = new Bitmap(Math.Max(32, baseSprite.Width), Math.Max(32, baseSprite.Height));
+            using (Graphics g = Graphics.FromImage(baseImage))
             {
-                if (config != null && species < config.MaxSpeciesID)
+                g.DrawImage(baseSprite, 0, 0, baseImage.Width, baseImage.Height);
+                if (species > 0)
                 {
-                    baseImage = LayerImage(
-                        Resources.ResourceManager.GetObject("_" + species) as Image,
-                        Resources.unknown,
-                        0, 0, .5);
-                }
-                else
-                {
-                    baseImage = Resources.unknown;
+                    using Font font = new Font("Segoe UI", 7, FontStyle.Bold);
+                    using Brush bgBrush = new SolidBrush(Color.FromArgb(180, 0, 0, 0));
+                    g.FillRectangle(bgBrush, 0, baseImage.Height - 12, baseImage.Width, 12);
+                    g.DrawString($"#{species}", font, Brushes.Cyan, 1, baseImage.Height - 12);
                 }
             }
         }
+
         if (shiny)
         {
             // Add shiny star to top left of image.
@@ -400,12 +495,18 @@ public static class WinFormsUtil
     {
         bool dark = theme == VisualTheme.Dark;
         bool grey = theme == VisualTheme.Grey;
+        bool light = theme == VisualTheme.Light;
+        bool purple = theme == VisualTheme.GalaxyPurple;
 
         if (form.Name != "Main")
         {
-            form.BackColor = dark ? Color.FromArgb(18, 18, 24) : Color.FromArgb(45, 45, 48);
+            if (light) form.BackColor = Color.FromArgb(245, 246, 248);
+            else if (purple) form.BackColor = Color.FromArgb(40, 22, 44);
+            else form.BackColor = dark ? Color.FromArgb(18, 18, 24) : Color.FromArgb(45, 45, 48);
         }
-        form.ForeColor = dark ? Color.FromArgb(230, 230, 240) : Color.FromArgb(241, 241, 241);
+        if (light) form.ForeColor = Color.FromArgb(33, 37, 41);
+        else if (purple) form.ForeColor = Color.FromArgb(245, 235, 250);
+        else form.ForeColor = dark ? Color.FromArgb(230, 230, 240) : Color.FromArgb(241, 241, 241);
         form.Font = new Font("Segoe UI Semibold", 9F, FontStyle.Regular, GraphicsUnit.Point);
         
         foreach (Control c in form.Controls)
@@ -414,8 +515,16 @@ public static class WinFormsUtil
         // Handle MenuStrips
         foreach (MenuStrip ms in form.Controls.OfType<MenuStrip>())
         {
-            ms.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
-            ms.ForeColor = Color.WhiteSmoke;
+            if (light) {
+                ms.BackColor = Color.FromArgb(235, 238, 242);
+                ms.ForeColor = Color.FromArgb(33, 37, 41);
+            } else if (purple) {
+                ms.BackColor = Color.FromArgb(32, 16, 36);
+                ms.ForeColor = Color.FromArgb(245, 235, 250);
+            } else {
+                ms.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
+                ms.ForeColor = Color.WhiteSmoke;
+            }
             foreach (ToolStripMenuItem item in ms.Items)
                 ApplyThemeToMenuItem(item, theme);
         }
@@ -433,16 +542,21 @@ public static class WinFormsUtil
 
         bool dark = theme == VisualTheme.Dark;
         bool grey = theme == VisualTheme.Grey;
+        bool light = theme == VisualTheme.Light;
+        bool purple = theme == VisualTheme.GalaxyPurple;
 
         if ((c is Panel || c is GroupBox || c is TabPage) && c.Name != "PNL_Sidebar")
         {
-            c.BackColor = dark ? Color.FromArgb(20, 20, 30) : Color.FromArgb(55, 55, 60);
-            c.ForeColor = Color.WhiteSmoke;
+            if (light) { c.BackColor = Color.FromArgb(255, 255, 255); c.ForeColor = Color.FromArgb(33, 37, 41); }
+            else if (purple) { c.BackColor = Color.FromArgb(52, 28, 58); c.ForeColor = Color.FromArgb(245, 235, 250); }
+            else { c.BackColor = dark ? Color.FromArgb(20, 20, 30) : Color.FromArgb(55, 55, 60); c.ForeColor = Color.WhiteSmoke; }
             if (c is TabPage tp) tp.UseVisualStyleBackColor = false;
         }
         else if (c is Label lbl)
         {
-            lbl.ForeColor = dark ? Color.FromArgb(220, 220, 220) : Color.FromArgb(235, 235, 235);
+            if (light) { lbl.ForeColor = Color.FromArgb(33, 37, 41); }
+            else if (purple) { lbl.ForeColor = Color.FromArgb(245, 235, 250); }
+            else { lbl.ForeColor = dark ? Color.FromArgb(220, 220, 220) : Color.FromArgb(235, 235, 235); }
         }
         else if (c is PictureBox pb)
         {
@@ -455,44 +569,104 @@ public static class WinFormsUtil
         else if (c is Button btn)
         {
             btn.FlatStyle = FlatStyle.Flat;
-            btn.BackColor = dark ? Color.FromArgb(32, 34, 46) : Color.FromArgb(70, 70, 75);
-            btn.ForeColor = Color.WhiteSmoke;
-            btn.FlatAppearance.BorderColor = dark ? Color.FromArgb(60, 65, 85) : Color.FromArgb(90, 90, 95);
+            if (light) {
+                btn.BackColor = Color.FromArgb(235, 238, 242);
+                btn.ForeColor = Color.FromArgb(33, 37, 41);
+                btn.FlatAppearance.BorderColor = Color.FromArgb(206, 212, 218);
+                btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(248, 249, 250);
+            } else if (purple) {
+                btn.BackColor = Color.FromArgb(68, 36, 76);
+                btn.ForeColor = Color.FromArgb(245, 235, 250);
+                btn.FlatAppearance.BorderColor = Color.FromArgb(102, 53, 114);
+                btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(88, 48, 98);
+            } else {
+                btn.BackColor = dark ? Color.FromArgb(32, 34, 46) : Color.FromArgb(70, 70, 75);
+                btn.ForeColor = Color.WhiteSmoke;
+                btn.FlatAppearance.BorderColor = dark ? Color.FromArgb(60, 65, 85) : Color.FromArgb(90, 90, 95);
+                btn.FlatAppearance.MouseOverBackColor = dark ? Color.FromArgb(50, 55, 75) : Color.FromArgb(85, 85, 90);
+            }
             btn.FlatAppearance.BorderSize = 1;
-            btn.FlatAppearance.MouseOverBackColor = dark ? Color.FromArgb(50, 55, 75) : Color.FromArgb(85, 85, 90);
             btn.Cursor = Cursors.Hand;
         }
         else if (c is TextBoxBase tb)
         {
-            tb.BackColor = dark ? Color.FromArgb(12, 12, 18) : Color.FromArgb(40, 40, 45);
-            tb.ForeColor = Color.FromArgb(220, 220, 230);
+            if (light) {
+                tb.BackColor = Color.FromArgb(255, 255, 255);
+                tb.ForeColor = Color.FromArgb(33, 37, 41);
+            } else if (purple) {
+                tb.BackColor = Color.FromArgb(32, 16, 36);
+                tb.ForeColor = Color.FromArgb(245, 235, 250);
+            } else {
+                tb.BackColor = dark ? Color.FromArgb(12, 12, 18) : Color.FromArgb(40, 40, 45);
+                tb.ForeColor = Color.FromArgb(220, 220, 230);
+            }
             tb.BorderStyle = BorderStyle.FixedSingle;
         }
         else if (c is ListControl lc)
         {
-            lc.BackColor = dark ? Color.FromArgb(12, 12, 18) : Color.FromArgb(40, 40, 45);
-            lc.ForeColor = Color.FromArgb(220, 220, 230);
+            if (light) {
+                lc.BackColor = SystemColors.Window;
+                lc.ForeColor = SystemColors.WindowText;
+            } else if (purple) {
+                lc.BackColor = Color.FromArgb(82, 42, 74);
+                lc.ForeColor = Color.WhiteSmoke;
+            } else {
+                lc.BackColor = dark ? Color.FromArgb(12, 12, 18) : Color.FromArgb(40, 40, 45);
+                lc.ForeColor = Color.FromArgb(220, 220, 230);
+            }
         }
         else if (c is ComboBox cb)
         {
-            cb.BackColor = dark ? Color.FromArgb(25, 25, 35) : Color.FromArgb(50, 50, 55);
-            cb.ForeColor = Color.WhiteSmoke;
+            if (light) {
+                cb.BackColor = SystemColors.Window;
+                cb.ForeColor = SystemColors.WindowText;
+            } else if (purple) {
+                cb.BackColor = Color.FromArgb(92, 47, 82);
+                cb.ForeColor = Color.WhiteSmoke;
+            } else {
+                cb.BackColor = dark ? Color.FromArgb(25, 25, 35) : Color.FromArgb(50, 50, 55);
+                cb.ForeColor = Color.WhiteSmoke;
+            }
             cb.FlatStyle = FlatStyle.Flat;
         }
         else if (c is ListBox lb)
         {
-            lb.BackColor = dark ? Color.FromArgb(15, 15, 25) : Color.FromArgb(45, 45, 50);
-            lb.ForeColor = Color.WhiteSmoke;
+            if (light) {
+                lb.BackColor = SystemColors.Window;
+                lb.ForeColor = SystemColors.WindowText;
+            } else if (purple) {
+                lb.BackColor = Color.FromArgb(82, 42, 74);
+                lb.ForeColor = Color.WhiteSmoke;
+            } else {
+                lb.BackColor = dark ? Color.FromArgb(15, 15, 25) : Color.FromArgb(45, 45, 50);
+                lb.ForeColor = Color.WhiteSmoke;
+            }
             lb.BorderStyle = BorderStyle.FixedSingle;
         }
         else if (c is DataGridView dgv)
         {
-            dgv.BackgroundColor = dark ? Color.FromArgb(18, 18, 24) : Color.FromArgb(45, 45, 50);
-            dgv.DefaultCellStyle.BackColor = dark ? Color.FromArgb(24, 26, 36) : Color.FromArgb(50, 50, 55);
-            dgv.DefaultCellStyle.ForeColor = Color.WhiteSmoke;
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = dark ? Color.FromArgb(40, 44, 60) : Color.FromArgb(65, 65, 70);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.WhiteSmoke;
-            dgv.GridColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(70, 70, 75);
+            if (light) {
+                dgv.BackgroundColor = SystemColors.ControlDark;
+                dgv.DefaultCellStyle.BackColor = SystemColors.Window;
+                dgv.DefaultCellStyle.ForeColor = SystemColors.WindowText;
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = SystemColors.Control;
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
+                dgv.GridColor = SystemColors.ControlDark;
+            } else if (purple) {
+                dgv.BackgroundColor = Color.FromArgb(122, 63, 110);
+                dgv.DefaultCellStyle.BackColor = Color.FromArgb(102, 53, 92);
+                dgv.DefaultCellStyle.ForeColor = Color.WhiteSmoke;
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(142, 73, 128);
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.WhiteSmoke;
+                dgv.GridColor = Color.FromArgb(162, 83, 146);
+            } else {
+                dgv.BackgroundColor = dark ? Color.FromArgb(18, 18, 24) : Color.FromArgb(45, 45, 50);
+                dgv.DefaultCellStyle.BackColor = dark ? Color.FromArgb(24, 26, 36) : Color.FromArgb(50, 50, 55);
+                dgv.DefaultCellStyle.ForeColor = Color.WhiteSmoke;
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = dark ? Color.FromArgb(40, 44, 60) : Color.FromArgb(65, 65, 70);
+                dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.WhiteSmoke;
+                dgv.GridColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(70, 70, 75);
+            }
             dgv.EnableHeadersVisualStyles = false;
         }
         
@@ -505,23 +679,45 @@ public static class WinFormsUtil
         // Glassmorphism effect for panels
         if (c is Panel p && p.Name.Contains("Glass"))
         {
-            p.BackColor = dark ? Color.FromArgb(180, 25, 25, 35) : Color.FromArgb(180, 50, 50, 60);
+            if (light) p.BackColor = Color.FromArgb(180, 240, 240, 240);
+            else if (purple) p.BackColor = Color.FromArgb(180, 122, 63, 110);
+            else p.BackColor = dark ? Color.FromArgb(180, 25, 25, 35) : Color.FromArgb(180, 50, 50, 60);
         }
 
         foreach (Control child in c.Controls)
             ApplyCyberSlateTheme(child, theme);
     }
 
-    private static void ApplyThemeToMenuItem(ToolStripMenuItem item, VisualTheme theme)
+    public static void ApplyThemeToMenuItem(ToolStripMenuItem item, VisualTheme theme)
     {
         bool dark = theme == VisualTheme.Dark;
-        item.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
-        item.ForeColor = Color.WhiteSmoke;
+        bool grey = theme == VisualTheme.Grey;
+        bool light = theme == VisualTheme.Light;
+        bool purple = theme == VisualTheme.GalaxyPurple;
+
+        if (light) {
+            item.BackColor = SystemColors.Control;
+            item.ForeColor = SystemColors.ControlText;
+        } else if (purple) {
+            item.BackColor = Color.FromArgb(122, 63, 110);
+            item.ForeColor = Color.WhiteSmoke;
+        } else {
+            item.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
+            item.ForeColor = Color.WhiteSmoke;
+        }
 
         foreach (ToolStripItem sub in item.DropDownItems)
         {
-            sub.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
-            sub.ForeColor = Color.WhiteSmoke;
+            if (light) {
+                sub.BackColor = SystemColors.Control;
+                sub.ForeColor = SystemColors.ControlText;
+            } else if (purple) {
+                sub.BackColor = Color.FromArgb(122, 63, 110);
+                sub.ForeColor = Color.WhiteSmoke;
+            } else {
+                sub.BackColor = dark ? Color.FromArgb(45, 50, 65) : Color.FromArgb(60, 60, 70);
+                sub.ForeColor = Color.WhiteSmoke;
+            }
 
             if (sub is ToolStripMenuItem tsmi)
                 ApplyThemeToMenuItem(tsmi, theme);

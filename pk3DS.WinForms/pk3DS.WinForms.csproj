@@ -20,6 +20,7 @@
     <EmbeddedResource Include="Resources\graidents.txt" />
     <EmbeddedResource Include="Resources\Pokemon_Move_Changes_Gen7_to_Gen9.txt" />
     <EmbeddedResource Include="Resources\exclusivesandsuch.txt" />
+    <EmbeddedResource Include="Resources\_*.png" />
   </ItemGroup>
   
   <ItemGroup>
@@ -52,6 +53,22 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="..\US\**\*.*" Condition="Exists('..\US')">
+      <Link>US\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\UM\**\*.*" Condition="Exists('..\UM')">
+      <Link>UM\%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\4.xdelta" Condition="Exists('..\4.xdelta')">
+      <Link>4.xdelta</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
   
   <ItemGroup>
     <PackageReference Include="Gee.External.Capstone" Version="2.3.0" />

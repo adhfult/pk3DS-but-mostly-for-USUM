@@ -1,0 +1,50 @@
+Ability: Reckless (ID: 120)
+==================================================
+
+Effect:
+Strengthens recoil moves to 1.2× their power.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x00044BCC (ARM)
+Raw Assembly:
+0x44BCC: 780050E3  cmp	r0, #0x78
+0x44BD0: 020000BA  blt	#0x44be0
+0x44BD4: 0400A0E1  mov	r0, r4
+0x44BD8: D6B700EB  bl	#0x72b38
+
+Logic Translation:
+- `0x44BCC`: Compares the loaded ability ID against 0x78. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x44BD0`: Calls the engine subroutine at `#0x44be0` to commit the math.
+- `0x44BD4`: Loads literal `r4` into `r0`.
+- `0x44BD8`: Calls the engine subroutine at `#0x72b38` to commit the math.
+--------------------
+Address: 0x000768E4 (ARM)
+Raw Assembly:
+0x768E4: 780050E3  cmp	r0, #0x78
+0x768E8: 99005013  cmpne	r0, #0x99
+0x768EC: 0200001A  bne	#0x768fc
+0x768F0: 5D02D4E5  ldrb	r0, [r4, #0x25d]
+
+Logic Translation:
+- `0x768E4`: Compares the loaded ability ID against 0x78. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x768E8`: Compares the loaded ability ID against 0x99. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x768EC`: If it doesn't match, branches to `0x0x768fc`.
+- `0x768F0`: Loads memory data into `r0`.
+--------------------
+Address: 0x00077748 (ARM)
+Raw Assembly:
+0x77748: 780050E3  cmp	r0, #0x78
+0x7774C: E10FA003  moveq	r0, #0x384
+0x77750: 1EFF2FE1  bx	lr
+0x77754: 820050E3  cmp	r0, #0x82
+
+Logic Translation:
+- `0x77748`: Compares the loaded ability ID against 0x78. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x7774C`: Loads literal `#0x384` into `r0`.
+- `0x77750`: Executes `bx lr`.
+- `0x77754`: Compares the loaded ability ID against 0x82. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

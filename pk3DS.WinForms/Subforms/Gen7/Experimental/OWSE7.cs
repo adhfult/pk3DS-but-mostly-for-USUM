@@ -31,8 +31,7 @@ namespace pk3DS.WinForms
             locationList = SMWE.GetGoodLocationList(locationList);
 
             InitializeComponent();
-            WinFormsUtil.ApplyTheme(this);
-
+            
             byteViewer = new ByteViewer();
             byteViewer.Location = new System.Drawing.Point(226, 6);
             byteViewer.Size = new System.Drawing.Size(400, 428);
@@ -40,9 +39,7 @@ namespace pk3DS.WinForms
             byteViewer.SetDisplayMode(DisplayMode.Hexdump);
             hexPanel.Controls.Add(byteViewer);
             
-            // Apply theme to ByteViewer specifically
-            byteViewer.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
-            byteViewer.ForeColor = System.Drawing.Color.WhiteSmoke;
+            WinFormsUtil.ApplyTheme(this);
 
             SetupDGV();
             LoadData();
@@ -125,6 +122,7 @@ namespace pk3DS.WinForms
 
             LoadDGV();
             LoadTree();
+            LoadTrainers();
             NUD_7_Count_ValueChanged(NUD_7_Count, null);
             NUD_8_Count_ValueChanged(NUD_8_Count, null);
         }
@@ -141,6 +139,8 @@ namespace pk3DS.WinForms
             public readonly Script[] ZoneScripts;
             public readonly Script[] ZoneInfoScripts;
             public List<int> Items;
+            public OWTrainerFile TrainerData;
+            public int TrainerDataIndex = -1;
 
             public World(LazyGARCFile garc, int worldID)
             {
@@ -165,6 +165,16 @@ namespace pk3DS.WinForms
                     }
                 }
                 Items = items;
+
+                for (int i = 0; i < _envData.Length; i++)
+                {
+                    if (_envData[i].Length > 2 && _envData[i][0] == 0x45 && _envData[i][1] == 0x54) // 'E' 'T'
+                    {
+                        TrainerDataIndex = i;
+                        TrainerData = new OWTrainerFile(_envData[i]);
+                        break; // We only want the first ET file
+                    }
+                }
             }
 
             public void WriteItems(LazyGARCFile garc, int worldID)
@@ -187,12 +197,37 @@ namespace pk3DS.WinForms
                 garc[worldID * 11] = Mini.PackMini(_envData, "ED");
                 garc.Save();
             }
+
+            public void WriteTrainers(LazyGARCFile garc, int worldID)
+            {
+                if (TrainerDataIndex != -1 && TrainerData != null)
+                {
+                    _envData[TrainerDataIndex] = TrainerData.Write();
+                    garc[worldID * 11] = Mini.PackMini(_envData, "ED");
+                    garc.Save();
+                }
+            }
         }
 
         private void SetupDGV()
         {
             foreach (string t in itemlist)
                 dgvItem.Items.Add(t);
+
+            dgvTrainers.Columns.Clear();
+            dgvTrainers.Columns.Add("Index", "#");
+            dgvTrainers.Columns.Add("Type", "Type");
+            dgvTrainers.Columns.Add("X", "X");
+            dgvTrainers.Columns.Add("Y", "Y");
+            dgvTrainers.Columns.Add("Z", "Z");
+            dgvTrainers.Columns.Add("Model", "Model ID");
+            dgvTrainers.Columns.Add("BattleID", "Battle Script ID");
+            dgvTrainers.Columns.Add("EventID", "Event ID");
+            dgvTrainers.Columns.Add("Name", "Trainer Name");
+            
+            dgvTrainers.Columns[0].ReadOnly = true;
+            dgvTrainers.Columns[1].ReadOnly = true;
+            dgvTrainers.Columns[8].ReadOnly = true;
         }
 
         private void LoadDGV()
@@ -411,6 +446,146 @@ namespace pk3DS.WinForms
                 Map.Items[i] = Array.IndexOf(itemlist, dgv.Rows[i].Cells[1].Value);
             }
             Map.WriteItems(EncounterData, entry);
+            if (Map.TrainerDataIndex != -1)
+                Map.WriteTrainers(EncounterData, entry);
+            SetEntry();
+        }
+
+        private void LoadTrainers()
+        {
+            dgvTrainers.Rows.Clear();
+            CB_UnusedTrainer.Items.Clear();
+
+            if (Map == null || Map.TrainerDataIndex == -1 || Map.TrainerData == null)
+            {
+                tab_Trainers.Enabled = false;
+                return;
+            }
+
+            tab_Trainers.Enabled = true;
+            int areaCount = Map.TrainerData.AreaCount;
+            NUD_Area.Maximum = Math.Max(0, areaCount - 1);
+            NUD_Area.Minimum = 0;
+            NUD_Area.Value = 0;
+
+            PopulateTrainerArea(0);
+        }
+
+        private void PopulateTrainerArea(int area)
+        {
+            dgvTrainers.Rows.Clear();
+            CB_UnusedTrainer.Items.Clear();
+
+            if (Map.TrainerData == null || area >= Map.TrainerData.Areas.Count)
+                return;
+
+            var entries = Map.TrainerData.Areas[area];
+            if (entries.Count == 0)
+            {
+                MessageBox.Show("This area has no trainers!");
+                return;
+            }
+
+            for (int i = 0; i < entries.Count; i++)
+            {
+                var tr = entries[i];
+                string name = "";
+                if (tr.BattleScriptID >= 1000)
+                {
+                    int tId = (int)(tr.BattleScriptID - 1000);
+                    var trNames = Main.Config.GetText(TextName.TrainerNames);
+                    if (tId >= 0 && tId < trNames.Length)
+                        name = trNames[tId];
+                }
+
+                dgvTrainers.Rows.Add(
+                    i.ToString(),
+                    tr.ObjectType.ToString("X2"),
+                    tr.X.ToString(),
+                    tr.Y.ToString(),
+                    tr.Z.ToString(),
+                    tr.ModelID.ToString(),
+                    tr.BattleScriptID.ToString(),
+                    tr.EventID.ToString(),
+                    name
+                );
+
+                if (tr.ObjectType == 0x07)
+                {
+                    CB_UnusedTrainer.Items.Add($"[{i}] Model: {tr.ModelID}, Event: {tr.EventID}, Battle: {tr.BattleScriptID}");
+                }
+            }
+
+            if (CB_UnusedTrainer.Items.Count > 0)
+                CB_UnusedTrainer.SelectedIndex = 0;
+        }
+
+        private void NUD_Area_ValueChanged(object sender, EventArgs e)
+        {
+            PopulateTrainerArea((int)NUD_Area.Value);
+        }
+
+        private void B_ConvertTrainer_Click(object sender, EventArgs e)
+        {
+            if (dgvTrainers.CurrentRow == null) return;
+            if (CB_UnusedTrainer.SelectedIndex < 0) return;
+
+            int npcIndex = dgvTrainers.CurrentRow.Index;
+            string selectedTrainerStr = CB_UnusedTrainer.SelectedItem.ToString();
+            int bracketClose = selectedTrainerStr.IndexOf(']');
+            if (bracketClose < 0) return;
+            if (!int.TryParse(selectedTrainerStr.Substring(1, bracketClose - 1), out int trIndex)) return;
+
+            if (npcIndex == trIndex)
+            {
+                MessageBox.Show("Cannot swap an entry with itself.");
+                return;
+            }
+
+            int area = (int)NUD_Area.Value;
+            var entries = Map.TrainerData.Areas[area];
+            var npc = entries[npcIndex];
+            var tr = entries[trIndex];
+
+            uint tempEvent = npc.EventID;
+            npc.EventID = tr.EventID;
+            tr.EventID = tempEvent;
+
+            uint tempBattle = npc.BattleScriptID;
+            npc.BattleScriptID = tr.BattleScriptID;
+            tr.BattleScriptID = tempBattle;
+
+            uint tempObj = npc.ObjectType;
+            npc.ObjectType = tr.ObjectType;
+            tr.ObjectType = tempObj;
+
+            PopulateTrainerArea(area);
+            MessageBox.Show("NPC successfully converted to a Trainer using the chosen unused trainer data. Model ID was preserved.");
+        }
+
+        private void B_SaveTrainers_Click(object sender, EventArgs e)
+        {
+            int area = (int)NUD_Area.Value;
+            if (Map.TrainerData != null && area < Map.TrainerData.Areas.Count)
+            {
+                var entries = Map.TrainerData.Areas[area];
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    var row = dgvTrainers.Rows[i];
+                    var tr = entries[i];
+
+                    if (float.TryParse(row.Cells[2].Value?.ToString(), out float x)) tr.X = x;
+                    if (float.TryParse(row.Cells[3].Value?.ToString(), out float y)) tr.Y = y;
+                    if (float.TryParse(row.Cells[4].Value?.ToString(), out float z)) tr.Z = z;
+                    
+                    if (uint.TryParse(row.Cells[5].Value?.ToString(), out uint model)) tr.ModelID = model;
+                    if (uint.TryParse(row.Cells[6].Value?.ToString(), out uint battle)) tr.BattleScriptID = battle;
+                    if (uint.TryParse(row.Cells[7].Value?.ToString(), out uint ev)) tr.EventID = ev;
+                }
+            }
+
+            Map.WriteTrainers(EncounterData, entry);
+            MessageBox.Show("Trainer Data Saved.");
         }
 
     }

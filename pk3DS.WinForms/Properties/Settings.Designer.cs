@@ -109,6 +109,30 @@ namespace pk3DS.WinForms.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CustomMascotPath {
+            get {
+                return ((string)(this["CustomMascotPath"]));
+            }
+            set {
+                this["CustomMascotPath"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string CustomMascotNickname {
+            get {
+                return ((string)(this["CustomMascotNickname"]));
+            }
+            set {
+                this["CustomMascotNickname"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool ShowFolderWarning {
             get {
@@ -116,6 +140,18 @@ namespace pk3DS.WinForms.Properties {
             }
             set {
                 this["ShowFolderWarning"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool ShowOWSEWarning {
+            get {
+                return ((bool)(this["ShowOWSEWarning"]));
+            }
+            set {
+                this["ShowOWSEWarning"] = value;
             }
         }
     }

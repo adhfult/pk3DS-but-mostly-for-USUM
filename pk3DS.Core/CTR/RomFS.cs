@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
@@ -369,7 +370,7 @@ public class RomFS
                 else { PB_Show.PerformStep(); }
             }
             long hashBaseOfs = (long)Align((ulong)OutFileStream.Position, ivfc.Levels[2].BlockSize);
-            long hOfs = (long)Align(MasterHashLen, ivfc.Levels[0].BlockSize);
+            long hOfs = (long)Align(MasterHashLen + 0x60, ivfc.Levels[0].BlockSize);
             long cOfs = hashBaseOfs + (long)ivfc.Levels[1].HashOffset;
             for (int i = ivfc.Levels.Length - 1; i >= 0; i--)
             {
@@ -582,6 +583,21 @@ public class RomFS
         return count;
     }
 
+    internal static bool ShouldIncludeFile(FileInfo file)
+    {
+        if (file.Name.StartsWith(".")) return false;
+        if (file.Name.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)) return false;
+        if (file.Name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)) return false;
+        return true;
+    }
+
+    internal static bool ShouldIncludeDir(DirectoryInfo dir)
+    {
+        if (dir.Name.StartsWith(".")) return false;
+        if (dir.Name.Equals("scratch", StringComparison.OrdinalIgnoreCase)) return false;
+        return true;
+    }
+
     internal static void CalcDirSize(Romfs_MetaData MetaData, DirectoryInfo dir)
     {
         if (MetaData.M_DirTableLen == 0)
@@ -589,11 +605,11 @@ public class RomFS
         else
             MetaData.M_DirTableLen += 0x18 + (uint)Align((ulong)dir.Name.Length * 2, 4);
 
-        FileInfo[] files = dir.GetFiles();
+        FileInfo[] files = dir.GetFiles().Where(ShouldIncludeFile).ToArray();
         foreach (FileInfo t in files)
             MetaData.M_FileTableLen += 0x20 + (uint)Align((ulong)t.Name.Length * 2, 4);
 
-        DirectoryInfo[] SubDirectories = dir.GetDirectories();
+        DirectoryInfo[] SubDirectories = dir.GetDirectories().Where(ShouldIncludeDir).ToArray();
         foreach (DirectoryInfo t in SubDirectories)
             CalcDirSize(MetaData, t);
 
@@ -700,7 +716,7 @@ public class RomFS
 
     internal static void AddDir(Romfs_MetaData MetaData, DirectoryInfo Dir, uint parent, uint sibling, bool DoSubs)
     {
-        DirectoryInfo[] SubDirectories = Dir.GetDirectories();
+        DirectoryInfo[] SubDirectories = Dir.GetDirectories().Where(ShouldIncludeDir).ToArray();
         if (!DoSubs)
         {
             uint CurrentDir = MetaData.DirTableLen;
@@ -975,8 +991,8 @@ public class RomFS
 
         internal void AddDirectory(DirectoryInfo dir)
         {
-            NameEntryTable.AddRange(dir.GetFiles());
-            foreach (DirectoryInfo subdir in dir.GetDirectories())
+            NameEntryTable.AddRange(dir.GetFiles().Where(ShouldIncludeFile));
+            foreach (DirectoryInfo subdir in dir.GetDirectories().Where(ShouldIncludeDir))
             {
                 AddDirectory(subdir);
             }

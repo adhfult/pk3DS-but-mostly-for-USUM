@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 
 using pk3DS.Core.Structures.PersonalInfo;
@@ -35,6 +35,8 @@ public class SpeciesRandomizer
     public bool G5 = true;
     public bool G6 = true;
     public bool G7 = false;
+    public bool G8 = true;
+    public bool G9 = true;
     public bool L = false;
     public bool E = false;
     public bool Shedinja = false;
@@ -139,6 +141,8 @@ public class SpeciesRandomizer
         if (G5) AddGen5Species(list);
         if (G6) AddGen6Species(list);
         if (G7) AddGen7Species(list);
+        if (G8) AddGen8Species(list);
+        if (G9) AddGen9Species(list);
 
         return list.Count == 0 ? RandomSpeciesList : [.. list];
     }
@@ -216,6 +220,18 @@ public class SpeciesRandomizer
             if (L) list.AddRange(Enumerable.Range(803, 4)); // Poipole, Naganadel, Stakataka, Blacephalon
             if (E) list.Add(807); // Zeraora
         }
+    }
+
+    private void AddGen8Species(List<int> list)
+    {
+        if (MaxSpeciesID >= 905)
+            list.AddRange(Enumerable.Range(808, 905 - 808 + 1));
+    }
+
+    private void AddGen9Species(List<int> list)
+    {
+        if (MaxSpeciesID >= 1025)
+            list.AddRange(Enumerable.Range(906, 1025 - 906 + 1));
     }
 
     public int[] RandomSpeciesList => Enumerable.Range(1, MaxSpeciesID).ToArray();

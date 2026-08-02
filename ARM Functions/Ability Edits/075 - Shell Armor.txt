@@ -1,0 +1,54 @@
+Ability: Shell Armor (ID: 75)
+==================================================
+
+Effect:
+Protects against critical hits.
+
+Dynamic ARM Mechanic:
+- **Immunity Bypass:** The code sets a global immunity flag in memory (`str rX, [rY]`) OR it executes a branch (`b` or `beq`) that literally jumps completely over the damage/status calculation subroutine, thereby preventing the effect from occurring.
+
+Execution Hooks:
+--------------------
+Address: 0x000E4420 (ARM)
+Raw Assembly:
+0xE4420: 4B0050E3  cmp	r0, #0x4b
+0xE4424: 0400003A  blo	#0xe443c
+0xE4428: 010000EA  b	#0xe4434
+0xE442C: 500050E3  cmp	r0, #0x50
+
+Logic Translation:
+- `0xE4420`: Compares the loaded ability ID against 0x4b. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xE4424`: Calls the engine subroutine at `#0xe443c` to commit the math.
+- `0xE4428`: Executes `b #0xe4434`.
+- `0xE442C`: Compares the loaded ability ID against 0x50. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000219B8 (THUMB)
+Raw Assembly:
+0x219B8: 4B2E      cmp	r6, #0x4b
+0x219BA: A0E3      b	#0x220fe
+0x219BC: 7E10      asrs	r6, r7, #1
+0x219BE: A0E3      b	#0x22102
+0x219C0: 909B      ldr	r3, [sp, #0x240]
+
+Logic Translation:
+- `0x219B8`: Compares the loaded ability ID against 0x4b. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x219BA`: Executes `b #0x220fe`.
+- `0x219BC`: Executes `asrs r6, r7, #1`.
+- `0x219BE`: Executes `b #0x22102`.
+- `0x219C0`: Loads memory data into `r3`.
+--------------------
+Address: 0x00026394 (THUMB)
+Raw Assembly:
+0x26394: 4B2F      cmp	r7, #0x4b
+0x26396: 01EB00F0  add.w	r0, r1, r0, lsl #28
+0x2639A: 20E3      b	#0x269de
+0x2639C: 00F020E3  blx	#0x4269e0
+0x263A0: BD87      strh	r5, [r7, #0x3c]
+
+Logic Translation:
+- `0x26394`: Compares the loaded ability ID against 0x4b. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x26396`: Adds `r0, r1, r0, lsl #28` to calculate the modifier.
+- `0x2639A`: Executes `b #0x269de`.
+- `0x2639C`: Calls the engine subroutine at `#0x4269e0` to commit the math.
+- `0x263A0`: Stores `r5` into memory.
+--------------------

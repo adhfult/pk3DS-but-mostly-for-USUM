@@ -1,0 +1,48 @@
+Ability: Beast Boost (ID: 224)
+==================================================
+
+Effect:
+Raises this Pokémon's highest stat by one stage when it faints another Pokémon.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x0001E394 (THUMB)
+Raw Assembly:
+0x1E394: E02B      cmp	r3, #0xe0
+0x1E396: 00EB0000  add.w	r0, r0, r0
+0x1E39A: 50E3      b	#0x1ea3e
+0x1E39C: 1B00      movs	r3, r3
+0x1E39E: 000A      lsrs	r0, r0, #8
+
+Logic Translation:
+- `0x1E394`: Compares the loaded ability ID against 0xe0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1E396`: Adds `r0, r0, r0` to calculate the modifier.
+- `0x1E39A`: Executes `b #0x1ea3e`.
+- `0x1E39C`: Loads literal `r3` into `r3`.
+- `0x1E39E`: Logical shift right by `8` (division by 2^N).
+--------------------
+Address: 0x00034718 (THUMB)
+Raw Assembly:
+0x34718: E02A      cmp	r2, #0xe0
+0x3471A: 7EEE0F00  cdp	p0, #7, c0, c14, c15, #0
+0x3471E: 00EA461A  and.w	sl, r0, r6, lsl #5
+0x34722: 9FED1200  ldc	p0, c0, [pc, #0x48]
+0x34726: 50E3      b	#0x34dca
+
+Logic Translation:
+- `0x34718`: Compares the loaded ability ID against 0xe0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3471A`: Executes `cdp p0, #7, c0, c14, c15, #0`.
+- `0x3471E`: Executes `and.w sl, r0, r6, lsl #5`.
+- `0x34722`: Executes `ldc p0, c0, [pc, #0x48]`.
+- `0x34726`: Executes `b #0x34dca`.
+--------------------
+Address: 0x00034770 (THUMB)
+Raw Assembly:
+0x34770: E02A      cmp	r2, #0xe0
+
+Logic Translation:
+- `0x34770`: Compares the loaded ability ID against 0xe0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

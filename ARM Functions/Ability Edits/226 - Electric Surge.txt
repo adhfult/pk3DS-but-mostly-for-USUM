@@ -1,0 +1,46 @@
+Ability: Electric Surge (ID: 226)
+==================================================
+
+Effect:
+When this Pokémon enters battle, it changes the terrain to Electric Terrain.
+
+Dynamic ARM Mechanic:
+- **Weather Check:** The code reads the global battle state struct and compares the active Weather ID byte (`cmp rX, #WeatherID`). If the weather doesn't match the required state, it uses a `bne` (branch if not equal) to skip the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x0008497C (ARM)
+Raw Assembly:
+0x8497C: E20054E3  cmp	r4, #0xe2
+0x84980: DEFFFF3A  blo	#0x84900
+0x84984: 10D08DE2  add	sp, sp, #0x10
+0x84988: 0000A0E3  mov	r0, #0
+
+Logic Translation:
+- `0x8497C`: Compares the loaded ability ID against 0xe2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x84980`: Calls the engine subroutine at `#0x84900` to commit the math.
+- `0x84984`: Adds `sp, sp, #0x10` to calculate the modifier.
+- `0x84988`: Loads literal `#0` into `r0`.
+--------------------
+Address: 0x000B56E8 (THUMB)
+Raw Assembly:
+0xB56E8: E22B      cmp	r3, #0xe2
+
+Logic Translation:
+- `0xB56E8`: Compares the loaded ability ID against 0xe2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000C72BC (THUMB)
+Raw Assembly:
+0xC72BC: E22F      cmp	r7, #0xe2
+0xC72BE: A0E3      b	#0xc7a02
+0xC72C0: 0210      asrs	r2, r0, #0x20
+0xC72C2: A0E3      b	#0xc7a06
+0xC72C4: 0400      movs	r4, r0
+
+Logic Translation:
+- `0xC72BC`: Compares the loaded ability ID against 0xe2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xC72BE`: Executes `b #0xc7a02`.
+- `0xC72C0`: Executes `asrs r2, r0, #0x20`.
+- `0xC72C2`: Executes `b #0xc7a06`.
+- `0xC72C4`: Loads literal `r0` into `r4`.
+--------------------

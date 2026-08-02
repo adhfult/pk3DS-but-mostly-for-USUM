@@ -1,0 +1,50 @@
+Ability: Teravolt (ID: 164)
+==================================================
+
+Effect:
+Bypasses targets' abilities if they could hinder or prevent moves.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x0001E8DC (ARM)
+Raw Assembly:
+0x1E8DC: A40050E3  cmp	r0, #0xa4
+0x1E8E0: 5500000A  beq	#0x1ea3c
+0x1E8E4: 010C40E2  sub	r0, r0, #0x100
+0x1E8E8: 1D0050E2  subs	r0, r0, #0x1d
+
+Logic Translation:
+- `0x1E8DC`: Compares the loaded ability ID against 0xa4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1E8E0`: If it matches, branches to `0x0x1ea3c` to apply the effect.
+- `0x1E8E4`: Executes `sub r0, r0, #0x100`.
+- `0x1E8E8`: Executes `subs r0, r0, #0x1d`.
+--------------------
+Address: 0x000DCCCC (ARM)
+Raw Assembly:
+0xDCCCC: A40050E3  cmp	r0, #0xa4
+0xDCCD0: 68409F15  ldrne	r4, [pc, #0x68]
+0xDCCD4: 68409F05  ldreq	r4, [pc, #0x68]
+0xDCCD8: 0620A0E1  mov	r2, r6
+
+Logic Translation:
+- `0xDCCCC`: Compares the loaded ability ID against 0xa4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xDCCD0`: Loads memory data into `r4`.
+- `0xDCCD4`: Loads memory data into `r4`.
+- `0xDCCD8`: Loads literal `r6` into `r2`.
+--------------------
+Address: 0x00050AC8 (THUMB)
+Raw Assembly:
+0x50AC8: A42A      cmp	r2, #0xa4
+0x50ACA: 62EE242A  vmul.f32	s5, s4, s9
+0x50ACE: 22EEA01A  vmul.f32	s2, s5, s1
+0x50AD2: 00EE002A  vmla.f32	s4, s0, s0
+
+Logic Translation:
+- `0x50AC8`: Compares the loaded ability ID against 0xa4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x50ACA`: Executes `vmul.f32 s5, s4, s9`.
+- `0x50ACE`: Executes `vmul.f32 s2, s5, s1`.
+- `0x50AD2`: Executes `vmla.f32 s4, s0, s0`.
+--------------------

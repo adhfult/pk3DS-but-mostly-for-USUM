@@ -1,0 +1,50 @@
+Ability: Static (ID: 9)
+==================================================
+
+Effect:
+Has a 30% chance of paralyzing attacking Pokémon on contact.
+
+Dynamic ARM Mechanic:
+- **Contact Flag Check:** Before applying the effect, the code loads the move data struct of the incoming attack and performs a bitwise check (`tst` or `and`) against the 'Makes Contact' bitflag. If the flag is 0, it skips the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x0001D2E4 (ARM)
+Raw Assembly:
+0x1D2E4: 090052E3  cmp	r2, #9
+0x1D2E8: 002BA011  lslne	r2, r0, #0x16
+0x1D2EC: 0910A0E3  mov	r1, #9
+0x1D2F0: A20D5111  cmpne	r1, r2, lsr #27
+
+Logic Translation:
+- `0x1D2E4`: Compares the loaded ability ID against 9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1D2E8`: Executes `lslne r2, r0, #0x16`.
+- `0x1D2EC`: Loads literal `#9` into `r1`.
+- `0x1D2F0`: Compares the loaded ability ID against 27. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x0001F9AC (ARM)
+Raw Assembly:
+0x1F9AC: 090054E3  cmp	r4, #9
+0x1F9B0: 0B40A003  moveq	r4, #0xb
+0x1F9B4: 0270A003  moveq	r7, #2
+0x1F9B8: 0940A013  movne	r4, #9
+
+Logic Translation:
+- `0x1F9AC`: Compares the loaded ability ID against 9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1F9B0`: Loads literal `#0xb` into `r4`.
+- `0x1F9B4`: Loads literal `#2` into `r7`.
+- `0x1F9B8`: Loads literal `#9` into `r4`.
+--------------------
+Address: 0x000215D8 (ARM)
+Raw Assembly:
+0x215D8: 090050E3  cmp	r0, #9
+0x215DC: 2800001A  bne	#0x21684
+0x215E0: 0A00A0E1  mov	r0, sl
+0x215E4: BC9901EB  bl	#0x87cdc
+
+Logic Translation:
+- `0x215D8`: Compares the loaded ability ID against 9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x215DC`: If it doesn't match, branches to `0x0x21684`.
+- `0x215E0`: Loads literal `sl` into `r0`.
+- `0x215E4`: Calls the engine subroutine at `#0x87cdc` to commit the math.
+--------------------

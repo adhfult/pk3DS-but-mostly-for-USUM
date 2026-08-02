@@ -1,0 +1,52 @@
+Ability: Magic Bounce (ID: 156)
+==================================================
+
+Effect:
+Reflects most non-damaging moves back at their user.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x0006AFDC (ARM)
+Raw Assembly:
+0x6AFDC: 9C0050E3  cmp	r0, #0x9c
+0x6AFE0: 1700000A  beq	#0x6b044
+0x6AFE4: 460F50E3  cmp	r0, #0x118
+0x6AFE8: 0F00000A  beq	#0x6b02c
+
+Logic Translation:
+- `0x6AFDC`: Compares the loaded ability ID against 0x9c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x6AFE0`: If it matches, branches to `0x0x6b044` to apply the effect.
+- `0x6AFE4`: Compares the loaded ability ID against 0x118. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x6AFE8`: If it matches, branches to `0x0x6b02c` to apply the effect.
+--------------------
+Address: 0x00077940 (ARM)
+Raw Assembly:
+0x77940: 9C0052E3  cmp	r2, #0x9c
+0x77944: A4019F05  ldreq	r0, [pc, #0x1a4]
+0x77948: 3DFFFF0A  beq	#0x77644
+0x7794C: 9D0052E3  cmp	r2, #0x9d
+
+Logic Translation:
+- `0x77940`: Compares the loaded ability ID against 0x9c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77944`: Loads memory data into `r0`.
+- `0x77948`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x7794C`: Compares the loaded ability ID against 0x9d. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00030BB0 (THUMB)
+Raw Assembly:
+0x30BB0: 9C2A      cmp	r2, #0x9c
+0x30BB2: 01EB0400  add.w	r0, r1, r4
+0x30BB6: 50E1      b	#0x30e5a
+0x30BB8: 0100      movs	r1, r0
+0x30BBA: A013      asrs	r0, r4, #0xe
+
+Logic Translation:
+- `0x30BB0`: Compares the loaded ability ID against 0x9c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x30BB2`: Adds `r0, r1, r4` to calculate the modifier.
+- `0x30BB6`: Executes `b #0x30e5a`.
+- `0x30BB8`: Loads literal `r0` into `r1`.
+- `0x30BBA`: Executes `asrs r0, r4, #0xe`.
+--------------------

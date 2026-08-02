@@ -44,6 +44,13 @@ partial class PersonalEditor7
         this.B_MaxCatchAll = new System.Windows.Forms.Button();
         this.B_ZeroHatchAll = new System.Windows.Forms.Button();
         this.CB_Species = new System.Windows.Forms.ComboBox();
+        this.StatBar_HP = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_ATK = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_DEF = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPA = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPD = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPE = new pk3DS.WinForms.Controls.StatBar();
+        this.L_SpeciesName = new System.Windows.Forms.Label();
         this.L_Species_Precursor = new System.Windows.Forms.Label();
         this.TC_Pokemon = new System.Windows.Forms.TabControl();
         this.TP_General = new System.Windows.Forms.TabPage();
@@ -100,6 +107,10 @@ partial class PersonalEditor7
         this.CB_HeldItem1 = new System.Windows.Forms.ComboBox();
         this.L_HeldItem = new System.Windows.Forms.Label();
         this.CB_Type2 = new System.Windows.Forms.ComboBox();
+        this.PB_Type1 = new System.Windows.Forms.PictureBox();
+        this.PB_Type2 = new System.Windows.Forms.PictureBox();
+        ((System.ComponentModel.ISupportInitialize)(this.PB_Type1)).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)(this.PB_Type2)).BeginInit();
         this.CB_Type1 = new System.Windows.Forms.ComboBox();
         this.L_Type = new System.Windows.Forms.Label();
         this.TB_SPEEVs = new System.Windows.Forms.MaskedTextBox();
@@ -206,6 +217,14 @@ partial class PersonalEditor7
         ((System.ComponentModel.ISupportInitialize)(this.PB_MonSprite)).BeginInit();
         this.TP_Changelog.SuspendLayout();
         this.SuspendLayout();
+
+        this.StatBar_HP = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_ATK = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_DEF = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPA = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPD = new pk3DS.WinForms.Controls.StatBar();
+        this.StatBar_SPE = new pk3DS.WinForms.Controls.StatBar();
+        this.L_SpeciesName = new System.Windows.Forms.Label();
         // 
         // CB_Species
         // 
@@ -235,16 +254,24 @@ partial class PersonalEditor7
         this.TC_Pokemon.Controls.Add(this.TP_MoveTutors);
         this.TC_Pokemon.Controls.Add(this.TP_Randomizer);
         this.TC_Pokemon.Controls.Add(this.TP_Changelog);
+        this.TP_General.Controls.Add(this.StatBar_HP);
+        this.TP_General.Controls.Add(this.StatBar_ATK);
+        this.TP_General.Controls.Add(this.StatBar_DEF);
+        this.TP_General.Controls.Add(this.StatBar_SPA);
+        this.TP_General.Controls.Add(this.StatBar_SPD);
+        this.TP_General.Controls.Add(this.StatBar_SPE);
+        this.TP_General.Controls.Add(this.L_SpeciesName);
+        this.Location = new System.Drawing.Point(12, 40);
         this.TC_Pokemon.Location = new System.Drawing.Point(12, 40);
         this.TC_Pokemon.Name = "TC_Pokemon";
         this.TC_Pokemon.SelectedIndex = 0;
-        this.TC_Pokemon.Size = new System.Drawing.Size(740, 630);
+        this.TC_Pokemon.Size = new System.Drawing.Size(732, 620);
         this.TC_Pokemon.TabIndex = 416;
 
         // RTB_DexEntry
         this.RTB_DexEntry = new System.Windows.Forms.RichTextBox();
-        this.RTB_DexEntry.Location = new System.Drawing.Point(12, 400);
-        this.RTB_DexEntry.Size = new System.Drawing.Size(530, 215);
+        this.RTB_DexEntry.Location = new System.Drawing.Point(450, 40);
+        this.RTB_DexEntry.Size = new System.Drawing.Size(250, 95);
         this.RTB_DexEntry.ReadOnly = true;
         this.RTB_DexEntry.BackColor = System.Drawing.Color.FromArgb(20, 20, 20);
         this.RTB_DexEntry.ForeColor = System.Drawing.Color.White;
@@ -307,6 +334,8 @@ partial class PersonalEditor7
         this.TP_General.Controls.Add(this.CB_HeldItem1);
         this.TP_General.Controls.Add(this.L_HeldItem);
         this.TP_General.Controls.Add(this.CB_Type2);
+        this.TP_General.Controls.Add(this.PB_Type1);
+        this.TP_General.Controls.Add(this.PB_Type2);
         this.TP_General.Controls.Add(this.CB_Type1);
         this.TP_General.Controls.Add(this.L_Type);
         this.TP_General.Controls.Add(this.TB_SPEEVs);
@@ -351,38 +380,73 @@ partial class PersonalEditor7
         this.TP_General.Controls.Add(this.B_Import);
         this.TP_General.Controls.Add(this.B_InsertForm);
         this.TP_General.Controls.Add(this.PB_MonSprite);
+
+        this.TP_General.Controls.Add(this.StatBar_HP);
+        this.TP_General.Controls.Add(this.StatBar_ATK);
+        this.TP_General.Controls.Add(this.StatBar_DEF);
+        this.TP_General.Controls.Add(this.StatBar_SPA);
+        this.TP_General.Controls.Add(this.StatBar_SPD);
+        this.TP_General.Controls.Add(this.StatBar_SPE);
+        this.TP_General.Controls.Add(this.L_SpeciesName);
+
         this.TP_General.Location = new System.Drawing.Point(4, 22);
         this.TP_General.Name = "TP_General";
-        this.TP_General.Size = new System.Drawing.Size(732, 499);
+        this.TP_General.Size = new System.Drawing.Size(732, 590);
         this.TP_General.TabIndex = 0;
         this.TP_General.Text = "General Info";
         this.TP_General.UseVisualStyleBackColor = true;
 
+        // StatBars
+        this.StatBar_HP.Location = new System.Drawing.Point(100, 215);
+        this.StatBar_HP.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_HP.Maximum = 255;
+        this.StatBar_ATK.Location = new System.Drawing.Point(100, 240);
+        this.StatBar_ATK.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_ATK.Maximum = 255;
+        this.StatBar_DEF.Location = new System.Drawing.Point(100, 265);
+        this.StatBar_DEF.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_DEF.Maximum = 255;
+        this.StatBar_SPA.Location = new System.Drawing.Point(100, 290);
+        this.StatBar_SPA.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPA.Maximum = 255;
+        this.StatBar_SPD.Location = new System.Drawing.Point(100, 315);
+        this.StatBar_SPD.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPD.Maximum = 255;
+        this.StatBar_SPE.Location = new System.Drawing.Point(100, 340);
+        this.StatBar_SPE.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPE.Maximum = 255;
+
+        // L_SpeciesName
+        this.L_SpeciesName.AutoSize = true;
+        this.L_SpeciesName.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+        this.L_SpeciesName.Location = new System.Drawing.Point(10, 5);
+        this.L_SpeciesName.Size = new System.Drawing.Size(200, 30);
+        this.L_SpeciesName.Text = "Pokémon Name #000";
         // Stat Diff row
         this.L_StatDiff.AutoSize = true;
-        this.L_StatDiff.Location = new System.Drawing.Point(320, 12);
+        this.L_StatDiff.Location = new System.Drawing.Point(100, 365);
         this.L_StatDiff.Name = "L_StatDiff";
         this.L_StatDiff.Size = new System.Drawing.Size(120, 13);
         this.L_StatDiff.TabIndex = 217;
         this.L_StatDiff.Text = "Vanilla BST Difference:";
 
         // Diff L_Labels (HP, ATK, etc)
-        this.L_DiffHP.Location = new System.Drawing.Point(80, 54);
+        this.L_DiffHP.Location = new System.Drawing.Point(270, 215);
         this.L_DiffHP.Size = new System.Drawing.Size(31, 13);
         this.L_DiffHP.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_DiffATK.Location = new System.Drawing.Point(119, 54);
+        this.L_DiffATK.Location = new System.Drawing.Point(270, 240);
         this.L_DiffATK.Size = new System.Drawing.Size(31, 13);
         this.L_DiffATK.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_DiffDEF.Location = new System.Drawing.Point(157, 54);
+        this.L_DiffDEF.Location = new System.Drawing.Point(270, 265);
         this.L_DiffDEF.Size = new System.Drawing.Size(31, 13);
         this.L_DiffDEF.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_DiffSPA.Location = new System.Drawing.Point(195, 54);
+        this.L_DiffSPA.Location = new System.Drawing.Point(270, 290);
         this.L_DiffSPA.Size = new System.Drawing.Size(31, 13);
         this.L_DiffSPA.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_DiffSPD.Location = new System.Drawing.Point(234, 54);
+        this.L_DiffSPD.Location = new System.Drawing.Point(270, 315);
         this.L_DiffSPD.Size = new System.Drawing.Size(31, 13);
         this.L_DiffSPD.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_DiffSPE.Location = new System.Drawing.Point(273, 54);
+        this.L_DiffSPE.Location = new System.Drawing.Point(270, 340);
         this.L_DiffSPE.Size = new System.Drawing.Size(31, 13);
         this.L_DiffSPE.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 
@@ -394,98 +458,98 @@ partial class PersonalEditor7
         this.TB_RawColor.Visible = false;
 
         this.L_HiddenAbility.AutoSize = true;
-        this.L_HiddenAbility.Location = new System.Drawing.Point(413, 156);
+        this.L_HiddenAbility.Location = new System.Drawing.Point(310, 164);
         this.L_HiddenAbility.Size = new System.Drawing.Size(21, 13);
         this.L_HiddenAbility.Text = "(H)";
-        this.L_HeightM.Location = new System.Drawing.Point(417, 331);
+        this.L_HeightM.Location = new System.Drawing.Point(390, 112);
         this.L_HeightM.Text = "m";
  
-        this.L_WeightKG.Location = new System.Drawing.Point(417, 352);
+        this.L_WeightKG.Location = new System.Drawing.Point(390, 162);
         this.L_WeightKG.Text = "kg";
 
         this.L_Ability2.AutoSize = true;
-        this.L_Ability2.Location = new System.Drawing.Point(414, 134);
+        this.L_Ability2.Location = new System.Drawing.Point(310, 139);
         this.L_Ability2.Size = new System.Drawing.Size(19, 13);
         this.L_Ability2.Text = "(2)";
  
         this.L_Ability1.AutoSize = true;
-        this.L_Ability1.Location = new System.Drawing.Point(414, 112);
+        this.L_Ability1.Location = new System.Drawing.Point(310, 114);
         this.L_Ability1.Size = new System.Drawing.Size(19, 13);
         this.L_Ability1.Text = "(1)";
 
         this.TB_Weight.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_Weight.Location = new System.Drawing.Point(384, 349);
+        this.TB_Weight.Location = new System.Drawing.Point(350, 160);
         this.TB_Weight.Size = new System.Drawing.Size(32, 20);
         this.TB_Weight.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_Height.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_Height.Location = new System.Drawing.Point(384, 328);
+        this.TB_Height.Location = new System.Drawing.Point(350, 110);
         this.TB_Height.Size = new System.Drawing.Size(32, 20);
         this.TB_Height.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.L_Weight.Location = new System.Drawing.Point(341, 352);
+        this.L_Weight.Location = new System.Drawing.Point(350, 140);
         this.L_Weight.Text = "Weight:";
 
-        this.L_Height.Location = new System.Drawing.Point(343, 331);
+        this.L_Height.Location = new System.Drawing.Point(350, 90);
         this.L_Height.Text = "Height:";
 
         this.CB_ZMove.FormattingEnabled = true;
-        this.CB_ZMove.Location = new System.Drawing.Point(177, 328);
+        this.CB_ZMove.Location = new System.Drawing.Point(380, 492);
         this.CB_ZMove.Size = new System.Drawing.Size(121, 21);
  
-        this.CB_ZBaseMove.Location = new System.Drawing.Point(177, 306);
+        this.CB_ZBaseMove.Location = new System.Drawing.Point(380, 542);
         this.CB_ZBaseMove.Size = new System.Drawing.Size(121, 21);
  
-        this.CB_ZItem.Location = new System.Drawing.Point(177, 284);
+        this.CB_ZItem.Location = new System.Drawing.Point(380, 517);
         this.CB_ZItem.Size = new System.Drawing.Size(121, 21);
 
         this.TB_CallRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_CallRate.Location = new System.Drawing.Point(77, 328);
+        this.TB_CallRate.Location = new System.Drawing.Point(230, 492);
         this.TB_CallRate.Mask = "000";
         this.TB_CallRate.Size = new System.Drawing.Size(31, 20);
         this.TB_CallRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.L_CallRate.AutoSize = true;
-        this.L_CallRate.Location = new System.Drawing.Point(23, 332);
+        this.L_CallRate.Location = new System.Drawing.Point(150, 495);
         this.L_CallRate.Size = new System.Drawing.Size(53, 13);
         this.L_CallRate.Text = "Call Rate:";
 
         this.CHK_Variant.AutoSize = true;
-        this.CHK_Variant.Location = new System.Drawing.Point(185, 264);
+        this.CHK_Variant.Location = new System.Drawing.Point(150, 413);
         this.CHK_Variant.Size = new System.Drawing.Size(104, 17);
         this.CHK_Variant.Text = "Regional Variant";
 
-        this.TB_BST.Location = new System.Drawing.Point(387, 27);
+        this.TB_BST.Location = new System.Drawing.Point(60, 362);
         this.TB_BST.Name = "TB_BST";
         this.TB_BST.ReadOnly = true;
         this.TB_BST.Size = new System.Drawing.Size(31, 20);
         this.TB_BST.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.L_BST.AutoSize = true;
-        this.L_BST.Location = new System.Drawing.Point(355, 30);
+        this.L_BST.Location = new System.Drawing.Point(20, 365);
         this.L_BST.Size = new System.Drawing.Size(31, 13);
         this.L_BST.Text = "BST:";
 
         this.TB_CatchRate.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_CatchRate.Location = new System.Drawing.Point(387, 51);
+        this.TB_CatchRate.Location = new System.Drawing.Point(230, 442);
         this.TB_CatchRate.Size = new System.Drawing.Size(31, 20);
         this.TB_CatchRate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.TB_Stage.Location = new System.Drawing.Point(384, 265);
+        this.TB_Stage.Location = new System.Drawing.Point(90, 387);
         this.TB_Stage.Size = new System.Drawing.Size(32, 20);
         this.TB_Stage.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.L_Stage.Location = new System.Drawing.Point(299, 267);
+        this.L_Stage.Location = new System.Drawing.Point(10, 390);
         this.L_Stage.Text = "Evolution Stage:";
 
-        this.TB_FormeCount.Location = new System.Drawing.Point(384, 307);
+        this.TB_FormeCount.Location = new System.Drawing.Point(230, 387);
         this.TB_FormeCount.Size = new System.Drawing.Size(32, 20);
         this.TB_FormeCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.L_FormesCount.Location = new System.Drawing.Point(309, 310);
+        this.L_FormesCount.Location = new System.Drawing.Point(150, 390);
         this.L_FormesCount.Text = "Formes Count:";
 
-        this.PB_MonSprite.Location = new System.Drawing.Point(575, 45);
+        this.PB_MonSprite.Location = new System.Drawing.Point(10, 40);
         this.PB_MonSprite.Name = "PB_MonSprite";
         this.PB_MonSprite.Size = new System.Drawing.Size(120, 120);
         this.PB_MonSprite.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -493,235 +557,237 @@ partial class PersonalEditor7
         this.PB_MonSprite.TabIndex = 415;
         this.PB_MonSprite.TabStop = false;
 
-        this.TB_FormeSprite.Location = new System.Drawing.Point(384, 286);
+        this.TB_FormeSprite.Location = new System.Drawing.Point(90, 412);
         this.TB_FormeSprite.Size = new System.Drawing.Size(32, 20);
         this.TB_FormeSprite.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.L_FormeSprite.Location = new System.Drawing.Point(315, 289);
+        this.L_FormeSprite.Location = new System.Drawing.Point(10, 415);
         this.L_FormeSprite.Text = "Forme Sprite:";
 
         this.L_CatchRate.AutoSize = true;
-        this.L_CatchRate.Location = new System.Drawing.Point(322, 54);
+        this.L_CatchRate.Location = new System.Drawing.Point(150, 445);
         this.L_CatchRate.Size = new System.Drawing.Size(64, 13);
         this.L_CatchRate.Text = "Catch Rate:";
 
         this.CB_Color.FormattingEnabled = true;
-        this.CB_Color.Location = new System.Drawing.Point(302, 235);
+        this.CB_Color.Location = new System.Drawing.Point(380, 467);
         this.CB_Color.Size = new System.Drawing.Size(121, 21);
 
         this.CB_EXPGroup.FormattingEnabled = true;
-        this.CB_EXPGroup.Location = new System.Drawing.Point(80, 235);
+        this.CB_EXPGroup.Location = new System.Drawing.Point(380, 442);
         this.CB_EXPGroup.Size = new System.Drawing.Size(112, 21);
 
         this.L_Color.AutoSize = true;
-        this.L_Color.Location = new System.Drawing.Point(268, 238);
+        this.L_Color.Location = new System.Drawing.Point(300, 470);
         this.L_Color.Size = new System.Drawing.Size(34, 13);
         this.L_Color.Text = "Color:";
 
         this.L_EXPGrowth.AutoSize = true;
-        this.L_EXPGrowth.Location = new System.Drawing.Point(16, 238);
+        this.L_EXPGrowth.Location = new System.Drawing.Point(300, 445);
         this.L_EXPGrowth.Size = new System.Drawing.Size(63, 13);
         this.L_EXPGrowth.Text = "EXP Group:";
 
         this.CB_Ability3.FormattingEnabled = true;
-        this.CB_Ability3.Location = new System.Drawing.Point(272, 153);
+        this.CB_Ability3.Location = new System.Drawing.Point(150, 160);
         this.CB_Ability3.Size = new System.Drawing.Size(140, 21);
  
-        this.CB_Ability2.Location = new System.Drawing.Point(272, 131);
+        this.CB_Ability2.Location = new System.Drawing.Point(150, 135);
         this.CB_Ability2.Size = new System.Drawing.Size(140, 21);
  
-        this.CB_Ability1.Location = new System.Drawing.Point(272, 109);
+        this.CB_Ability1.Location = new System.Drawing.Point(150, 110);
         this.CB_Ability1.Size = new System.Drawing.Size(140, 21);
 
         this.CB_EggGroup2.FormattingEnabled = true;
-        this.CB_EggGroup2.Location = new System.Drawing.Point(302, 203);
+        this.CB_EggGroup2.Location = new System.Drawing.Point(430, 410);
         this.CB_EggGroup2.Size = new System.Drawing.Size(121, 21);
 
         this.CB_EggGroup1.FormattingEnabled = true;
-        this.CB_EggGroup1.Location = new System.Drawing.Point(302, 181);
+        this.CB_EggGroup1.Location = new System.Drawing.Point(300, 410);
         this.CB_EggGroup1.Size = new System.Drawing.Size(121, 21);
 
-        this.L_EggGroup.Location = new System.Drawing.Point(232, 188);
+        this.L_EggGroup.Location = new System.Drawing.Point(300, 390);
         this.L_EggGroup.Text = "Egg Groups:";
 
-        this.L_Ability.Location = new System.Drawing.Point(226, 112);
+        this.L_Ability.Location = new System.Drawing.Point(150, 90);
         this.L_Ability.Text = "Abilities:";
 
-        this.TB_BaseExp.Location = new System.Drawing.Point(77, 307);
+        this.TB_BaseExp.Location = new System.Drawing.Point(90, 467);
         this.TB_BaseExp.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseExp.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
         this.TB_BaseExp.Mask = "000";
 
-        this.L_BaseEXP.Location = new System.Drawing.Point(18, 311);
+        this.L_BaseEXP.Location = new System.Drawing.Point(10, 470);
         this.L_BaseEXP.Text = "Base EXP:";
 
-        this.TB_HatchCycles.Location = new System.Drawing.Point(77, 349);
+        this.TB_HatchCycles.Location = new System.Drawing.Point(230, 467);
         this.TB_HatchCycles.Size = new System.Drawing.Size(31, 20);
         this.TB_HatchCycles.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
         this.TB_HatchCycles.Mask = "000";
  
-        this.L_HatchCycles.Location = new System.Drawing.Point(3, 352);
+        this.L_HatchCycles.Location = new System.Drawing.Point(150, 470);
         this.L_HatchCycles.Text = "Hatch Cycles:";
 
-        this.TB_Friendship.Location = new System.Drawing.Point(77, 286);
+        this.TB_Friendship.Location = new System.Drawing.Point(90, 492);
         this.TB_Friendship.Size = new System.Drawing.Size(31, 20);
         this.TB_Friendship.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
         this.TB_Friendship.Mask = "000";
  
-        this.TB_Gender.Location = new System.Drawing.Point(77, 265);
+        this.TB_Gender.Location = new System.Drawing.Point(90, 442);
         this.TB_Gender.Size = new System.Drawing.Size(31, 20);
         this.TB_Gender.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
         this.TB_Gender.Mask = "000";
 
         this.L_Friendship.AutoSize = true;
-        this.L_Friendship.Location = new System.Drawing.Point(18, 290);
+        this.L_Friendship.Location = new System.Drawing.Point(10, 495);
         this.L_Friendship.Size = new System.Drawing.Size(58, 13);
         this.L_Friendship.Text = "Friendship:";
 
         this.L_Gender.AutoSize = true;
-        this.L_Gender.Location = new System.Drawing.Point(31, 268);
+        this.L_Gender.Location = new System.Drawing.Point(10, 445);
         this.L_Gender.Size = new System.Drawing.Size(45, 13);
         this.L_Gender.Text = "Gender:";
 
         this.L_Item1.AutoSize = true;
-        this.L_Item1.Location = new System.Drawing.Point(45, 156);
+        this.L_Item1.Location = new System.Drawing.Point(450, 313);
         this.L_Item1.Text = "1%";
  
         this.L_Item5.AutoSize = true;
-        this.L_Item5.Location = new System.Drawing.Point(45, 134);
+        this.L_Item5.Location = new System.Drawing.Point(450, 288);
         this.L_Item5.Text = "5%";
  
         this.L_Item50.AutoSize = true;
-        this.L_Item50.Location = new System.Drawing.Point(45, 112);
+        this.L_Item50.Location = new System.Drawing.Point(450, 263);
         this.L_Item50.Text = "50%";
 
-        this.CB_HeldItem1.Location = new System.Drawing.Point(80, 109);
+        this.CB_HeldItem1.Location = new System.Drawing.Point(300, 260);
         this.CB_HeldItem1.Size = new System.Drawing.Size(140, 21);
-        this.CB_HeldItem2.Location = new System.Drawing.Point(80, 131);
+        this.CB_HeldItem2.Location = new System.Drawing.Point(300, 285);
         this.CB_HeldItem2.Size = new System.Drawing.Size(140, 21);
-        this.CB_HeldItem3.Location = new System.Drawing.Point(80, 153);
+        this.CB_HeldItem3.Location = new System.Drawing.Point(300, 310);
         this.CB_HeldItem3.Size = new System.Drawing.Size(140, 21);
-        this.L_HeldItem.Location = new System.Drawing.Point(16, 112);
+        this.L_HeldItem.Location = new System.Drawing.Point(300, 240);
         this.L_HeldItem.Size = new System.Drawing.Size(35, 13);
         this.L_HeldItem.Text = "Items:";
 
-        this.CB_Type2.Location = new System.Drawing.Point(80, 206);
+        this.CB_Type2.Location = new System.Drawing.Point(285, 60);
         this.CB_Type2.Size = new System.Drawing.Size(129, 21);
  
-        this.CB_Type1.Location = new System.Drawing.Point(80, 185);
+        this.CB_Type1.Location = new System.Drawing.Point(150, 60);
         this.CB_Type1.Size = new System.Drawing.Size(129, 21);
- 
-        this.L_Type.Location = new System.Drawing.Point(16, 188);
-        this.L_Type.Size = new System.Drawing.Size(47, 13);
-        this.L_Type.Text = "Typings:";
+
+        this.L_Type.AutoSize = true;
+        this.L_Type.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+        this.L_Type.Location = new System.Drawing.Point(250, 20);
+        this.L_Type.Text = "Typing";
+
 
         this.TB_SPEEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_SPEEVs.Location = new System.Drawing.Point(273, 80);
+        this.TB_SPEEVs.Location = new System.Drawing.Point(500, 210);
         this.TB_SPEEVs.Mask = "0";
         this.TB_SPEEVs.Size = new System.Drawing.Size(31, 20);
         this.TB_SPDEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_SPDEVs.Location = new System.Drawing.Point(234, 80);
+        this.TB_SPDEVs.Location = new System.Drawing.Point(460, 210);
         this.TB_SPDEVs.Mask = "0";
         this.TB_SPDEVs.Size = new System.Drawing.Size(31, 20);
         this.TB_SPAEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_SPAEVs.Location = new System.Drawing.Point(195, 80);
+        this.TB_SPAEVs.Location = new System.Drawing.Point(420, 210);
         this.TB_SPAEVs.Mask = "0";
         this.TB_SPAEVs.Size = new System.Drawing.Size(31, 20);
         this.TB_DEFEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_DEFEVs.Location = new System.Drawing.Point(157, 80);
+        this.TB_DEFEVs.Location = new System.Drawing.Point(380, 210);
         this.TB_DEFEVs.Mask = "0";
         this.TB_DEFEVs.Size = new System.Drawing.Size(31, 20);
         this.TB_ATKEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_ATKEVs.Location = new System.Drawing.Point(119, 80);
+        this.TB_ATKEVs.Location = new System.Drawing.Point(340, 210);
         this.TB_ATKEVs.Mask = "0";
         this.TB_ATKEVs.Size = new System.Drawing.Size(31, 20);
         this.TB_HPEVs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_HPEVs.Location = new System.Drawing.Point(80, 72);
-        this.TB_ATKEVs.Location = new System.Drawing.Point(119, 72);
-        this.TB_DEFEVs.Location = new System.Drawing.Point(157, 72);
-        this.TB_SPAEVs.Location = new System.Drawing.Point(195, 72);
-        this.TB_SPDEVs.Location = new System.Drawing.Point(233, 72);
-        this.TB_SPEEVs.Location = new System.Drawing.Point(271, 72);
+        this.TB_HPEVs.Location = new System.Drawing.Point(300, 210);
+        this.TB_ATKEVs.Location = new System.Drawing.Point(340, 210);
+        this.TB_DEFEVs.Location = new System.Drawing.Point(380, 210);
+        this.TB_SPAEVs.Location = new System.Drawing.Point(420, 210);
+        this.TB_SPDEVs.Location = new System.Drawing.Point(460, 210);
+        this.TB_SPEEVs.Location = new System.Drawing.Point(500, 210);
         this.TB_HPEVs.Mask = "0";
         this.TB_HPEVs.Size = new System.Drawing.Size(31, 20);
 
         this.TB_BaseSPE.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseSPE.Location = new System.Drawing.Point(273, 27);
+        this.TB_BaseSPE.Location = new System.Drawing.Point(60, 337);
         this.TB_BaseSPE.Mask = "000";
         this.TB_BaseSPE.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseSPE.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_BaseSPD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseSPD.Location = new System.Drawing.Point(234, 27);
+        this.TB_BaseSPD.Location = new System.Drawing.Point(60, 312);
         this.TB_BaseSPD.Mask = "000";
         this.TB_BaseSPD.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseSPD.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_BaseSPA.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseSPA.Location = new System.Drawing.Point(195, 27);
+        this.TB_BaseSPA.Location = new System.Drawing.Point(60, 287);
         this.TB_BaseSPA.Mask = "000";
         this.TB_BaseSPA.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseSPA.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_BaseDEF.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseDEF.Location = new System.Drawing.Point(157, 27);
+        this.TB_BaseDEF.Location = new System.Drawing.Point(60, 262);
         this.TB_BaseDEF.Mask = "000";
         this.TB_BaseDEF.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseDEF.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_BaseATK.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseATK.Location = new System.Drawing.Point(119, 27);
+        this.TB_BaseATK.Location = new System.Drawing.Point(60, 237);
         this.TB_BaseATK.Mask = "000";
         this.TB_BaseATK.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseATK.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.TB_BaseHP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-        this.TB_BaseHP.Location = new System.Drawing.Point(80, 27);
+        this.TB_BaseHP.Location = new System.Drawing.Point(60, 212);
         this.TB_BaseHP.Mask = "000";
         this.TB_BaseHP.Size = new System.Drawing.Size(31, 20);
         this.TB_BaseHP.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
-        this.Label_HP.Location = new System.Drawing.Point(77, 11);
+        this.Label_HP.Location = new System.Drawing.Point(30, 215);
         this.Label_HP.Size = new System.Drawing.Size(31, 13);
         this.Label_HP.Text = "HP:";
 
-        this.Label_ATK.Location = new System.Drawing.Point(119, 11);
+        this.Label_ATK.Location = new System.Drawing.Point(30, 240);
         this.Label_ATK.Size = new System.Drawing.Size(31, 13);
         this.Label_ATK.Text = "Atk:";
 
-        this.Label_DEF.Location = new System.Drawing.Point(157, 11);
+        this.Label_DEF.Location = new System.Drawing.Point(30, 265);
         this.Label_DEF.Size = new System.Drawing.Size(31, 13);
         this.Label_DEF.Text = "Def:";
 
-        this.Label_SPA.Location = new System.Drawing.Point(195, 11);
+        this.Label_SPA.Location = new System.Drawing.Point(30, 290);
         this.Label_SPA.Size = new System.Drawing.Size(31, 13);
         this.Label_SPA.Text = "SpA:";
 
-        this.Label_SPD.Location = new System.Drawing.Point(234, 11);
+        this.Label_SPD.Location = new System.Drawing.Point(30, 315);
         this.Label_SPD.Size = new System.Drawing.Size(31, 13);
         this.Label_SPD.Text = "SpD:";
 
-        this.Label_SPE.Location = new System.Drawing.Point(271, 11);
+        this.Label_SPE.Location = new System.Drawing.Point(30, 340);
         this.Label_SPE.Size = new System.Drawing.Size(31, 13);
         this.Label_SPE.Text = "Spe:";
 
         this.L_EVYield.AutoSize = true;
-        this.L_EVYield.Location = new System.Drawing.Point(16, 75);
+        this.L_EVYield.Location = new System.Drawing.Point(300, 190);
         this.L_EVYield.Size = new System.Drawing.Size(50, 13);
         this.L_EVYield.Text = "EV Yield:";
 
         this.L_BaseStats.AutoSize = true;
-        this.L_BaseStats.Location = new System.Drawing.Point(16, 30);
+        this.L_BaseStats.Location = new System.Drawing.Point(10, 190);
         this.L_BaseStats.Size = new System.Drawing.Size(61, 13);
         this.L_BaseStats.Text = "Base Stats:";
 
-        this.L_ZMove.Location = new System.Drawing.Point(130, 331);
+        this.L_ZMove.Location = new System.Drawing.Point(300, 495);
         this.L_ZMove.Text = "Z-Move:";
  
-        this.L_BaseMove.Location = new System.Drawing.Point(113, 310);
+        this.L_BaseMove.Location = new System.Drawing.Point(300, 545);
         this.L_BaseMove.Text = "Base Move:";
  
-        this.L_ZCrystal.Location = new System.Drawing.Point(126, 288);
+        this.L_ZCrystal.Location = new System.Drawing.Point(300, 520);
         this.L_ZCrystal.Text = "Z-Crystal:";
 
         // B_CopyPage1
@@ -828,7 +894,7 @@ partial class PersonalEditor7
         this.TP_Randomizer.Name = "TP_Randomizer";
         this.TP_Randomizer.Size = new System.Drawing.Size(772, 394);
         this.TP_Randomizer.TabIndex = 2;
-        this.TP_Randomizer.Text = "Enhancements";
+        this.TP_Randomizer.Text = "Randomizer";
         this.TP_Randomizer.UseVisualStyleBackColor = true;
 
         this.GB_Modifier.Controls.Add(this.CHK_EXP);
@@ -841,6 +907,16 @@ partial class PersonalEditor7
         this.GB_Modifier.Controls.Add(this.NUD_CatchRateMod);
         this.GB_Modifier.Controls.Add(this.L_CatchRateMod);
         this.GB_Modifier.Controls.Add(this.CHK_CallRate);
+        this.GB_Modifier.Controls.Add(this.CHK_NoEV);
+        this.GB_Modifier.Controls.Add(this.CHK_Growth);
+        this.GB_Modifier.Controls.Add(this.CHK_EXP);
+        this.GB_Modifier.Controls.Add(this.L_FinalXP);
+        this.GB_Modifier.Controls.Add(this.NUD_EXP);
+        this.GB_Modifier.Controls.Add(this.CHK_QuickHatch);
+        this.GB_Modifier.Controls.Add(this.CHK_CatchRateMod);
+        this.GB_Modifier.Controls.Add(this.NUD_CatchRateMod);
+        this.GB_Modifier.Controls.Add(this.L_CatchRateMod);
+        this.GB_Modifier.Controls.Add(this.CHK_CallRate);
         this.GB_Modifier.Controls.Add(this.NUD_CallRate);
         this.GB_Modifier.Controls.Add(this.L_CallRateVal);
         this.GB_Modifier.Controls.Add(this.CHK_NoTutor);
@@ -849,62 +925,70 @@ partial class PersonalEditor7
         this.GB_Modifier.Controls.Add(this.CHK_FullBeachTutorCompatibility);
         this.GB_Modifier.Controls.Add(this.B_SaveCurrent);
         this.GB_Modifier.Controls.Add(this.B_ModAll);
-        this.GB_Modifier.Location = new System.Drawing.Point(6, 210);
-        this.GB_Modifier.Size = new System.Drawing.Size(720, 220);
+        this.GB_Modifier.Location = new System.Drawing.Point(6, 208);
+        this.GB_Modifier.Size = new System.Drawing.Size(740, 215);
         this.GB_Modifier.Text = "Modifier Options";
 
-        this.CHK_NoEV.Location = new System.Drawing.Point(13, 22);
+        this.CHK_NoEV.Location = new System.Drawing.Point(15, 22);
         this.CHK_NoEV.Text = "Remove EV Yields";
-        this.CHK_NoEV.Size = new System.Drawing.Size(150, 17);
-        this.CHK_Growth.Location = new System.Drawing.Point(13, 44);
+        this.CHK_NoEV.Size = new System.Drawing.Size(180, 17);
+
+        this.CHK_Growth.Location = new System.Drawing.Point(15, 50);
         this.CHK_Growth.Text = "Lowest EXP Growth Rate";
         this.CHK_Growth.Size = new System.Drawing.Size(180, 17);
-        this.CHK_EXP.Location = new System.Drawing.Point(13, 67);
+
+        this.CHK_EXP.Location = new System.Drawing.Point(15, 78);
         this.CHK_EXP.Text = "Modify EXP Yield";
-        this.CHK_EXP.Size = new System.Drawing.Size(150, 17);
-        this.L_FinalXP.Location = new System.Drawing.Point(10, 93);
+        this.CHK_EXP.Size = new System.Drawing.Size(120, 17);
+
+        this.L_FinalXP.Location = new System.Drawing.Point(140, 80);
         this.L_FinalXP.Text = "Final XP (%)";
         this.L_FinalXP.Size = new System.Drawing.Size(70, 13);
-        this.NUD_EXP.Location = new System.Drawing.Point(90, 91);
+
+        this.NUD_EXP.Location = new System.Drawing.Point(215, 76);
         this.NUD_EXP.Size = new System.Drawing.Size(45, 20);
 
-        this.CHK_QuickHatch.Location = new System.Drawing.Point(430, 22);
+        this.CHK_QuickHatch.Location = new System.Drawing.Point(300, 22);
         this.CHK_QuickHatch.Text = "Quick Hatch Eggs";
-        this.CHK_QuickHatch.Size = new System.Drawing.Size(150, 17);
+        this.CHK_QuickHatch.Size = new System.Drawing.Size(180, 17);
 
-        this.CHK_CatchRateMod.Location = new System.Drawing.Point(430, 44);
+        this.CHK_CatchRateMod.Location = new System.Drawing.Point(300, 50);
         this.CHK_CatchRateMod.Text = "Modify Catch Rate";
-        this.CHK_CatchRateMod.Size = new System.Drawing.Size(150, 17);
-        this.NUD_CatchRateMod.Location = new System.Drawing.Point(510, 66);
-        this.NUD_CatchRateMod.Size = new System.Drawing.Size(45, 20);
-        this.L_CatchRateMod.Location = new System.Drawing.Point(440, 68);
+        this.CHK_CatchRateMod.Size = new System.Drawing.Size(130, 17);
+
+        this.L_CatchRateMod.Location = new System.Drawing.Point(435, 52);
         this.L_CatchRateMod.Text = "Value:";
-        this.L_CatchRateMod.Size = new System.Drawing.Size(65, 13);
+        this.L_CatchRateMod.Size = new System.Drawing.Size(40, 13);
 
-        this.CHK_CallRate.Location = new System.Drawing.Point(430, 100);
+        this.NUD_CatchRateMod.Location = new System.Drawing.Point(480, 48);
+        this.NUD_CatchRateMod.Size = new System.Drawing.Size(45, 20);
+
+        this.CHK_CallRate.Location = new System.Drawing.Point(300, 78);
         this.CHK_CallRate.Text = "Modify SOS Call Rate";
-        this.CHK_CallRate.Size = new System.Drawing.Size(150, 17);
-        this.NUD_CallRate.Location = new System.Drawing.Point(510, 122);
-        this.NUD_CallRate.Size = new System.Drawing.Size(45, 20);
-        this.L_CallRateVal.Location = new System.Drawing.Point(440, 124);
+        this.CHK_CallRate.Size = new System.Drawing.Size(130, 17);
+
+        this.L_CallRateVal.Location = new System.Drawing.Point(435, 80);
         this.L_CallRateVal.Text = "Value:";
-        this.L_CallRateVal.Size = new System.Drawing.Size(65, 13);
+        this.L_CallRateVal.Size = new System.Drawing.Size(40, 13);
 
-        this.CHK_NoTutor.Location = new System.Drawing.Point(13, 125);
+        this.NUD_CallRate.Location = new System.Drawing.Point(480, 76);
+        this.NUD_CallRate.Size = new System.Drawing.Size(45, 20);
+
+        this.CHK_NoTutor.Location = new System.Drawing.Point(15, 112);
         this.CHK_NoTutor.Text = "Remove All TM/Move Tutor Compatibility (Metronome Mode)";
-        this.CHK_NoTutor.Size = new System.Drawing.Size(400, 17);
+        this.CHK_NoTutor.Size = new System.Drawing.Size(450, 17);
 
-        this.CHK_FullTMCompatibility.Location = new System.Drawing.Point(13, 155);
+        this.CHK_FullTMCompatibility.Location = new System.Drawing.Point(15, 145);
         this.CHK_FullTMCompatibility.Text = "Full TM Compatibility";
-        this.CHK_FullTMCompatibility.Size = new System.Drawing.Size(200, 17);
+        this.CHK_FullTMCompatibility.Size = new System.Drawing.Size(150, 17);
 
         this.CHK_FullMoveTutorCompatibility.Text = "Full Special Move Tutor Compatibility";
-        this.CHK_FullMoveTutorCompatibility.Location = new System.Drawing.Point(13, 185);
-        this.CHK_FullMoveTutorCompatibility.Size = new System.Drawing.Size(250, 17);
+        this.CHK_FullMoveTutorCompatibility.Location = new System.Drawing.Point(175, 145);
+        this.CHK_FullMoveTutorCompatibility.Size = new System.Drawing.Size(210, 17);
 
         this.CHK_FullBeachTutorCompatibility.Text = "Full Beach Move Tutor Compatibility";
-        this.CHK_FullBeachTutorCompatibility.Location = new System.Drawing.Point(430, 185);
-        this.CHK_FullBeachTutorCompatibility.Size = new System.Drawing.Size(250, 17);
+        this.CHK_FullBeachTutorCompatibility.Location = new System.Drawing.Point(395, 145);
+        this.CHK_FullBeachTutorCompatibility.Size = new System.Drawing.Size(210, 17);
 
         this.GB_Randomizer.Controls.Add(this.CHK_Stats);
         this.GB_Randomizer.Controls.Add(this.CHK_rHP);
@@ -930,98 +1014,110 @@ partial class PersonalEditor7
         this.GB_Randomizer.Controls.Add(this.B_RandomizeAll);
         this.GB_Randomizer.Controls.Add(this.B_Randomize);
         this.GB_Randomizer.Location = new System.Drawing.Point(6, 6);
-        this.GB_Randomizer.Size = new System.Drawing.Size(720, 200);
+        this.GB_Randomizer.Size = new System.Drawing.Size(740, 195);
         this.GB_Randomizer.Text = "Randomizer Options";
 
-        this.CHK_Stats.Location = new System.Drawing.Point(15, 25);
+        this.CHK_Stats.Location = new System.Drawing.Point(15, 22);
         this.CHK_Stats.Text = "Randomize Stats";
         this.CHK_Stats.Size = new System.Drawing.Size(120, 17);
 
-        this.CHK_rHP.Location = new System.Drawing.Point(15, 50);
+        this.CHK_rHP.Location = new System.Drawing.Point(140, 22);
         this.CHK_rHP.Text = "HP";
-        this.CHK_rHP.Size = new System.Drawing.Size(50, 17);
-        this.CHK_rATK.Location = new System.Drawing.Point(70, 50);
+        this.CHK_rHP.Size = new System.Drawing.Size(48, 17);
+        this.CHK_rATK.Location = new System.Drawing.Point(192, 22);
         this.CHK_rATK.Text = "Atk";
-        this.CHK_rATK.Size = new System.Drawing.Size(50, 17);
-        this.CHK_rDEF.Location = new System.Drawing.Point(140, 50);
+        this.CHK_rATK.Size = new System.Drawing.Size(48, 17);
+        this.CHK_rDEF.Location = new System.Drawing.Point(244, 22);
         this.CHK_rDEF.Text = "Def";
-        this.CHK_rDEF.Size = new System.Drawing.Size(50, 17);
-        this.CHK_rSPA.Location = new System.Drawing.Point(210, 50);
+        this.CHK_rDEF.Size = new System.Drawing.Size(48, 17);
+        this.CHK_rSPA.Location = new System.Drawing.Point(296, 22);
         this.CHK_rSPA.Text = "SpA";
-        this.CHK_rSPA.Size = new System.Drawing.Size(50, 17);
-        this.CHK_rSPD.Location = new System.Drawing.Point(280, 50);
+        this.CHK_rSPA.Size = new System.Drawing.Size(52, 17);
+        this.CHK_rSPD.Location = new System.Drawing.Point(352, 22);
         this.CHK_rSPD.Text = "SpD";
-        this.CHK_rSPD.Size = new System.Drawing.Size(50, 17);
-        this.CHK_rSPE.Location = new System.Drawing.Point(350, 50);
+        this.CHK_rSPD.Size = new System.Drawing.Size(52, 17);
+        this.CHK_rSPE.Location = new System.Drawing.Point(408, 22);
         this.CHK_rSPE.Text = "Spe";
-        this.CHK_rSPE.Size = new System.Drawing.Size(50, 17);
+        this.CHK_rSPE.Size = new System.Drawing.Size(52, 17);
 
-        this.CHK_Type.Location = new System.Drawing.Point(15, 75);
+        this.CHK_Shuffle.Location = new System.Drawing.Point(15, 50);
+        this.CHK_Shuffle.Text = "Shuffle Stats";
+        this.CHK_Shuffle.Size = new System.Drawing.Size(110, 17);
+
+        this.L_StatDev.Location = new System.Drawing.Point(140, 52);
+        this.L_StatDev.Text = "Deviance (%)";
+        this.L_StatDev.Size = new System.Drawing.Size(85, 13);
+
+        this.NUD_StatDev.Location = new System.Drawing.Point(230, 48);
+        this.NUD_StatDev.Size = new System.Drawing.Size(45, 20);
+
+        this.CHK_Type.Location = new System.Drawing.Point(15, 78);
         this.CHK_Type.Text = "Type:";
         this.CHK_Type.Size = new System.Drawing.Size(55, 17);
-        this.NUD_TypePercent.Location = new System.Drawing.Point(75, 73);
+
+        this.NUD_TypePercent.Location = new System.Drawing.Point(75, 76);
         this.NUD_TypePercent.Size = new System.Drawing.Size(45, 20);
-        this.L_SingleType.Location = new System.Drawing.Point(125, 76);
-        this.L_SingleType.Size = new System.Drawing.Size(100, 13);
+
+        this.L_SingleType.Location = new System.Drawing.Point(125, 79);
+        this.L_SingleType.Size = new System.Drawing.Size(95, 13);
         this.L_SingleType.Text = "% Single Type";
 
-        this.CHK_Ability.Location = new System.Drawing.Point(15, 100);
+        this.CHK_Ability.Location = new System.Drawing.Point(15, 110);
         this.CHK_Ability.Text = "Ability";
-        this.CHK_Ability.Size = new System.Drawing.Size(100, 17);
-        this.CHK_WGuard.Location = new System.Drawing.Point(185, 100);
+        this.CHK_Ability.Size = new System.Drawing.Size(110, 17);
+
+        this.CHK_WGuard.Location = new System.Drawing.Point(140, 110);
         this.CHK_WGuard.Text = "Wonder Guard";
         this.CHK_WGuard.Size = new System.Drawing.Size(120, 17);
 
-        this.CHK_Item.Location = new System.Drawing.Point(15, 125);
-        this.CHK_Item.Text = "Item";
-        this.CHK_Item.Size = new System.Drawing.Size(100, 17);
-        this.CHK_EggGroup.Location = new System.Drawing.Point(185, 125);
-        this.CHK_EggGroup.Text = "Egg Group";
-        this.CHK_EggGroup.Size = new System.Drawing.Size(100, 17);
-        this.CHK_CatchRate.Location = new System.Drawing.Point(355, 125);
+        this.CHK_CatchRate.Location = new System.Drawing.Point(270, 110);
         this.CHK_CatchRate.Text = "Catch Rate";
-        this.CHK_CatchRate.Size = new System.Drawing.Size(100, 17);
+        this.CHK_CatchRate.Size = new System.Drawing.Size(110, 17);
 
-        this.CHK_Shuffle.Location = new System.Drawing.Point(15, 150);
-        this.CHK_Shuffle.Text = "Shuffle Stats";
-        this.CHK_Shuffle.Size = new System.Drawing.Size(100, 17);
-        this.CHK_TM.Location = new System.Drawing.Point(185, 150);
-        this.CHK_TM.Text = "TM/HM";
-        this.CHK_TM.Size = new System.Drawing.Size(100, 17);
-        this.CHK_Tutors.Location = new System.Drawing.Point(355, 150);
-        this.CHK_Tutors.Text = "Tutors";
-        this.CHK_Tutors.Size = new System.Drawing.Size(100, 17);
-        this.CHK_BeachTutors.Location = new System.Drawing.Point(525, 150);
+        this.CHK_Item.Location = new System.Drawing.Point(400, 110);
+        this.CHK_Item.Text = "Item";
+        this.CHK_Item.Size = new System.Drawing.Size(110, 17);
+
+        this.CHK_EggGroup.Location = new System.Drawing.Point(15, 145);
+        this.CHK_EggGroup.Text = "Egg Group";
+        this.CHK_EggGroup.Size = new System.Drawing.Size(110, 17);
+
+        this.CHK_TM.Location = new System.Drawing.Point(140, 145);
+        this.CHK_TM.Text = "TM Compatibility";
+        this.CHK_TM.Size = new System.Drawing.Size(110, 17);
+
+        this.CHK_Tutors.Location = new System.Drawing.Point(270, 145);
+        this.CHK_Tutors.Text = "Special Tutors";
+        this.CHK_Tutors.Size = new System.Drawing.Size(110, 17);
+
+        this.CHK_BeachTutors.Location = new System.Drawing.Point(400, 145);
         this.CHK_BeachTutors.Text = "Beach Tutors";
         this.CHK_BeachTutors.Size = new System.Drawing.Size(110, 17);
 
-        this.L_StatDev.Location = new System.Drawing.Point(15, 175);
-        this.L_StatDev.Text = "Deviance (%)";
-        this.L_StatDev.Size = new System.Drawing.Size(95, 13);
-        this.NUD_StatDev.Location = new System.Drawing.Point(110, 173);
-        this.NUD_StatDev.Size = new System.Drawing.Size(45, 20);
-
-        this.B_Randomize.Location = new System.Drawing.Point(580, 25);
-        this.B_Randomize.Size = new System.Drawing.Size(120, 30);
+        this.B_Randomize.Location = new System.Drawing.Point(580, 20);
+        this.B_Randomize.Size = new System.Drawing.Size(145, 30);
         this.B_Randomize.Text = "Randomize";
         this.B_Randomize.UseVisualStyleBackColor = true;
         this.B_Randomize.Click += new System.EventHandler(this.B_RandomizeCurrent_Click);
 
-        this.B_RandomizeAll.Location = new System.Drawing.Point(580, 60);
-        this.B_RandomizeAll.Size = new System.Drawing.Size(120, 30);
+        this.B_RandomizeAll.Location = new System.Drawing.Point(580, 56);
+        this.B_RandomizeAll.Size = new System.Drawing.Size(145, 30);
         this.B_RandomizeAll.Text = "Randomize All";
         this.B_RandomizeAll.UseVisualStyleBackColor = true;
         this.B_RandomizeAll.Click += new System.EventHandler(this.B_RandomizeAll_Click);
 
-        this.B_ModAll.Location = new System.Drawing.Point(580, 25);
-        this.B_ModAll.Size = new System.Drawing.Size(120, 30);
+        this.B_ModAll.Location = new System.Drawing.Point(580, 20);
+        this.B_ModAll.Size = new System.Drawing.Size(145, 30);
         this.B_ModAll.Text = "Modify All";
 
         // B_SaveCurrent
-        this.B_SaveCurrent.Location = new System.Drawing.Point(555, 145);
+        this.B_SaveCurrent.Location = new System.Drawing.Point(580, 175);
         this.B_SaveCurrent.Name = "B_SaveCurrent";
-        this.B_SaveCurrent.Size = new System.Drawing.Size(160, 23);
+        this.B_SaveCurrent.Size = new System.Drawing.Size(145, 28);
         this.B_SaveCurrent.Text = "Save Current Pokemon";
+        this.B_SaveCurrent.BackColor = System.Drawing.Color.FromArgb(60, 100, 60);
+        this.B_SaveCurrent.ForeColor = System.Drawing.Color.White;
+        this.B_SaveCurrent.UseVisualStyleBackColor = false;
         this.B_SaveCurrent.BackColor = System.Drawing.Color.FromArgb(60, 100, 60);
         this.B_SaveCurrent.ForeColor = System.Drawing.Color.White;
         this.B_SaveCurrent.UseVisualStyleBackColor = false;
@@ -1131,6 +1227,53 @@ partial class PersonalEditor7
         this.Text = "Personal Stats Editor (Gen 7)";
         
         this.TC_Pokemon.ResumeLayout(false);
+        
+        //
+        // StatBars
+        //
+        this.StatBar_HP.Location = new System.Drawing.Point(100, 215);
+        this.StatBar_HP.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_HP.Maximum = 255;
+
+        this.StatBar_ATK.Location = new System.Drawing.Point(100, 240);
+        this.StatBar_ATK.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_ATK.Maximum = 255;
+
+        this.StatBar_DEF.Location = new System.Drawing.Point(100, 265);
+        this.StatBar_DEF.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_DEF.Maximum = 255;
+
+        this.StatBar_SPA.Location = new System.Drawing.Point(100, 290);
+        this.StatBar_SPA.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPA.Maximum = 255;
+
+        this.StatBar_SPD.Location = new System.Drawing.Point(100, 315);
+        this.StatBar_SPD.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPD.Maximum = 255;
+
+        this.StatBar_SPE.Location = new System.Drawing.Point(100, 340);
+        this.StatBar_SPE.Size = new System.Drawing.Size(150, 15);
+        this.StatBar_SPE.Maximum = 255;
+
+        //
+        // L_SpeciesName
+        //
+        this.L_SpeciesName.AutoSize = true;
+        this.L_SpeciesName.Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold);
+        this.L_SpeciesName.Location = new System.Drawing.Point(10, 5);
+        this.L_SpeciesName.Size = new System.Drawing.Size(200, 30);
+        this.L_SpeciesName.Text = "Pokémon Name #000";
+
+        
+        // PB_Type1
+        this.PB_Type1.Location = new System.Drawing.Point(150, 42);
+        this.PB_Type1.Size = new System.Drawing.Size(32, 14);
+        this.PB_Type1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+        // PB_Type2
+        this.PB_Type2.Location = new System.Drawing.Point(285, 42);
+        this.PB_Type2.Size = new System.Drawing.Size(32, 14);
+        this.PB_Type2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+
         this.TP_General.ResumeLayout(false);
         this.TP_General.PerformLayout();
         this.TP_MoveTutors.ResumeLayout(false);
@@ -1147,6 +1290,8 @@ partial class PersonalEditor7
         ((System.ComponentModel.ISupportInitialize)(this.NUD_TypePercent)).EndInit();
         ((System.ComponentModel.ISupportInitialize)(this.NUD_StatDev)).EndInit();
         ((System.ComponentModel.ISupportInitialize)(this.PB_MonSprite)).EndInit();
+        ((System.ComponentModel.ISupportInitialize)(this.PB_Type1)).EndInit();
+        ((System.ComponentModel.ISupportInitialize)(this.PB_Type2)).EndInit();
         this.TP_Changelog.ResumeLayout(false);
         this.ResumeLayout(false);
         this.PerformLayout();
@@ -1182,6 +1327,8 @@ partial class PersonalEditor7
     private System.Windows.Forms.ComboBox CB_HeldItem1;
     private System.Windows.Forms.Label L_HeldItem;
     private System.Windows.Forms.ComboBox CB_Type2;
+    private System.Windows.Forms.PictureBox PB_Type1;
+    private System.Windows.Forms.PictureBox PB_Type2;
     private System.Windows.Forms.ComboBox CB_Type1;
     private System.Windows.Forms.Label L_Type;
     private System.Windows.Forms.Label L_Item1;
@@ -1318,4 +1465,11 @@ partial class PersonalEditor7
     private System.Windows.Forms.Button B_InsertForm;
     private System.Windows.Forms.Button B_Import;
     private System.Windows.Forms.Button B_Export;
+    private pk3DS.WinForms.Controls.StatBar StatBar_HP;
+    private pk3DS.WinForms.Controls.StatBar StatBar_ATK;
+    private pk3DS.WinForms.Controls.StatBar StatBar_DEF;
+    private pk3DS.WinForms.Controls.StatBar StatBar_SPA;
+    private pk3DS.WinForms.Controls.StatBar StatBar_SPD;
+    private pk3DS.WinForms.Controls.StatBar StatBar_SPE;
+    private System.Windows.Forms.Label L_SpeciesName;
 }

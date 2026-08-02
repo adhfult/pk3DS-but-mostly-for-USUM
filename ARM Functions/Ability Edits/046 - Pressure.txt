@@ -1,0 +1,50 @@
+Ability: Pressure (ID: 46)
+==================================================
+
+Effect:
+Increases the PP cost of moves targetting the Pokémon by one.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x000776FC (ARM)
+Raw Assembly:
+0x776FC: 2E0050E3  cmp	r0, #0x2e
+0x77700: 0E0DA003  moveq	r0, #0x380
+0x77704: CEFFFF0A  beq	#0x77644
+0x77708: 490050E3  cmp	r0, #0x49
+
+Logic Translation:
+- `0x776FC`: Compares the loaded ability ID against 0x2e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77700`: Loads literal `#0x380` into `r0`.
+- `0x77704`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x77708`: Compares the loaded ability ID against 0x49. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x0007788C (ARM)
+Raw Assembly:
+0x7788C: 2E0052E3  cmp	r2, #0x2e
+0x77890: 28029F05  ldreq	r0, [pc, #0x228]
+0x77894: 6AFFFF0A  beq	#0x77644
+0x77898: 3E0052E3  cmp	r2, #0x3e
+
+Logic Translation:
+- `0x7788C`: Compares the loaded ability ID against 0x2e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77890`: Loads memory data into `r0`.
+- `0x77894`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x77898`: Compares the loaded ability ID against 0x3e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000C1B74 (ARM)
+Raw Assembly:
+0xC1B74: 2E0050E3  cmp	r0, #0x2e
+0xC1B78: 7040BDE8  pop	{r4, r5, r6, lr}
+0xC1B7C: 5E10A003  moveq	r1, #0x5e
+0xC1B80: 5F10A013  movne	r1, #0x5f
+
+Logic Translation:
+- `0xC1B74`: Compares the loaded ability ID against 0x2e. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xC1B78`: Executes `pop {r4, r5, r6, lr}`.
+- `0xC1B7C`: Loads literal `#0x5e` into `r1`.
+- `0xC1B80`: Loads literal `#0x5f` into `r1`.
+--------------------

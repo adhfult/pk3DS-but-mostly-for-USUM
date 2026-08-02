@@ -58,6 +58,13 @@ public partial class PersonalEditor7 : Form
         TB_BaseSPD.TextChanged += UpdateDynamicDiff;
         TB_BaseSPE.TextChanged += UpdateDynamicDiff;
 
+        TB_BaseHP.TextChanged += (s, e) => { if (int.TryParse(TB_BaseHP.Text, out int v)) StatBar_HP.Value = v; };
+        TB_BaseATK.TextChanged += (s, e) => { if (int.TryParse(TB_BaseATK.Text, out int v)) StatBar_ATK.Value = v; };
+        TB_BaseDEF.TextChanged += (s, e) => { if (int.TryParse(TB_BaseDEF.Text, out int v)) StatBar_DEF.Value = v; };
+        TB_BaseSPA.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPA.Text, out int v)) StatBar_SPA.Value = v; };
+        TB_BaseSPD.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPD.Text, out int v)) StatBar_SPD.Value = v; };
+        TB_BaseSPE.TextChanged += (s, e) => { if (int.TryParse(TB_BaseSPE.Text, out int v)) StatBar_SPE.Value = v; };
+
         species[0] = "---";
         abilities[0] = items[0] = moves[0] = "";
         var altForms = Main.Config.Personal.GetFormList(species, Main.Config.MaxSpeciesID);
@@ -101,6 +108,8 @@ public partial class PersonalEditor7 : Form
         B_SaveCurrent.Click += (s, e) => { SaveEntry(); WinFormsUtil.Alert("Current Pokémon saved to internal buffer."); };
 
         RegisterAutosave(TP_General.Controls);
+        CB_Type1.SelectedIndexChanged += UpdateTypeIcons;
+        CB_Type2.SelectedIndexChanged += UpdateTypeIcons;
         NUD_TutorBase = new NumericUpDown
         {
             Minimum = 0x28, Maximum = 0x2F, Hexadecimal = true, 
@@ -108,16 +117,44 @@ public partial class PersonalEditor7 : Form
             Enabled = false // Locked — ASM patch expects base 0x29
         };
         L_TutorBase = new Label { Text = "Base:", Location = new Point(300, 373), Size = new Size(70, 20) };
-        B_AlignTutors = new Button { Text = "Align", Location = new Point(430, 368), Size = new Size(50, 24) };
-        L_ContinuousTutors = new CheckBox { Text = "Continuous Mapping (ASM)", Location = new Point(490, 370), Size = new Size(200, 20), Checked = true, Enabled = false };
+        B_AlignTutors = new Button { 
+            Text = "Align", 
+            Location = new Point(430, 366), 
+            Size = new Size(55, 26),
+            FlatStyle = FlatStyle.Flat,
+            ForeColor = Color.White,
+            BackColor = Color.FromArgb(0, 150, 136),
+            Cursor = Cursors.Hand
+        };
+        B_AlignTutors.FlatAppearance.BorderSize = 0;
+        L_ContinuousTutors = new CheckBox { Text = "Continuous Mapping (ASM)", Location = new Point(495, 370), Size = new Size(200, 20), Checked = true, Enabled = false };
 
         TP_MoveTutors.Controls.Add(L_TutorBase);
         TP_MoveTutors.Controls.Add(NUD_TutorBase);
         TP_MoveTutors.Controls.Add(B_AlignTutors);
         TP_MoveTutors.Controls.Add(L_ContinuousTutors);
 
-        B_CopyTutors = new Button { Text = "Copy Tutors", Location = new Point(300, 405), Size = new Size(130, 30) };
-        B_PasteTutors = new Button { Text = "Paste Tutors", Location = new Point(440, 405), Size = new Size(130, 30) };
+        B_CopyTutors = new Button { 
+            Text = "📋 Copy Tutors", 
+            Location = new Point(300, 405), 
+            Size = new Size(130, 30),
+            FlatStyle = FlatStyle.Flat,
+            ForeColor = Color.White,
+            BackColor = Color.FromArgb(52, 73, 94),
+            Cursor = Cursors.Hand
+        };
+        B_CopyTutors.FlatAppearance.BorderSize = 0;
+
+        B_PasteTutors = new Button { 
+            Text = "📥 Paste Tutors", 
+            Location = new Point(440, 405), 
+            Size = new Size(130, 30),
+            FlatStyle = FlatStyle.Flat,
+            ForeColor = Color.White,
+            BackColor = Color.FromArgb(52, 73, 94),
+            Cursor = Cursors.Hand
+        };
+        B_PasteTutors.FlatAppearance.BorderSize = 0;
         B_CopyTutors.Click += B_CopyTutors_Click;
         B_PasteTutors.Click += B_PasteTutors_Click;
         TP_MoveTutors.Controls.Add(B_CopyTutors);
@@ -199,29 +236,20 @@ public partial class PersonalEditor7 : Form
             CLB_MoveTutors.Items.Add($"[{moveID:000}] {name}");
         }
 
-        // 2. Add Vanilla Beach Tutors
-        for (int i = 0; i < Tutors_USUM.Length; i++)
-        {
-            int moveID = Tutors_USUM[i];
-            string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
-            CLB_BeachTutors.Items.Add($"[{moveID:000}] {name}");
-            beachMap.Add(startBit + i);
-        }
-
-        // 3. Add Expansion Moves
-        var seen = new HashSet<int>(Tutors_USUM);
+        // 2. Add Tutors directly from the currently loaded CRO data!
         var shopTutors = tutorData.moves;
-        int nextExpIndex = 67;
         for (int i = 0; i < shopTutors.Length; i++)
         {
             int moveID = shopTutors[i];
-            if (moveID > 0 && !seen.Contains(moveID))
-            {
-                seen.Add(moveID);
-                string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
+            string name = moveID < moves.Length ? moves[moveID] : $"Move {moveID}";
+            
+            // Mark expansion moves (past vanilla 67) with a star
+            if (i >= 67)
                 CLB_BeachTutors.Items.Add($"* [{moveID:000}] {name}");
-                beachMap.Add(startBit + nextExpIndex++);
-            }
+            else
+                CLB_BeachTutors.Items.Add($"[{moveID:000}] {name}");
+                
+            beachMap.Add(startBit + i);
         }
         Tutors_Beach_Map = beachMap.ToArray();
     }
@@ -292,11 +320,46 @@ public partial class PersonalEditor7 : Form
     private static bool[] ClipboardBeachTutors;
     private readonly byte[][] originalFiles;
     #endregion
+    
+    private Image typeSprites;
+    private void LoadTypeSprites()
+    {
+        string path = Path.Combine(Application.StartupPath, "Resources", "img", "type_sprites.png");
+        if (!File.Exists(path))
+            path = Path.Combine(Application.StartupPath, "type_sprites.png");
+        if (File.Exists(path)) 
+            typeSprites = Image.FromFile(path);
+    }
+    
+    private Image GetTypeImage(int typeId)
+    {
+        if (typeSprites == null) return null;
+        Rectangle src;
+        if (typeSprites.Width >= 576) src = new Rectangle(typeId * 32, 0, 32, 14);
+        else if (typeSprites.Width == 192) src = new Rectangle((typeId % 6) * 32, (typeId / 6) * 14, 32, 14);
+        else src = new Rectangle(0, typeId * 14, 32, 14);
+        
+        Bitmap bmp = new Bitmap(32, 14);
+        using (Graphics g = Graphics.FromImage(bmp))
+            g.DrawImage(typeSprites, new Rectangle(0, 0, 32, 14), src, GraphicsUnit.Pixel);
+        return bmp;
+    }
+    
+    private void UpdateTypeIcons(object sender, EventArgs e)
+    {
+        if (reading) return;
+        if (PB_Type1.Image != null) { PB_Type1.Image.Dispose(); }
+        if (PB_Type2.Image != null) { PB_Type2.Image.Dispose(); }
+        PB_Type1.Image = GetTypeImage(CB_Type1.SelectedIndex);
+        PB_Type2.Image = GetTypeImage(CB_Type2.SelectedIndex);
+    }
+
     private bool reading;
     private int tutorBase = 0x29;
     private void Setup()
     {
         reading = true;
+        if (typeSprites == null) LoadTypeSprites();
         if (Main.Config.USUM)
         {
             tutorBase = 0x29;
@@ -324,10 +387,14 @@ public partial class PersonalEditor7 : Form
         foreach (ushort m in tutormoves)
             CLB_MoveTutors.Items.Add(moves[m]);
 
+        var _customNames = CustomNameEditor.LoadCustomNames();
         for (int i = 0; i < entryNames.Length; i++)
-            CB_Species.Items.Add($"{entryNames[i]} - {i:000}");
+        {
+            string displayName = _customNames.TryGetValue(i, out string cn) ? cn : entryNames[i];
+            CB_Species.Items.Add($"{displayName} - {i:000}");
+        }
 
-        CB_Species.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+        CB_Species.AutoCompleteMode = AutoCompleteMode.Suggest;
         CB_Species.AutoCompleteSource = AutoCompleteSource.ListItems;
 
         foreach (ComboBox cb in helditem_boxes)
@@ -486,8 +553,12 @@ public partial class PersonalEditor7 : Form
         var altForms = Main.Config.Personal.GetFormList(species, Main.Config.MaxSpeciesID);
         var res = Main.Config.Personal.GetPersonalEntryList(altForms, species, Main.Config.MaxSpeciesID, out var bf, out var fv);
         
+        var _customNames2 = CustomNameEditor.LoadCustomNames();
         CB_Species.Items.Clear();
-        CB_Species.Items.AddRange(res.Select((n, i) => $"{n} - {i:000}").ToArray());
+        CB_Species.Items.AddRange(res.Select((n, i) => {
+            string displayName = _customNames2.TryGetValue(i, out string cn) ? cn : n;
+            return $"{displayName} - {i:000}";
+        }).ToArray());
         CB_Species.SelectedIndex = entry;
     }
 
@@ -512,12 +583,13 @@ public partial class PersonalEditor7 : Form
 
     private void B_Import_Click(object sender, EventArgs e)
     {
-        var ofd = new OpenFileDialog { Filter = "JSON File|*.json|TM/Tutor CSV|*.csv" };
+        var ofd = new OpenFileDialog { Filter = "JSON File|*.json|TM/Tutor CSV|*.csv|Text File (Tab)|*.txt|All Supported|*.json;*.csv;*.txt" };
         if (ofd.ShowDialog() != DialogResult.OK) return;
         
         try
         {
-            if (ofd.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            if (ofd.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase) ||
+                ofd.FileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
             {
                 ImportTMsTutors(ofd.FileName);
                 return;
@@ -614,6 +686,11 @@ public partial class PersonalEditor7 : Form
     {
         reading = true;
         pkm = Main.SpeciesStat[entry];
+        if (pkm == null) 
+        {
+            reading = false;
+            return;
+        }
 
         TB_BaseHP.Text = pkm.HP.ToString("000");
         TB_BaseATK.Text = pkm.ATK.ToString("000");
@@ -621,6 +698,13 @@ public partial class PersonalEditor7 : Form
         TB_BaseSPE.Text = pkm.SPE.ToString("000");
         TB_BaseSPA.Text = pkm.SPA.ToString("000");
         TB_BaseSPD.Text = pkm.SPD.ToString("000");
+
+        StatBar_HP.Value = pkm.HP;
+        StatBar_ATK.Value = pkm.ATK;
+        StatBar_DEF.Value = pkm.DEF;
+        StatBar_SPE.Value = pkm.SPE;
+        StatBar_SPA.Value = pkm.SPA;
+        StatBar_SPD.Value = pkm.SPD;
         TB_HPEVs.Text = pkm.EV_HP.ToString("0");
         TB_ATKEVs.Text = pkm.EV_ATK.ToString("0");
         TB_DEFEVs.Text = pkm.EV_DEF.ToString("0");
@@ -687,6 +771,7 @@ public partial class PersonalEditor7 : Form
         ReadDexEntry();
         UpdateDebugLabel(sm);
         reading = false;
+        UpdateTypeIcons(null, null);
     }
 
     private void UpdateDebugLabel(PersonalInfoSM sm)
@@ -729,6 +814,7 @@ public partial class PersonalEditor7 : Form
             }
         }
         reading = false;
+        UpdateTypeIcons(null, null);
     }
 
     private void ReadEntry()
@@ -740,6 +826,25 @@ public partial class PersonalEditor7 : Form
         int f = formVal[entry];
         if (entry <= Main.Config.MaxSpeciesID)
             s = entry;
+            
+        // Use custom name for the header if one has been set
+        var _customNames = CustomNameEditor.LoadCustomNames();
+        string currentName = (entry >= 0 && entry < entryNames.Length && !string.IsNullOrWhiteSpace(entryNames[entry])) 
+            ? entryNames[entry] 
+            : (s >= 0 && s < species.Length && !string.IsNullOrWhiteSpace(species[s]) && species[s] != "---") 
+                ? species[s] 
+                : $"Species {entry}";
+
+        // Strip trailing form number for neat header display (e.g. "Tatsugiri 5" -> "Tatsugiri")
+        string cleanHeaderName = currentName;
+        int lastSpace = currentName.LastIndexOf(' ');
+        if (lastSpace > 0 && int.TryParse(currentName.Substring(lastSpace + 1), out _))
+        {
+            cleanHeaderName = currentName.Substring(0, lastSpace);
+        }
+
+        L_SpeciesName.Text = _customNames.TryGetValue(entry, out string cn) ? cn : cleanHeaderName;
+            
         var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
         var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
         for (int x = 0; x < rawImg.Width; x++)
@@ -810,6 +915,12 @@ public partial class PersonalEditor7 : Form
             if (bitPos >= 0 && bitPos < sm.TutorFlags.Length) 
                 sm.TutorFlags[bitPos] = CLB_BeachTutors.GetItemChecked(i);
         }
+
+        // Save Z-Move data
+        sm.SpecialZ_Item = CB_ZItem.SelectedIndex;
+        sm.SpecialZ_BaseMove = CB_ZBaseMove.SelectedIndex;
+        sm.SpecialZ_ZMove = CB_ZMove.SelectedIndex;
+
         UpdateDebugLabel(sm);
 
         // Log significant changes
@@ -898,7 +1009,7 @@ public partial class PersonalEditor7 : Form
 
     private void B_RandomizeAll_Click(object sender, EventArgs e)
     {
-        if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Randomize all? Cannot undo.", "Double check Randomization settings in the Enhancements tab.") != DialogResult.Yes)
+        if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Randomize all? Cannot undo.", "Double check Randomization settings in the Randomizer tab.") != DialogResult.Yes)
             return;
         if (entry > -1) SaveEntry();
         // input settings
@@ -932,7 +1043,7 @@ public partial class PersonalEditor7 : Form
 
     private void B_ModifyAll(object sender, EventArgs e)
     {
-        if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Modify all? Cannot undo.", "Double check Modification settings in the Enhancements tab.") != DialogResult.Yes) return;
+        if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Modify all? Cannot undo.", "Double check Modification settings in the Randomizer tab.") != DialogResult.Yes) return;
         if (entry > -1) SaveEntry();
 
         for (int i = 1; i < CB_Species.Items.Count; i++)
@@ -1025,9 +1136,10 @@ public partial class PersonalEditor7 : Form
         if (entry > -1) SaveEntry();
         dumping = true;
         List<string> lines = [];
-        for (int i = 0; i < CB_Species.Items.Count; i++)
+        for (int i = 0; i < Math.Min(CB_Species.Items.Count, Math.Min(files.Length, Main.SpeciesStat.Length)); i++)
         {
             CB_Species.SelectedIndex = i; // Get new Species
+            if (pkm == null) continue;
             lines.Add("======");
             lines.Add($"{entry} - {CB_Species.Text} (Stage: {TB_Stage.Text})");
             lines.Add("======");
@@ -1125,7 +1237,7 @@ public partial class PersonalEditor7 : Form
     }
     private void UpdateDynamicDiff(object sender, EventArgs e)
     {
-        if (pkm == null || vanillaStats == null || entry < 0 || entry >= vanillaStats.Length) return;
+        if (pkm == null || entry < 0) return;
         
         int.TryParse(TB_BaseHP.Text, out int hp);
         int.TryParse(TB_BaseATK.Text, out int atk);
@@ -1134,7 +1246,8 @@ public partial class PersonalEditor7 : Form
         int.TryParse(TB_BaseSPD.Text, out int spd);
         int.TryParse(TB_BaseSPE.Text, out int spe);
 
-        bool isAlt = entry > Main.Config.MaxSpeciesID;
+        bool isNewSpecies = entry > 807 && entry <= 1025;
+        bool isAlt = entry > Main.Config.MaxSpeciesID && !isNewSpecies;
         int[] origValues = new int[6];
         string prefix = isAlt ? "Base Form" : "Vanilla";
 
@@ -1149,9 +1262,18 @@ public partial class PersonalEditor7 : Form
             origValues[4] = bPkm.SPD;
             origValues[5] = bPkm.SPE;
         }
+        else if (isNewSpecies || vanillaStats == null || entry >= vanillaStats.Length || vanillaStats[entry] == null)
+        {
+            // For new species, Vanilla BST Diff is 0 against its own stats
+            origValues[0] = hp;
+            origValues[1] = atk;
+            origValues[2] = def;
+            origValues[3] = spa;
+            origValues[4] = spd;
+            origValues[5] = spe;
+        }
         else
         {
-            if (entry >= vanillaStats.Length || vanillaStats[entry] == null) return;
             origValues = vanillaStats[entry];
         }
 
@@ -1165,6 +1287,8 @@ public partial class PersonalEditor7 : Form
         int origBST = origValues.Sum();
         int curBST = hp + atk + def + spa + spd + spe;
         int diff = curBST - origBST;
+        
+        TB_BST.Text = curBST.ToString("000");
 
         if (diff > 0)
         {
@@ -1500,4 +1624,6 @@ public partial class PersonalEditor7 : Form
         }
         return table;
     }
+
+
 }

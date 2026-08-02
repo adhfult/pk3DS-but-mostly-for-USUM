@@ -115,6 +115,13 @@ partial class ItemEditor7
         this.B_PasteTable.Text = "Paste";
         this.B_PasteTable.Click += new System.EventHandler(this.B_PasteTable_Click);
 
+        this.B_MakeMega = new System.Windows.Forms.Button();
+        this.B_MakeMega.Location = new System.Drawing.Point(120, 36);
+        this.B_MakeMega.Name = "B_MakeMega";
+        this.B_MakeMega.Size = new System.Drawing.Size(105, 23);
+        this.B_MakeMega.Text = "Make Mega Stone";
+        this.B_MakeMega.Click += new System.EventHandler(this.B_MakeMega_Click);
+
         // 
         // ItemEditor7
         // 
@@ -122,6 +129,7 @@ partial class ItemEditor7
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.ClientSize = new System.Drawing.Size(484, 440);
         this.Controls.Add(this.PB_ItemSprite);
+        this.Controls.Add(this.B_MakeMega);
         this.Controls.Add(this.B_CopyTable);
         this.Controls.Add(this.B_PasteTable);
         this.Controls.Add(this.B_Table);
@@ -152,4 +160,5 @@ partial class ItemEditor7
     private System.Windows.Forms.PictureBox PB_ItemSprite;
     private System.Windows.Forms.Button B_CopyTable;
     private System.Windows.Forms.Button B_PasteTable;
+    private System.Windows.Forms.Button B_MakeMega;
 }

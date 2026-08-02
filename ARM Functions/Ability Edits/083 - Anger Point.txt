@@ -1,0 +1,50 @@
+Ability: Anger Point (ID: 83)
+==================================================
+
+Effect:
+Raises Attack to the maximum of six stages upon receiving a critical hit.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x00064FFC (ARM)
+Raw Assembly:
+0x64FFC: 530057E3  cmp	r7, #0x53
+0x65000: CD00000A  beq	#0x6533c
+0x65004: 540057E3  cmp	r7, #0x54
+0x65008: 0800001A  bne	#0x65030
+
+Logic Translation:
+- `0x64FFC`: Compares the loaded ability ID against 0x53. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x65000`: If it matches, branches to `0x0x6533c` to apply the effect.
+- `0x65004`: Compares the loaded ability ID against 0x54. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x65008`: If it doesn't match, branches to `0x0x65030`.
+--------------------
+Address: 0x000776AC (ARM)
+Raw Assembly:
+0x776AC: 530050E3  cmp	r0, #0x53
+0x776B0: 90039F05  ldreq	r0, [pc, #0x390]
+0x776B4: E2FFFF0A  beq	#0x77644
+0x776B8: 180000CA  bgt	#0x77720
+
+Logic Translation:
+- `0x776AC`: Compares the loaded ability ID against 0x53. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x776B0`: Loads memory data into `r0`.
+- `0x776B4`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x776B8`: Executes `bgt #0x77720`.
+--------------------
+Address: 0x00077864 (ARM)
+Raw Assembly:
+0x77864: 530052E3  cmp	r2, #0x53
+0x77868: 48029F05  ldreq	r0, [pc, #0x248]
+0x7786C: 74FFFF0A  beq	#0x77644
+0x77870: 0B0000CA  bgt	#0x778a4
+
+Logic Translation:
+- `0x77864`: Compares the loaded ability ID against 0x53. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77868`: Loads memory data into `r0`.
+- `0x7786C`: If it matches, branches to `0x0x77644` to apply the effect.
+- `0x77870`: Executes `bgt #0x778a4`.
+--------------------

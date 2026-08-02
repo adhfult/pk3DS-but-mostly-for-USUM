@@ -1,0 +1,31 @@
+Ability: Mummy (ID: 152)
+==================================================
+
+Effect:
+Changes attacking Pokémon's abilities to Mummy on contact.
+
+Dynamic ARM Mechanic:
+- **Contact Flag Check:** Before applying the effect, the code loads the move data struct of the incoming attack and performs a bitwise check (`tst` or `and`) against the 'Makes Contact' bitflag. If the flag is 0, it skips the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x000D3D44 (ARM)
+Raw Assembly:
+0xD3D44: 980050E3  cmp	r0, #0x98
+0xD3D48: 1E00000A  beq	#0xd3dc8
+0xD3D4C: 0620A0E1  mov	r2, r6
+0xD3D50: 2310A0E3  mov	r1, #0x23
+
+Logic Translation:
+- `0xD3D44`: Compares the loaded ability ID against 0x98. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xD3D48`: If it matches, branches to `0x0xd3dc8` to apply the effect.
+- `0xD3D4C`: Loads literal `r6` into `r2`.
+- `0xD3D50`: Loads literal `#0x23` into `r1`.
+--------------------
+Address: 0x000F4AF8 (THUMB)
+Raw Assembly:
+0xF4AF8: 982F      cmp	r7, #0x98
+
+Logic Translation:
+- `0xF4AF8`: Compares the loaded ability ID against 0x98. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

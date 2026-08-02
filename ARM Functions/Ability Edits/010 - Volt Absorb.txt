@@ -1,0 +1,51 @@
+Ability: Volt Absorb (ID: 10)
+==================================================
+
+Effect:
+Absorbs Electric moves, healing for 1/4 max HP.
+
+Dynamic ARM Mechanic:
+- **Fractional Math (Healing):** The ARM code loads the Max HP from the Pokémon's stat struct. It then uses a logical shift right (`lsr`) instruction (`lsr #4` for 1/16th, `lsr #3` for 1/8th) to efficiently divide the Max HP by a power of 2.
+- **Subroutine:** It calls the global healing subroutine (`bl`), passing the shifted value as the heal amount.
+
+Execution Hooks:
+--------------------
+Address: 0x00016B40 (ARM)
+Raw Assembly:
+0x16B40: 0A0054E3  cmp	r4, #0xa
+0x16B44: 0A404482  subhi	r4, r4, #0xa
+0x16B48: 0040A093  movls	r4, #0
+0x16B4C: 000055E3  cmp	r5, #0
+
+Logic Translation:
+- `0x16B40`: Compares the loaded ability ID against 0xa. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x16B44`: Executes `subhi r4, r4, #0xa`.
+- `0x16B48`: Loads literal `#0` into `r4`.
+- `0x16B4C`: Compares the loaded ability ID against 0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x0001960C (ARM)
+Raw Assembly:
+0x1960C: 0A0055E3  cmp	r5, #0xa
+0x19610: 2300001A  bne	#0x196a4
+0x19614: 1C0094E5  ldr	r0, [r4, #0x1c]
+0x19618: 1100D0E5  ldrb	r0, [r0, #0x11]
+
+Logic Translation:
+- `0x1960C`: Compares the loaded ability ID against 0xa. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x19610`: If it doesn't match, branches to `0x0x196a4`.
+- `0x19614`: Loads memory data into `r0`.
+- `0x19618`: Loads memory data into `r0`.
+--------------------
+Address: 0x0002323C (ARM)
+Raw Assembly:
+0x2323C: 0A0056E3  cmp	r6, #0xa
+0x23240: 2F00000A  beq	#0x23304
+0x23244: 3400D5E5  ldrb	r0, [r5, #0x34]
+0x23248: 08B085E2  add	fp, r5, #8
+
+Logic Translation:
+- `0x2323C`: Compares the loaded ability ID against 0xa. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x23240`: If it matches, branches to `0x0x23304` to apply the effect.
+- `0x23244`: Loads memory data into `r0`.
+- `0x23248`: Adds `fp, r5, #8` to calculate the modifier.
+--------------------

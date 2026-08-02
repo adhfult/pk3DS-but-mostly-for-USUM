@@ -1,0 +1,44 @@
+Ability: Stance Change (ID: 176)
+==================================================
+
+Effect:
+Changes Aegislash to Blade Forme before using a damaging move, or Shield Forme before using King’s Shield.
+
+Dynamic ARM Mechanic:
+- **Form ID Override:** The engine writes a new integer to the Form ID byte in the Pokémon's data struct and triggers the form-change visual subroutine to update its model and stats.
+
+Execution Hooks:
+--------------------
+Address: 0x0002AE0C (ARM)
+Raw Assembly:
+0x2AE0C: B00050E3  cmp	r0, #0xb0
+0x2AE10: 46FFFF1A  bne	#0x2ab30
+0x2AE14: 0560A0E1  mov	r6, r5
+0x2AE18: 0050A0E3  mov	r5, #0
+
+Logic Translation:
+- `0x2AE0C`: Compares the loaded ability ID against 0xb0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AE10`: If it doesn't match, branches to `0x0x2ab30`.
+- `0x2AE14`: Loads literal `r5` into `r6`.
+- `0x2AE18`: Loads literal `#0` into `r5`.
+--------------------
+Address: 0x00066204 (ARM)
+Raw Assembly:
+0x66204: B00050E3  cmp	r0, #0xb0
+0x66208: D000001A  bne	#0x66550
+0x6620C: B90000EA  b	#0x664f8
+0x66210: 050197E7  ldr	r0, [r7, r5, lsl #2]
+
+Logic Translation:
+- `0x66204`: Compares the loaded ability ID against 0xb0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x66208`: If it doesn't match, branches to `0x0x66550`.
+- `0x6620C`: Executes `b #0x664f8`.
+- `0x66210`: Loads memory data into `r0`.
+--------------------
+Address: 0x00035740 (THUMB)
+Raw Assembly:
+0x35740: B02A      cmp	r2, #0xb0
+
+Logic Translation:
+- `0x35740`: Compares the loaded ability ID against 0xb0. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

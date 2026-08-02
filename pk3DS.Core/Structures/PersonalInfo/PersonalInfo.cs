@@ -1,4 +1,4 @@
-﻿namespace pk3DS.Core.Structures.PersonalInfo;
+namespace pk3DS.Core.Structures.PersonalInfo;
 
 public abstract class PersonalInfo
 {
@@ -73,7 +73,7 @@ public abstract class PersonalInfo
     }
 
     // Data Manipulation
-    public int FormeIndex(int species, int forme)
+    public int FormeIndex(int species, int forme, int maxSpecies = 807)
     {
         if (forme <= 0) // no forme requested
             return species;
@@ -82,7 +82,12 @@ public abstract class PersonalInfo
         if (forme > FormeCount) // beyond range of species' formes
             return species;
 
-        return FormStatsIndex + forme - 1;
+        int idx = FormStatsIndex + forme - 1;
+        if (species <= 807 && FormStatsIndex >= 808 && FormStatsIndex < 1026 && maxSpecies > 807)
+        {
+            idx += (maxSpecies - 807);
+        }
+        return idx;
     }
 
     public int RandomGender

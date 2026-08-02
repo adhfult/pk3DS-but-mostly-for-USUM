@@ -1,9 +1,27 @@
 # .NET Build Artifacts
 [Bb]in/
 [Oo]bj/
+.vs/
 *.user
 *.userosscache
 *.sln.docstates
+
+# Mod Working Directories (keep empty folders in git)
+US/*
+!US/.gitkeep
+UM/*
+!UM/.gitkeep
+CustomSprites/*
+!CustomSprites/.gitkeep
+patches/*
+!patches/.gitkeep
+
+# Large Binaries, Local Workspace Dumps & Zip Packages
+*.zip
+4.xdelta
+Pokemon+/
+encdata/
+ultramoon/
 
 # User Settings
 randsettings.txt
@@ -12,9 +30,12 @@ showdown_sets_storage.json
 showdown_sets.txt
 showdown_set_storage.txt
 
-# Personal Notes
+# Personal Notes & Temp
 Planned Features.txt
+*.bak
+*.tmp
 
 # Python temp files
 __pycache__/
 *.pyc
+

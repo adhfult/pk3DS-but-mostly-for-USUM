@@ -1,0 +1,54 @@
+Ability: Neuroforce (ID: 233)
+==================================================
+
+Effect:
+Increases super-effective damage dealt to 1.25×.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x0003FAB0 (THUMB)
+Raw Assembly:
+0x3FAB0: E92A      cmp	r2, #0xe9
+0x3FAB2: 9FEDE91A  vldr	s2, [pc, #0x3a4]
+0x3FAB6: DFED0000  ldcl	p0, c0, [pc]
+0x3FABA: 51E1      b	#0x3fd60
+0x3FABC: 0500      movs	r5, r0
+
+Logic Translation:
+- `0x3FAB0`: Compares the loaded ability ID against 0xe9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3FAB2`: Executes `vldr s2, [pc, #0x3a4]`.
+- `0x3FAB6`: Executes `ldcl p0, c0, [pc]`.
+- `0x3FABA`: Executes `b #0x3fd60`.
+- `0x3FABC`: Loads literal `r0` into `r5`.
+--------------------
+Address: 0x00066EF0 (THUMB)
+Raw Assembly:
+0x66EF0: E92F      cmp	r7, #0xe9
+0x66EF2: 88E2      b	#0x67406
+0x66EF4: 0C00      movs	r4, r1
+0x66EF6: 92E80D00  ldm.w	r2, {r0, r2, r3}
+
+Logic Translation:
+- `0x66EF0`: Compares the loaded ability ID against 0xe9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x66EF2`: Executes `b #0x67406`.
+- `0x66EF4`: Loads literal `r1` into `r4`.
+- `0x66EF6`: Executes `ldm.w r2, {r0, r2, r3}`.
+--------------------
+Address: 0x00083ED0 (THUMB)
+Raw Assembly:
+0x83ED0: E92F      cmp	r7, #0xe9
+0x83ED2: 00EB0600  add.w	r0, r0, r6
+0x83ED6: 50E1      b	#0x8417a
+0x83ED8: 0400      movs	r4, r0
+0x83EDA: 8DE5      b	#0x839f8
+
+Logic Translation:
+- `0x83ED0`: Compares the loaded ability ID against 0xe9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x83ED2`: Adds `r0, r0, r6` to calculate the modifier.
+- `0x83ED6`: Executes `b #0x8417a`.
+- `0x83ED8`: Loads literal `r0` into `r4`.
+- `0x83EDA`: Executes `b #0x839f8`.
+--------------------

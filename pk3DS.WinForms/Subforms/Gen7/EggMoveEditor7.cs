@@ -98,14 +98,14 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
     private void GetList()
     {
         entry = WinFormsUtil.GetIndex(CB_Species);
-        int s = 0, f = 0;
+        int s = baseForms[entry];
+        int f = formVal[entry];
         if (entry <= Main.Config.MaxSpeciesID)
         {
             s = entry;
+            f = 0;
         }
-        int[] specForm = [s, f];
-        string filename = "_" + specForm[0] + (entry > Main.Config.MaxSpeciesID ? "_" + (specForm[1] + 1) : "");
-        PB_MonSprite.Image = (Bitmap)Resources.ResourceManager.GetObject(filename);
+        PB_MonSprite.Image = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
 
         dgv.Rows.Clear();
         pkm = entries[entry];

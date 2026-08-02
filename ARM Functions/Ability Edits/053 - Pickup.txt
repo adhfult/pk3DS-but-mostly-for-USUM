@@ -1,0 +1,52 @@
+Ability: Pickup (ID: 53)
+==================================================
+
+Effect:
+Picks up other Pokémon's used and Flung held items.  May also pick up an item after battle.
+
+Dynamic ARM Mechanic:
+- **Item Hook:** The logic hooks into the item consumption/removal subroutines. It compares the held item ID against known item index ranges (e.g., the Berry IDs) to determine if the effect should trigger.
+
+Execution Hooks:
+--------------------
+Address: 0x00038828 (ARM)
+Raw Assembly:
+0x38828: 350051E3  cmp	r1, #0x35
+0x3882C: AF00000A  beq	#0x38af0
+0x38830: 360051E3  cmp	r1, #0x36
+0x38834: 1401001A  bne	#0x38c8c
+
+Logic Translation:
+- `0x38828`: Compares the loaded ability ID against 0x35. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3882C`: If it matches, branches to `0x0x38af0` to apply the effect.
+- `0x38830`: Compares the loaded ability ID against 0x36. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x38834`: If it doesn't match, branches to `0x0x38c8c`.
+--------------------
+Address: 0x0007A4B8 (ARM)
+Raw Assembly:
+0x7A4B8: 350051E3  cmp	r1, #0x35
+0x7A4BC: 6002C415  strbne	r0, [r4, #0x260]
+0x7A4C0: 031C81E2  add	r1, r1, #0x300
+0x7A4C4: 1E2E84E2  add	r2, r4, #0x1e0
+
+Logic Translation:
+- `0x7A4B8`: Compares the loaded ability ID against 0x35. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x7A4BC`: Stores `r0` into memory.
+- `0x7A4C0`: Adds `r1, r1, #0x300` to calculate the modifier.
+- `0x7A4C4`: Adds `r2, r4, #0x1e0` to calculate the modifier.
+--------------------
+Address: 0x00044A44 (THUMB)
+Raw Assembly:
+0x44A44: 352A      cmp	r2, #0x35
+0x44A46: 01EB0010  add.w	r0, r1, r0, lsl #4
+0x44A4A: A0E1      b	#0x44d8e
+0x44A4C: 0400      movs	r4, r0
+0x44A4E: 94E5      b	#0x4457a
+
+Logic Translation:
+- `0x44A44`: Compares the loaded ability ID against 0x35. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x44A46`: Adds `r0, r1, r0, lsl #4` to calculate the modifier.
+- `0x44A4A`: Executes `b #0x44d8e`.
+- `0x44A4C`: Loads literal `r0` into `r4`.
+- `0x44A4E`: Executes `b #0x4457a`.
+--------------------

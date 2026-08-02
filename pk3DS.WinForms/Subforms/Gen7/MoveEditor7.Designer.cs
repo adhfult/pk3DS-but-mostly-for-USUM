@@ -161,307 +161,395 @@ partial class MoveEditor7
         // 
         this.L_Type.AutoSize = true;
         this.L_Type.Location = new System.Drawing.Point(32, 38);
-        this.L_Type.Name = "L_Type";
-        this.L_Type.Size = new System.Drawing.Size(34, 13);
-        this.L_Type.TabIndex = 0;
-        this.L_Type.Text = "Type:";
-        this.L_Type.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // CB_Move
-        // 
-        this.CB_Move.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-        this.CB_Move.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-        this.CB_Move.DropDownWidth = 120;
-        this.CB_Move.FormattingEnabled = true;
-        this.CB_Move.Location = new System.Drawing.Point(71, 10);
-        this.CB_Move.Name = "CB_Move";
-        this.CB_Move.Size = new System.Drawing.Size(157, 21);
-        this.CB_Move.TabIndex = 1;
-        this.CB_Move.SelectedIndexChanged += new System.EventHandler(this.ChangeEntry);
-        // 
         // L_Move
         // 
         this.L_Move.AutoSize = true;
-        this.L_Move.Location = new System.Drawing.Point(33, 13);
+        this.L_Move.Location = new System.Drawing.Point(28, 13);
         this.L_Move.Name = "L_Move";
         this.L_Move.Size = new System.Drawing.Size(37, 13);
         this.L_Move.TabIndex = 2;
         this.L_Move.Text = "Move:";
         this.L_Move.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
+        // CB_Move
+        // 
+        this.CB_Move.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+        this.CB_Move.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+        this.CB_Move.DropDownWidth = 150;
+        this.CB_Move.FormattingEnabled = true;
+        this.CB_Move.Location = new System.Drawing.Point(68, 10);
+        this.CB_Move.Name = "CB_Move";
+        this.CB_Move.Size = new System.Drawing.Size(155, 21);
+        this.CB_Move.TabIndex = 1;
+        this.CB_Move.SelectedIndexChanged += new System.EventHandler(this.ChangeEntry);
+        // 
+        // L_Type
+        // 
+        this.L_Type.AutoSize = true;
+        this.L_Type.Location = new System.Drawing.Point(30, 36);
+        this.L_Type.Name = "L_Type";
+        this.L_Type.Size = new System.Drawing.Size(34, 13);
+        this.L_Type.TabIndex = 0;
+        this.L_Type.Text = "Type:";
+        this.L_Type.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
         // CB_Type
         // 
         this.CB_Type.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         this.CB_Type.FormattingEnabled = true;
-        this.CB_Type.Location = new System.Drawing.Point(71, 35);
+        this.CB_Type.Location = new System.Drawing.Point(68, 33);
         this.CB_Type.Name = "CB_Type";
-        this.CB_Type.Size = new System.Drawing.Size(99, 21);
+        this.CB_Type.Size = new System.Drawing.Size(95, 21);
         this.CB_Type.TabIndex = 3;
         // 
-        // CB_Category
+        // L_Targeting
         // 
-        this.CB_Category.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_Category.FormattingEnabled = true;
-        this.CB_Category.Location = new System.Drawing.Point(71, 58);
-        this.CB_Category.Name = "CB_Category";
-        this.CB_Category.Size = new System.Drawing.Size(99, 21);
-        this.CB_Category.TabIndex = 4;
+        this.L_Targeting.AutoSize = true;
+        this.L_Targeting.Location = new System.Drawing.Point(168, 36);
+        this.L_Targeting.Name = "L_Targeting";
+        this.L_Targeting.Size = new System.Drawing.Size(55, 13);
+        this.L_Targeting.TabIndex = 36;
+        this.L_Targeting.Text = "Targeting:";
+        this.L_Targeting.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // CB_Targeting
+        // 
+        this.CB_Targeting.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_Targeting.DropDownWidth = 150;
+        this.CB_Targeting.FormattingEnabled = true;
+        this.CB_Targeting.Location = new System.Drawing.Point(225, 33);
+        this.CB_Targeting.Name = "CB_Targeting";
+        this.CB_Targeting.Size = new System.Drawing.Size(90, 21);
+        this.CB_Targeting.TabIndex = 39;
         // 
         // L_Category
         // 
         this.L_Category.AutoSize = true;
-        this.L_Category.Location = new System.Drawing.Point(18, 61);
+        this.L_Category.Location = new System.Drawing.Point(12, 59);
         this.L_Category.Name = "L_Category";
         this.L_Category.Size = new System.Drawing.Size(52, 13);
         this.L_Category.TabIndex = 5;
         this.L_Category.Text = "Category:";
         this.L_Category.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
+        // CB_Category
+        // 
+        this.CB_Category.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_Category.FormattingEnabled = true;
+        this.CB_Category.Location = new System.Drawing.Point(68, 56);
+        this.CB_Category.Name = "CB_Category";
+        this.CB_Category.Size = new System.Drawing.Size(95, 21);
+        this.CB_Category.TabIndex = 4;
+        // 
+        // L_Influcts
+        // 
+        this.L_Influcts.AutoSize = true;
+        this.L_Influcts.Location = new System.Drawing.Point(181, 59);
+        this.L_Influcts.Name = "L_Influcts";
+        this.L_Influcts.Size = new System.Drawing.Size(40, 13);
+        this.L_Influcts.TabIndex = 37;
+        this.L_Influcts.Text = "Inflicts:";
+        this.L_Influcts.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // CB_Inflict
+        // 
+        this.CB_Inflict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_Inflict.DropDownWidth = 150;
+        this.CB_Inflict.FormattingEnabled = true;
+        this.CB_Inflict.Location = new System.Drawing.Point(225, 56);
+        this.CB_Inflict.Name = "CB_Inflict";
+        this.CB_Inflict.Size = new System.Drawing.Size(90, 21);
+        this.CB_Inflict.TabIndex = 40;
+        // 
+        // L_Quality
+        // 
+        this.L_Quality.AutoSize = true;
+        this.L_Quality.Location = new System.Drawing.Point(14, 82);
+        this.L_Quality.Name = "L_Quality";
+        this.L_Quality.Size = new System.Drawing.Size(50, 13);
+        this.L_Quality.TabIndex = 49;
+        this.L_Quality.Text = "Qualities:";
+        this.L_Quality.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // CB_Quality
+        // 
+        this.CB_Quality.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_Quality.DropDownWidth = 170;
+        this.CB_Quality.FormattingEnabled = true;
+        this.CB_Quality.Location = new System.Drawing.Point(68, 79);
+        this.CB_Quality.Name = "CB_Quality";
+        this.CB_Quality.Size = new System.Drawing.Size(95, 21);
+        this.CB_Quality.TabIndex = 48;
+        // 
+        // L_Inflict
+        // 
+        this.L_Inflict.AutoSize = true;
+        this.L_Inflict.Location = new System.Drawing.Point(175, 82);
+        this.L_Inflict.Name = "L_Inflict";
+        this.L_Inflict.Size = new System.Drawing.Size(46, 13);
+        this.L_Inflict.TabIndex = 41;
+        this.L_Inflict.Text = "Inflict %:";
+        this.L_Inflict.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_Inflict
+        // 
+        this.NUD_Inflict.Location = new System.Drawing.Point(225, 79);
+        this.NUD_Inflict.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Inflict.Name = "NUD_Inflict";
+        this.NUD_Inflict.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Inflict.TabIndex = 42;
+        // 
+        // L_0xB
+        // 
+        this.L_0xB.AutoSize = true;
+        this.L_0xB.Location = new System.Drawing.Point(267, 82);
+        this.L_0xB.Name = "L_0xB";
+        this.L_0xB.Size = new System.Drawing.Size(28, 13);
+        this.L_0xB.TabIndex = 50;
+        this.L_0xB.Text = "0xB:";
+        // 
+        // NUD_0xB
+        // 
+        this.NUD_0xB.Location = new System.Drawing.Point(295, 79);
+        this.NUD_0xB.Maximum = new decimal(new int[] { 255, 0, 0, 0 });
+        this.NUD_0xB.Name = "NUD_0xB";
+        this.NUD_0xB.Size = new System.Drawing.Size(30, 20);
+        this.NUD_0xB.TabIndex = 51;
+        // 
+        // L_Effect
+        // 
+        this.L_Effect.AutoSize = true;
+        this.L_Effect.Location = new System.Drawing.Point(26, 105);
+        this.L_Effect.Name = "L_Effect";
+        this.L_Effect.Size = new System.Drawing.Size(38, 13);
+        this.L_Effect.TabIndex = 45;
+        this.L_Effect.Text = "Effect:";
+        this.L_Effect.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_Effect
+        // 
+        this.NUD_Effect.Location = new System.Drawing.Point(68, 102);
+        this.NUD_Effect.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Effect.Name = "NUD_Effect";
+        this.NUD_Effect.Size = new System.Drawing.Size(50, 20);
+        this.NUD_Effect.TabIndex = 44;
+        // 
         // L_BP
         // 
         this.L_BP.AutoSize = true;
-        this.L_BP.Location = new System.Drawing.Point(26, 132);
+        this.L_BP.Location = new System.Drawing.Point(24, 132);
         this.L_BP.Name = "L_BP";
         this.L_BP.Size = new System.Drawing.Size(40, 13);
         this.L_BP.TabIndex = 7;
         this.L_BP.Text = "Power:";
         this.L_BP.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
-        // L_PP
+        // NUD_Power
         // 
-        this.L_PP.AutoSize = true;
-        this.L_PP.Location = new System.Drawing.Point(15, 174);
-        this.L_PP.Name = "L_PP";
-        this.L_PP.Size = new System.Drawing.Size(51, 13);
-        this.L_PP.TabIndex = 8;
-        this.L_PP.Text = "Base PP:";
-        this.L_PP.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.NUD_Power.Location = new System.Drawing.Point(68, 130);
+        this.NUD_Power.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Power.Name = "NUD_Power";
+        this.NUD_Power.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Power.TabIndex = 22;
+        // 
+        // L_Flinch
+        // 
+        this.L_Flinch.AutoSize = true;
+        this.L_Flinch.Location = new System.Drawing.Point(114, 132);
+        this.L_Flinch.Name = "L_Flinch";
+        this.L_Flinch.Size = new System.Drawing.Size(49, 13);
+        this.L_Flinch.TabIndex = 28;
+        this.L_Flinch.Text = "Flinch %:";
+        this.L_Flinch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_Flinch
+        // 
+        this.NUD_Flinch.Location = new System.Drawing.Point(165, 130);
+        this.NUD_Flinch.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Flinch.Name = "NUD_Flinch";
+        this.NUD_Flinch.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Flinch.TabIndex = 29;
         // 
         // L_Min
         // 
         this.L_Min.AutoSize = true;
-        this.L_Min.Location = new System.Drawing.Point(236, 132);
+        this.L_Min.Location = new System.Drawing.Point(215, 132);
         this.L_Min.Name = "L_Min";
         this.L_Min.Size = new System.Drawing.Size(48, 13);
         this.L_Min.TabIndex = 10;
         this.L_Min.Text = "Min Hits:";
         this.L_Min.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
-        // L_Max
-        // 
-        this.L_Max.AutoSize = true;
-        this.L_Max.Location = new System.Drawing.Point(233, 153);
-        this.L_Max.Name = "L_Max";
-        this.L_Max.Size = new System.Drawing.Size(51, 13);
-        this.L_Max.TabIndex = 12;
-        this.L_Max.Text = "Max Hits:";
-        this.L_Max.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // L_Priority
-        // 
-        this.L_Priority.AutoSize = true;
-        this.L_Priority.Location = new System.Drawing.Point(25, 195);
-        this.L_Priority.Name = "L_Priority";
-        this.L_Priority.Size = new System.Drawing.Size(41, 13);
-        this.L_Priority.TabIndex = 17;
-        this.L_Priority.Text = "Priority:";
-        // 
-        // NUD_HitMax
-        // 
-        this.NUD_HitMax.Location = new System.Drawing.Point(290, 151);
-        this.NUD_HitMax.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_HitMax.Name = "NUD_HitMax";
-        this.NUD_HitMax.Size = new System.Drawing.Size(30, 20);
-        this.NUD_HitMax.TabIndex = 18;
-        // 
         // NUD_HitMin
         // 
-        this.NUD_HitMin.Location = new System.Drawing.Point(290, 130);
-        this.NUD_HitMin.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
+        this.NUD_HitMin.Location = new System.Drawing.Point(265, 130);
+        this.NUD_HitMin.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         this.NUD_HitMin.Name = "NUD_HitMin";
-        this.NUD_HitMin.Size = new System.Drawing.Size(30, 20);
+        this.NUD_HitMin.Size = new System.Drawing.Size(35, 20);
         this.NUD_HitMin.TabIndex = 19;
         // 
-        // NUD_Priority
+        // L_Accuracy
         // 
-        this.NUD_Priority.Location = new System.Drawing.Point(72, 193);
-        this.NUD_Priority.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Priority.Minimum = new decimal(new int[] {
-            8,
-            0,
-            0,
-            -2147483648});
-        this.NUD_Priority.Name = "NUD_Priority";
-        this.NUD_Priority.Size = new System.Drawing.Size(35, 20);
-        this.NUD_Priority.TabIndex = 20;
+        this.L_Accuracy.AutoSize = true;
+        this.L_Accuracy.Location = new System.Drawing.Point(15, 155);
+        this.L_Accuracy.Name = "L_Accuracy";
+        this.L_Accuracy.Size = new System.Drawing.Size(49, 13);
+        this.L_Accuracy.TabIndex = 46;
+        this.L_Accuracy.Text = "Accur %:";
+        this.L_Accuracy.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
-        // NUD_PP
+        // NUD_Accuracy
         // 
-        this.NUD_PP.Location = new System.Drawing.Point(72, 172);
-        this.NUD_PP.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_PP.Name = "NUD_PP";
-        this.NUD_PP.Size = new System.Drawing.Size(35, 20);
-        this.NUD_PP.TabIndex = 21;
-        // 
-        // NUD_Power
-        // 
-        this.NUD_Power.Location = new System.Drawing.Point(72, 130);
-        this.NUD_Power.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Power.Name = "NUD_Power";
-        this.NUD_Power.Size = new System.Drawing.Size(45, 20);
-        this.NUD_Power.TabIndex = 22;
-        // 
-        // NUD_TurnMin
-        // 
-        this.NUD_TurnMin.Location = new System.Drawing.Point(290, 172);
-        this.NUD_TurnMin.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_TurnMin.Name = "NUD_TurnMin";
-        this.NUD_TurnMin.Size = new System.Drawing.Size(30, 20);
-        this.NUD_TurnMin.TabIndex = 26;
-        // 
-        // L_TrapMin
-        // 
-        this.L_TrapMin.AutoSize = true;
-        this.L_TrapMin.Location = new System.Drawing.Point(227, 174);
-        this.L_TrapMin.Name = "L_TrapMin";
-        this.L_TrapMin.Size = new System.Drawing.Size(57, 13);
-        this.L_TrapMin.TabIndex = 23;
-        this.L_TrapMin.Text = "Min Turns:";
-        this.L_TrapMin.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // NUD_TurnMax
-        // 
-        this.NUD_TurnMax.Location = new System.Drawing.Point(290, 193);
-        this.NUD_TurnMax.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_TurnMax.Name = "NUD_TurnMax";
-        this.NUD_TurnMax.Size = new System.Drawing.Size(30, 20);
-        this.NUD_TurnMax.TabIndex = 25;
-        // 
-        // L_TrapMax
-        // 
-        this.L_TrapMax.AutoSize = true;
-        this.L_TrapMax.Location = new System.Drawing.Point(224, 195);
-        this.L_TrapMax.Name = "L_TrapMax";
-        this.L_TrapMax.Size = new System.Drawing.Size(60, 13);
-        this.L_TrapMax.TabIndex = 24;
-        this.L_TrapMax.Text = "Max Turns:";
-        this.L_TrapMax.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // NUD_Recoil
-        // 
-        this.NUD_Recoil.Location = new System.Drawing.Point(184, 172);
-        this.NUD_Recoil.Minimum = new decimal(new int[] {
-            100,
-            0,
-            0,
-            -2147483648});
-        this.NUD_Recoil.Name = "NUD_Recoil";
-        this.NUD_Recoil.Size = new System.Drawing.Size(40, 20);
-        this.NUD_Recoil.TabIndex = 34;
-        // 
-        // L_Recoil
-        // 
-        this.L_Recoil.AutoSize = true;
-        this.L_Recoil.Location = new System.Drawing.Point(114, 174);
-        this.L_Recoil.Name = "L_Recoil";
-        this.L_Recoil.Size = new System.Drawing.Size(64, 13);
-        this.L_Recoil.TabIndex = 31;
-        this.L_Recoil.Text = "Rec/Abs %:";
-        this.L_Recoil.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        // 
-        // NUD_Heal
-        // 
-        this.NUD_Heal.Location = new System.Drawing.Point(184, 151);
-        this.NUD_Heal.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Heal.Name = "NUD_Heal";
-        this.NUD_Heal.Size = new System.Drawing.Size(40, 20);
-        this.NUD_Heal.TabIndex = 33;
+        this.NUD_Accuracy.Location = new System.Drawing.Point(68, 153);
+        this.NUD_Accuracy.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Accuracy.Name = "NUD_Accuracy";
+        this.NUD_Accuracy.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Accuracy.TabIndex = 47;
         // 
         // L_Heal
         // 
         this.L_Heal.AutoSize = true;
-        this.L_Heal.Location = new System.Drawing.Point(135, 153);
+        this.L_Heal.Location = new System.Drawing.Point(120, 155);
         this.L_Heal.Name = "L_Heal";
         this.L_Heal.Size = new System.Drawing.Size(43, 13);
         this.L_Heal.TabIndex = 32;
         this.L_Heal.Text = "Heal %:";
         this.L_Heal.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
-        // NUD_CritStage
+        // NUD_Heal
         // 
-        this.NUD_CritStage.Location = new System.Drawing.Point(184, 193);
-        this.NUD_CritStage.Maximum = new decimal(new int[] {
-            6,
-            0,
-            0,
-            0});
-        this.NUD_CritStage.Name = "NUD_CritStage";
-        this.NUD_CritStage.Size = new System.Drawing.Size(30, 20);
-        this.NUD_CritStage.TabIndex = 30;
+        this.NUD_Heal.Location = new System.Drawing.Point(165, 153);
+        this.NUD_Heal.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Heal.Name = "NUD_Heal";
+        this.NUD_Heal.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Heal.TabIndex = 33;
+        // 
+        // L_Max
+        // 
+        this.L_Max.AutoSize = true;
+        this.L_Max.Location = new System.Drawing.Point(212, 155);
+        this.L_Max.Name = "L_Max";
+        this.L_Max.Size = new System.Drawing.Size(51, 13);
+        this.L_Max.TabIndex = 12;
+        this.L_Max.Text = "Max Hits:";
+        this.L_Max.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_HitMax
+        // 
+        this.NUD_HitMax.Location = new System.Drawing.Point(265, 153);
+        this.NUD_HitMax.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_HitMax.Name = "NUD_HitMax";
+        this.NUD_HitMax.Size = new System.Drawing.Size(35, 20);
+        this.NUD_HitMax.TabIndex = 18;
+        // 
+        // L_PP
+        // 
+        this.L_PP.AutoSize = true;
+        this.L_PP.Location = new System.Drawing.Point(12, 178);
+        this.L_PP.Name = "L_PP";
+        this.L_PP.Size = new System.Drawing.Size(51, 13);
+        this.L_PP.TabIndex = 8;
+        this.L_PP.Text = "Base PP:";
+        this.L_PP.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_PP
+        // 
+        this.NUD_PP.Location = new System.Drawing.Point(62, 176);
+        this.NUD_PP.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_PP.Name = "NUD_PP";
+        this.NUD_PP.Size = new System.Drawing.Size(35, 20);
+        this.NUD_PP.TabIndex = 21;
+        // 
+        // L_Recoil
+        // 
+        this.L_Recoil.AutoSize = true;
+        this.L_Recoil.Location = new System.Drawing.Point(114, 178);
+        this.L_Recoil.Name = "L_Recoil";
+        this.L_Recoil.Size = new System.Drawing.Size(46, 13);
+        this.L_Recoil.TabIndex = 31;
+        this.L_Recoil.Text = "Rec %:";
+        this.L_Recoil.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_Recoil
+        // 
+        this.NUD_Recoil.Location = new System.Drawing.Point(165, 176);
+        this.NUD_Recoil.Minimum = new decimal(new int[] { 100, 0, 0, -2147483648 });
+        this.NUD_Recoil.Name = "NUD_Recoil";
+        this.NUD_Recoil.Size = new System.Drawing.Size(38, 20);
+        this.NUD_Recoil.TabIndex = 34;
+        // 
+        // L_TrapMin
+        // 
+        this.L_TrapMin.AutoSize = true;
+        this.L_TrapMin.Location = new System.Drawing.Point(208, 178);
+        this.L_TrapMin.Name = "L_TrapMin";
+        this.L_TrapMin.Size = new System.Drawing.Size(57, 13);
+        this.L_TrapMin.TabIndex = 23;
+        this.L_TrapMin.Text = "Min Turns:";
+        this.L_TrapMin.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_TurnMin
+        // 
+        this.NUD_TurnMin.Location = new System.Drawing.Point(265, 176);
+        this.NUD_TurnMin.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_TurnMin.Name = "NUD_TurnMin";
+        this.NUD_TurnMin.Size = new System.Drawing.Size(35, 20);
+        this.NUD_TurnMin.TabIndex = 26;
+        // 
+        // L_Priority
+        // 
+        this.L_Priority.AutoSize = true;
+        this.L_Priority.Location = new System.Drawing.Point(23, 201);
+        this.L_Priority.Name = "L_Priority";
+        this.L_Priority.Size = new System.Drawing.Size(41, 13);
+        this.L_Priority.TabIndex = 17;
+        this.L_Priority.Text = "Priority:";
+        this.L_Priority.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_Priority
+        // 
+        this.NUD_Priority.Location = new System.Drawing.Point(68, 199);
+        this.NUD_Priority.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Priority.Minimum = new decimal(new int[] { 8, 0, 0, -2147483648 });
+        this.NUD_Priority.Name = "NUD_Priority";
+        this.NUD_Priority.Size = new System.Drawing.Size(40, 20);
+        this.NUD_Priority.TabIndex = 20;
         // 
         // L_CritStage
         // 
         this.L_CritStage.AutoSize = true;
-        this.L_CritStage.Location = new System.Drawing.Point(122, 195);
+        this.L_CritStage.Location = new System.Drawing.Point(108, 201);
         this.L_CritStage.Name = "L_CritStage";
         this.L_CritStage.Size = new System.Drawing.Size(56, 13);
         this.L_CritStage.TabIndex = 27;
         this.L_CritStage.Text = "Crit Stage:";
         this.L_CritStage.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
         // 
-        // NUD_Flinch
+        // NUD_CritStage
         // 
-        this.NUD_Flinch.Location = new System.Drawing.Point(184, 130);
-        this.NUD_Flinch.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Flinch.Name = "NUD_Flinch";
-        this.NUD_Flinch.Size = new System.Drawing.Size(40, 20);
-        this.NUD_Flinch.TabIndex = 29;
+        this.NUD_CritStage.Location = new System.Drawing.Point(165, 199);
+        this.NUD_CritStage.Maximum = new decimal(new int[] { 6, 0, 0, 0 });
+        this.NUD_CritStage.Name = "NUD_CritStage";
+        this.NUD_CritStage.Size = new System.Drawing.Size(40, 20);
+        this.NUD_CritStage.TabIndex = 30;
         // 
-        // L_Flinch
+        // L_TrapMax
         // 
-        this.L_Flinch.AutoSize = true;
-        this.L_Flinch.Location = new System.Drawing.Point(129, 132);
-        this.L_Flinch.Name = "L_Flinch";
-        this.L_Flinch.Size = new System.Drawing.Size(49, 13);
-        this.L_Flinch.TabIndex = 28;
-        this.L_Flinch.Text = "Flinch %:";
-        this.L_Flinch.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.L_TrapMax.AutoSize = true;
+        this.L_TrapMax.Location = new System.Drawing.Point(205, 201);
+        this.L_TrapMax.Name = "L_TrapMax";
+        this.L_TrapMax.Size = new System.Drawing.Size(60, 13);
+        this.L_TrapMax.TabIndex = 24;
+        this.L_TrapMax.Text = "Max Turns:";
+        this.L_TrapMax.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        // 
+        // NUD_TurnMax
+        // 
+        this.NUD_TurnMax.Location = new System.Drawing.Point(265, 199);
+        this.NUD_TurnMax.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_TurnMax.Name = "NUD_TurnMax";
+        this.NUD_TurnMax.Size = new System.Drawing.Size(35, 20);
+        this.NUD_TurnMax.TabIndex = 25;
         // 
         // GB_Stat
         // 
@@ -477,131 +565,95 @@ partial class MoveEditor7
         this.GB_Stat.Controls.Add(this.L_Stage3);
         this.GB_Stat.Controls.Add(this.L_Stage2);
         this.GB_Stat.Controls.Add(this.L_Stage1);
-        this.GB_Stat.Location = new System.Drawing.Point(11, 216);
+        this.GB_Stat.Location = new System.Drawing.Point(10, 224);
         this.GB_Stat.Name = "GB_Stat";
-        this.GB_Stat.Size = new System.Drawing.Size(212, 100);
+        this.GB_Stat.Size = new System.Drawing.Size(205, 95);
         this.GB_Stat.TabIndex = 35;
         this.GB_Stat.TabStop = false;
         this.GB_Stat.Text = "Stat Stage Changes";
         // 
         // NUD_StatP3
         // 
-        this.NUD_StatP3.Location = new System.Drawing.Point(165, 68);
-        this.NUD_StatP3.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
+        this.NUD_StatP3.Location = new System.Drawing.Point(160, 65);
+        this.NUD_StatP3.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         this.NUD_StatP3.Name = "NUD_StatP3";
-        this.NUD_StatP3.Size = new System.Drawing.Size(40, 20);
+        this.NUD_StatP3.Size = new System.Drawing.Size(38, 20);
         this.NUD_StatP3.TabIndex = 44;
         // 
         // NUD_StatP2
         // 
-        this.NUD_StatP2.Location = new System.Drawing.Point(165, 46);
-        this.NUD_StatP2.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
+        this.NUD_StatP2.Location = new System.Drawing.Point(160, 42);
+        this.NUD_StatP2.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         this.NUD_StatP2.Name = "NUD_StatP2";
-        this.NUD_StatP2.Size = new System.Drawing.Size(40, 20);
+        this.NUD_StatP2.Size = new System.Drawing.Size(38, 20);
         this.NUD_StatP2.TabIndex = 43;
         // 
         // NUD_StatP1
         // 
-        this.NUD_StatP1.Location = new System.Drawing.Point(165, 24);
-        this.NUD_StatP1.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
+        this.NUD_StatP1.Location = new System.Drawing.Point(160, 19);
+        this.NUD_StatP1.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         this.NUD_StatP1.Name = "NUD_StatP1";
-        this.NUD_StatP1.Size = new System.Drawing.Size(40, 20);
+        this.NUD_StatP1.Size = new System.Drawing.Size(38, 20);
         this.NUD_StatP1.TabIndex = 42;
         // 
         // NUD_Stat2
         // 
-        this.NUD_Stat2.Location = new System.Drawing.Point(127, 46);
-        this.NUD_Stat2.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Stat2.Minimum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            -2147483648});
+        this.NUD_Stat2.Location = new System.Drawing.Point(122, 42);
+        this.NUD_Stat2.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Stat2.Minimum = new decimal(new int[] { 5, 0, 0, -2147483648 });
         this.NUD_Stat2.Name = "NUD_Stat2";
-        this.NUD_Stat2.Size = new System.Drawing.Size(35, 20);
+        this.NUD_Stat2.Size = new System.Drawing.Size(34, 20);
         this.NUD_Stat2.TabIndex = 41;
         // 
         // NUD_Stat3
         // 
-        this.NUD_Stat3.Location = new System.Drawing.Point(127, 68);
-        this.NUD_Stat3.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Stat3.Minimum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            -2147483648});
+        this.NUD_Stat3.Location = new System.Drawing.Point(122, 65);
+        this.NUD_Stat3.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Stat3.Minimum = new decimal(new int[] { 5, 0, 0, -2147483648 });
         this.NUD_Stat3.Name = "NUD_Stat3";
-        this.NUD_Stat3.Size = new System.Drawing.Size(35, 20);
+        this.NUD_Stat3.Size = new System.Drawing.Size(34, 20);
         this.NUD_Stat3.TabIndex = 40;
         // 
         // NUD_Stat1
         // 
-        this.NUD_Stat1.Location = new System.Drawing.Point(127, 24);
-        this.NUD_Stat1.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Stat1.Minimum = new decimal(new int[] {
-            5,
-            0,
-            0,
-            -2147483648});
+        this.NUD_Stat1.Location = new System.Drawing.Point(122, 19);
+        this.NUD_Stat1.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_Stat1.Minimum = new decimal(new int[] { 5, 0, 0, -2147483648 });
         this.NUD_Stat1.Name = "NUD_Stat1";
-        this.NUD_Stat1.Size = new System.Drawing.Size(35, 20);
+        this.NUD_Stat1.Size = new System.Drawing.Size(34, 20);
         this.NUD_Stat1.TabIndex = 39;
         // 
         // CB_Stat3
         // 
         this.CB_Stat3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         this.CB_Stat3.FormattingEnabled = true;
-        this.CB_Stat3.Location = new System.Drawing.Point(27, 67);
+        this.CB_Stat3.Location = new System.Drawing.Point(22, 65);
         this.CB_Stat3.Name = "CB_Stat3";
-        this.CB_Stat3.Size = new System.Drawing.Size(99, 21);
+        this.CB_Stat3.Size = new System.Drawing.Size(96, 21);
         this.CB_Stat3.TabIndex = 38;
         // 
         // CB_Stat2
         // 
         this.CB_Stat2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         this.CB_Stat2.FormattingEnabled = true;
-        this.CB_Stat2.Location = new System.Drawing.Point(27, 45);
+        this.CB_Stat2.Location = new System.Drawing.Point(22, 42);
         this.CB_Stat2.Name = "CB_Stat2";
-        this.CB_Stat2.Size = new System.Drawing.Size(99, 21);
+        this.CB_Stat2.Size = new System.Drawing.Size(96, 21);
         this.CB_Stat2.TabIndex = 37;
         // 
         // CB_Stat1
         // 
         this.CB_Stat1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
         this.CB_Stat1.FormattingEnabled = true;
-        this.CB_Stat1.Location = new System.Drawing.Point(27, 23);
+        this.CB_Stat1.Location = new System.Drawing.Point(22, 19);
         this.CB_Stat1.Name = "CB_Stat1";
-        this.CB_Stat1.Size = new System.Drawing.Size(99, 21);
+        this.CB_Stat1.Size = new System.Drawing.Size(96, 21);
         this.CB_Stat1.TabIndex = 36;
         // 
         // L_Stage3
         // 
         this.L_Stage3.AutoSize = true;
-        this.L_Stage3.Location = new System.Drawing.Point(5, 70);
+        this.L_Stage3.Location = new System.Drawing.Point(5, 68);
         this.L_Stage3.Name = "L_Stage3";
         this.L_Stage3.Size = new System.Drawing.Size(16, 13);
         this.L_Stage3.TabIndex = 2;
@@ -610,7 +662,7 @@ partial class MoveEditor7
         // L_Stage2
         // 
         this.L_Stage2.AutoSize = true;
-        this.L_Stage2.Location = new System.Drawing.Point(5, 48);
+        this.L_Stage2.Location = new System.Drawing.Point(5, 45);
         this.L_Stage2.Name = "L_Stage2";
         this.L_Stage2.Size = new System.Drawing.Size(16, 13);
         this.L_Stage2.TabIndex = 1;
@@ -619,215 +671,208 @@ partial class MoveEditor7
         // L_Stage1
         // 
         this.L_Stage1.AutoSize = true;
-        this.L_Stage1.Location = new System.Drawing.Point(5, 26);
+        this.L_Stage1.Location = new System.Drawing.Point(5, 22);
         this.L_Stage1.Name = "L_Stage1";
         this.L_Stage1.Size = new System.Drawing.Size(16, 13);
         this.L_Stage1.TabIndex = 0;
         this.L_Stage1.Text = "1:";
         // 
-        // L_Targeting
+        // L_ZMove
         // 
-        this.L_Targeting.AutoSize = true;
-        this.L_Targeting.Location = new System.Drawing.Point(173, 38);
-        this.L_Targeting.Name = "L_Targeting";
-        this.L_Targeting.Size = new System.Drawing.Size(55, 13);
-        this.L_Targeting.TabIndex = 36;
-        this.L_Targeting.Text = "Targeting:";
-        this.L_Targeting.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.L_ZMove.AutoSize = true;
+        this.L_ZMove.Location = new System.Drawing.Point(18, 326);
+        this.L_ZMove.Name = "L_ZMove";
+        this.L_ZMove.Size = new System.Drawing.Size(47, 13);
+        this.L_ZMove.TabIndex = 76;
+        this.L_ZMove.Text = "Z Move:";
         // 
-        // L_Influcts
+        // CB_ZMove
         // 
-        this.L_Influcts.AutoSize = true;
-        this.L_Influcts.Location = new System.Drawing.Point(188, 60);
-        this.L_Influcts.Name = "L_Influcts";
-        this.L_Influcts.Size = new System.Drawing.Size(40, 13);
-        this.L_Influcts.TabIndex = 37;
-        this.L_Influcts.Text = "Inflicts:";
-        this.L_Influcts.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.CB_ZMove.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+        this.CB_ZMove.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+        this.CB_ZMove.DropDownWidth = 150;
+        this.CB_ZMove.FormattingEnabled = true;
+        this.CB_ZMove.Location = new System.Drawing.Point(68, 323);
+        this.CB_ZMove.Name = "CB_ZMove";
+        this.CB_ZMove.Size = new System.Drawing.Size(140, 21);
+        this.CB_ZMove.TabIndex = 75;
         // 
-        // CB_Targeting
+        // L_ZPower
         // 
-        this.CB_Targeting.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_Targeting.DropDownWidth = 150;
-        this.CB_Targeting.FormattingEnabled = true;
-        this.CB_Targeting.Location = new System.Drawing.Point(228, 35);
-        this.CB_Targeting.Name = "CB_Targeting";
-        this.CB_Targeting.Size = new System.Drawing.Size(99, 21);
-        this.CB_Targeting.TabIndex = 39;
+        this.L_ZPower.AutoSize = true;
+        this.L_ZPower.Location = new System.Drawing.Point(24, 350);
+        this.L_ZPower.Name = "L_ZPower";
+        this.L_ZPower.Size = new System.Drawing.Size(40, 13);
+        this.L_ZPower.TabIndex = 78;
+        this.L_ZPower.Text = "Power:";
         // 
-        // CB_Inflict
+        // NUD_ZPower
         // 
-        this.CB_Inflict.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_Inflict.DropDownWidth = 150;
-        this.CB_Inflict.FormattingEnabled = true;
-        this.CB_Inflict.Location = new System.Drawing.Point(228, 57);
-        this.CB_Inflict.Name = "CB_Inflict";
-        this.CB_Inflict.Size = new System.Drawing.Size(99, 21);
-        this.CB_Inflict.TabIndex = 40;
+        this.NUD_ZPower.Location = new System.Drawing.Point(68, 348);
+        this.NUD_ZPower.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_ZPower.Name = "NUD_ZPower";
+        this.NUD_ZPower.Size = new System.Drawing.Size(40, 20);
+        this.NUD_ZPower.TabIndex = 72;
         // 
-        // L_Inflict
+        // L_ZEffect
         // 
-        this.L_Inflict.AutoSize = true;
-        this.L_Inflict.Location = new System.Drawing.Point(238, 81);
-        this.L_Inflict.Name = "L_Inflict";
-        this.L_Inflict.Size = new System.Drawing.Size(46, 13);
-        this.L_Inflict.TabIndex = 41;
-        this.L_Inflict.Text = "Inflict %:";
-        this.L_Inflict.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.L_ZEffect.AutoSize = true;
+        this.L_ZEffect.Location = new System.Drawing.Point(115, 350);
+        this.L_ZEffect.Name = "L_ZEffect";
+        this.L_ZEffect.Size = new System.Drawing.Size(38, 13);
+        this.L_ZEffect.TabIndex = 79;
+        this.L_ZEffect.Text = "Effect:";
         // 
-        // NUD_Inflict
+        // CB_ZEffect
         // 
-        this.NUD_Inflict.Location = new System.Drawing.Point(287, 78);
-        this.NUD_Inflict.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Inflict.Name = "NUD_Inflict";
-        this.NUD_Inflict.Size = new System.Drawing.Size(40, 20);
-        this.NUD_Inflict.TabIndex = 42;
+        this.CB_ZEffect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_ZEffect.FormattingEnabled = true;
+        this.CB_ZEffect.Location = new System.Drawing.Point(155, 348);
+        this.CB_ZEffect.Name = "CB_ZEffect";
+        this.CB_ZEffect.Size = new System.Drawing.Size(120, 21);
+        this.CB_ZEffect.TabIndex = 80;
         // 
-        // NUD_Effect
+        // L_Refresh
         // 
-        this.NUD_Effect.Location = new System.Drawing.Point(150, 103);
-        this.NUD_Effect.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Effect.Name = "NUD_Effect";
-        this.NUD_Effect.Size = new System.Drawing.Size(50, 20);
-        this.NUD_Effect.TabIndex = 44;
+        this.L_Refresh.AutoSize = true;
+        this.L_Refresh.Location = new System.Drawing.Point(222, 227);
+        this.L_Refresh.Name = "L_Refresh";
+        this.L_Refresh.Size = new System.Drawing.Size(76, 13);
+        this.L_Refresh.TabIndex = 82;
+        this.L_Refresh.Text = "Afflict Refresh:";
         // 
-        // L_Effect
+        // CB_AfflictRefresh
         // 
-        this.L_Effect.AutoSize = true;
-        this.L_Effect.Location = new System.Drawing.Point(106, 106);
-        this.L_Effect.Name = "L_Effect";
-        this.L_Effect.Size = new System.Drawing.Size(38, 13);
-        this.L_Effect.TabIndex = 45;
-        this.L_Effect.Text = "Effect:";
-        this.L_Effect.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.CB_AfflictRefresh.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+        this.CB_AfflictRefresh.FormattingEnabled = true;
+        this.CB_AfflictRefresh.Location = new System.Drawing.Point(222, 243);
+        this.CB_AfflictRefresh.Name = "CB_AfflictRefresh";
+        this.CB_AfflictRefresh.Size = new System.Drawing.Size(90, 21);
+        this.CB_AfflictRefresh.TabIndex = 81;
         // 
-        // NUD_Accuracy
+        // label1
         // 
-        this.NUD_Accuracy.Location = new System.Drawing.Point(72, 151);
-        this.NUD_Accuracy.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_Accuracy.Name = "NUD_Accuracy";
-        this.NUD_Accuracy.Size = new System.Drawing.Size(40, 20);
-        this.NUD_Accuracy.TabIndex = 47;
+        this.label1.AutoSize = true;
+        this.label1.Location = new System.Drawing.Point(222, 271);
+        this.label1.Name = "label1";
+        this.label1.Size = new System.Drawing.Size(47, 13);
+        this.label1.TabIndex = 83;
+        this.label1.Text = "Percent:";
         // 
-        // L_Accuracy
+        // NUD_RefreshAfflictPercent
         // 
-        this.L_Accuracy.AutoSize = true;
-        this.L_Accuracy.Location = new System.Drawing.Point(17, 153);
-        this.L_Accuracy.Name = "L_Accuracy";
-        this.L_Accuracy.Size = new System.Drawing.Size(49, 13);
-        this.L_Accuracy.TabIndex = 46;
-        this.L_Accuracy.Text = "Accur %:";
-        this.L_Accuracy.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.NUD_RefreshAfflictPercent.Location = new System.Drawing.Point(270, 269);
+        this.NUD_RefreshAfflictPercent.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
+        this.NUD_RefreshAfflictPercent.Name = "NUD_RefreshAfflictPercent";
+        this.NUD_RefreshAfflictPercent.Size = new System.Drawing.Size(40, 20);
+        this.NUD_RefreshAfflictPercent.TabIndex = 73;
         // 
-        // CB_Quality
+        // RTB_MoveDesc
         // 
-        this.CB_Quality.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_Quality.DropDownWidth = 170;
-        this.CB_Quality.FormattingEnabled = true;
-        this.CB_Quality.Location = new System.Drawing.Point(71, 81);
-        this.CB_Quality.Name = "CB_Quality";
-        this.CB_Quality.Size = new System.Drawing.Size(129, 21);
-        this.CB_Quality.TabIndex = 48;
+        this.RTB_MoveDesc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(35)))));
+        this.RTB_MoveDesc.BorderStyle = System.Windows.Forms.BorderStyle.None;
+        this.RTB_MoveDesc.ForeColor = System.Drawing.Color.LightCyan;
+        this.RTB_MoveDesc.Location = new System.Drawing.Point(10, 375);
+        this.RTB_MoveDesc.Name = "RTB_MoveDesc";
+        this.RTB_MoveDesc.ReadOnly = false;
+        this.RTB_MoveDesc.Size = new System.Drawing.Size(305, 125);
+        this.RTB_MoveDesc.TabIndex = 200;
+        this.RTB_MoveDesc.Text = "";
         // 
-        // L_Quality
+        // CLB_Flags
         // 
-        this.L_Quality.AutoSize = true;
-        this.L_Quality.Location = new System.Drawing.Point(20, 84);
-        this.L_Quality.Name = "L_Quality";
-        this.L_Quality.Size = new System.Drawing.Size(50, 13);
-        this.L_Quality.TabIndex = 49;
-        this.L_Quality.Text = "Qualities:";
-        this.L_Quality.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.CLB_Flags.FormattingEnabled = true;
+        this.CLB_Flags.Location = new System.Drawing.Point(325, 10);
+        this.CLB_Flags.Name = "CLB_Flags";
+        this.CLB_Flags.Size = new System.Drawing.Size(165, 454);
+        this.CLB_Flags.TabIndex = 71;
         // 
-        // L_0xB
+        // B_RenameFlags
         // 
-        this.L_0xB.AutoSize = true;
-        this.L_0xB.Location = new System.Drawing.Point(256, 101);
-        this.L_0xB.Name = "L_0xB";
-        this.L_0xB.Size = new System.Drawing.Size(28, 13);
-        this.L_0xB.TabIndex = 50;
-        this.L_0xB.Text = "0xB:";
-        this.L_0xB.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        this.B_RenameFlags.Location = new System.Drawing.Point(325, 472);
+        this.B_RenameFlags.Name = "B_RenameFlags";
+        this.B_RenameFlags.Size = new System.Drawing.Size(165, 28);
+        this.B_RenameFlags.TabIndex = 109;
+        this.B_RenameFlags.Text = "Rename Flags (F18-F32)";
+        this.B_RenameFlags.UseVisualStyleBackColor = true;
+        this.B_RenameFlags.Click += new System.EventHandler(this.B_RenameFlags_Click);
         // 
-        // NUD_0xB
+        // B_RandAll
         // 
-        this.NUD_0xB.Location = new System.Drawing.Point(287, 99);
-        this.NUD_0xB.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_0xB.Name = "NUD_0xB";
-        this.NUD_0xB.Size = new System.Drawing.Size(40, 20);
-        this.NUD_0xB.TabIndex = 51;
+        this.B_RandAll.Location = new System.Drawing.Point(500, 10);
+        this.B_RandAll.Name = "B_RandAll";
+        this.B_RandAll.Size = new System.Drawing.Size(145, 26);
+        this.B_RandAll.TabIndex = 63;
+        this.B_RandAll.Text = "Randomize!";
+        this.B_RandAll.UseVisualStyleBackColor = true;
+        this.B_RandAll.Click += new System.EventHandler(this.B_RandAll_Click);
         // 
-        // B_AddMove
+        // groupBox1
         // 
-        this.B_AddMove.Location = new System.Drawing.Point(10, 25);
-        this.B_AddMove.Name = "B_AddMove";
-        this.B_AddMove.Size = new System.Drawing.Size(145, 23);
-        this.B_AddMove.TabIndex = 102;
-        this.B_AddMove.Text = "Add New Move Slot";
-        this.B_AddMove.UseVisualStyleBackColor = true;
-        this.B_AddMove.Click += new System.EventHandler(this.B_AddMove_Click);
+        this.groupBox1.Controls.Add(this.CHK_Category);
+        this.groupBox1.Controls.Add(this.CHK_Type);
+        this.groupBox1.Location = new System.Drawing.Point(500, 40);
+        this.groupBox1.Name = "groupBox1";
+        this.groupBox1.Size = new System.Drawing.Size(145, 60);
+        this.groupBox1.TabIndex = 64;
+        this.groupBox1.TabStop = false;
+        this.groupBox1.Text = "Randomizer Options";
         // 
-        // B_SyncAnim
+        // CHK_Type
         // 
-        this.B_SyncAnim.Location = new System.Drawing.Point(10, 50);
-        this.B_SyncAnim.Name = "B_SyncAnim";
-        this.B_SyncAnim.Size = new System.Drawing.Size(145, 23);
-        this.B_SyncAnim.TabIndex = 103;
-        this.B_SyncAnim.Text = "Sync Animations";
-        this.B_SyncAnim.UseVisualStyleBackColor = true;
-        this.B_SyncAnim.Click += new System.EventHandler(this.B_SyncAnim_Click);
+        this.CHK_Type.AutoSize = true;
+        this.CHK_Type.Location = new System.Drawing.Point(8, 18);
+        this.CHK_Type.Name = "CHK_Type";
+        this.CHK_Type.Size = new System.Drawing.Size(50, 17);
+        this.CHK_Type.TabIndex = 0;
+        this.CHK_Type.Text = "Type";
+        this.CHK_Type.UseVisualStyleBackColor = true;
         // 
-        // B_SyncBSEQ
+        // CHK_Category
         // 
-        this.B_SyncBSEQ.Location = new System.Drawing.Point(10, 75);
-        this.B_SyncBSEQ.Name = "B_SyncBSEQ";
-        this.B_SyncBSEQ.Size = new System.Drawing.Size(145, 23);
-        this.B_SyncBSEQ.TabIndex = 104;
-        this.B_SyncBSEQ.Text = "Sync BSEQ Files";
-        this.B_SyncBSEQ.UseVisualStyleBackColor = true;
-        this.B_SyncBSEQ.Click += new System.EventHandler(this.B_SyncBSEQ_Click);
+        this.CHK_Category.AutoSize = true;
+        this.CHK_Category.Location = new System.Drawing.Point(8, 36);
+        this.CHK_Category.Name = "CHK_Category";
+        this.CHK_Category.Size = new System.Drawing.Size(68, 17);
+        this.CHK_Category.TabIndex = 1;
+        this.CHK_Category.Text = "Category";
+        this.CHK_Category.UseVisualStyleBackColor = true;
         // 
-        // B_ExportTxt
+        // B_Metronome
         // 
-        this.B_ExportTxt.Location = new System.Drawing.Point(10, 210);
-        this.B_ExportTxt.Name = "B_ExportTxt";
-        this.B_ExportTxt.Size = new System.Drawing.Size(145, 23);
-        this.B_ExportTxt.TabIndex = 115;
-        this.B_ExportTxt.Text = "Export Moves .txt";
-        this.B_ExportTxt.UseVisualStyleBackColor = true;
-        this.B_ExportTxt.Click += new System.EventHandler(this.B_ExportTxt_Click);
+        this.B_Metronome.Location = new System.Drawing.Point(500, 105);
+        this.B_Metronome.Name = "B_Metronome";
+        this.B_Metronome.Size = new System.Drawing.Size(145, 26);
+        this.B_Metronome.TabIndex = 66;
+        this.B_Metronome.Text = "Metronome Mode";
+        this.B_Metronome.UseVisualStyleBackColor = true;
+        this.B_Metronome.Click += new System.EventHandler(this.B_Metronome_Click);
         // 
-        // B_ImportTxt
+        // B_Table
         // 
-        this.B_ImportTxt.Location = new System.Drawing.Point(165, 210);
-        this.B_ImportTxt.Name = "B_ImportTxt";
-        this.B_ImportTxt.Size = new System.Drawing.Size(145, 23);
-        this.B_ImportTxt.TabIndex = 116;
-        this.B_ImportTxt.Text = "Import Moves .txt";
-        this.B_ImportTxt.UseVisualStyleBackColor = true;
-        this.B_ImportTxt.Click += new System.EventHandler(this.B_ImportTxt_Click);
+        this.B_Table.Location = new System.Drawing.Point(500, 135);
+        this.B_Table.Name = "B_Table";
+        this.B_Table.Size = new System.Drawing.Size(145, 26);
+        this.B_Table.TabIndex = 67;
+        this.B_Table.Text = "Export Table";
+        this.B_Table.UseVisualStyleBackColor = true;
+        this.B_Table.Click += new System.EventHandler(this.B_Table_Click);
+        // 
+        // B_ChampionsPP
+        // 
+        this.B_ChampionsPP.Location = new System.Drawing.Point(500, 165);
+        this.B_ChampionsPP.Name = "B_ChampionsPP";
+        this.B_ChampionsPP.Size = new System.Drawing.Size(145, 26);
+        this.B_ChampionsPP.TabIndex = 68;
+        this.B_ChampionsPP.Text = "Champions PP Settings";
+        this.B_ChampionsPP.UseVisualStyleBackColor = true;
+        this.B_ChampionsPP.Click += new System.EventHandler(this.B_ChampionsPP_Click);
         // 
         // B_CopyData
         // 
-        this.B_CopyData.Location = new System.Drawing.Point(550, 330); // Moved to bottom-left
+        this.B_CopyData.Location = new System.Drawing.Point(500, 195);
         this.B_CopyData.Name = "B_CopyData";
-        this.B_CopyData.Size = new System.Drawing.Size(75, 23);
+        this.B_CopyData.Size = new System.Drawing.Size(70, 26);
         this.B_CopyData.TabIndex = 100;
         this.B_CopyData.Text = "Copy Data";
         this.B_CopyData.UseVisualStyleBackColor = true;
@@ -835,102 +880,16 @@ partial class MoveEditor7
         // 
         // B_PasteData
         // 
-        this.B_PasteData.Location = new System.Drawing.Point(630, 330); // Placed right next to Copy
+        this.B_PasteData.Location = new System.Drawing.Point(575, 195);
         this.B_PasteData.Name = "B_PasteData";
-        this.B_PasteData.Size = new System.Drawing.Size(75, 23);
+        this.B_PasteData.Size = new System.Drawing.Size(70, 26);
         this.B_PasteData.TabIndex = 101;
         this.B_PasteData.Text = "Paste Data";
         this.B_PasteData.UseVisualStyleBackColor = true;
         this.B_PasteData.Click += new System.EventHandler(this.B_PasteData_Click);
         // 
-        // B_VanillaLog
-        // 
-        this.B_VanillaLog.Location = new System.Drawing.Point(10, 240);
-        this.B_VanillaLog.Name = "B_VanillaLog";
-        this.B_VanillaLog.Size = new System.Drawing.Size(300, 23);
-        this.B_VanillaLog.TabIndex = 117;
-        this.B_VanillaLog.Text = "Load Vanilla Baseline";
-        this.B_VanillaLog.UseVisualStyleBackColor = true;
-        this.B_VanillaLog.Click += new System.EventHandler(this.B_VanillaLog_Click);
-        //
-        // B_ChampionsPP
-        // 
-        this.B_ChampionsPP.Location = new System.Drawing.Point(540, 260);
-        this.B_ChampionsPP.Name = "B_ChampionsPP";
-        this.B_ChampionsPP.Size = new System.Drawing.Size(160, 23);
-        this.B_ChampionsPP.TabIndex = 68;
-        this.B_ChampionsPP.Text = "Champions PP Settings";
-        this.B_ChampionsPP.UseVisualStyleBackColor = true;
-        this.B_ChampionsPP.Click += new System.EventHandler(this.B_ChampionsPP_Click);
-        // 
-        // NUD_CopyAnim
-        // 
-        this.NUD_CopyAnim.Location = new System.Drawing.Point(75, 108);
-        this.NUD_CopyAnim.Maximum = new decimal(new int[] {
-            2000,
-            0,
-            0,
-            0});
-        this.NUD_CopyAnim.Name = "NUD_CopyAnim";
-        this.NUD_CopyAnim.Size = new System.Drawing.Size(80, 20);
-        this.NUD_CopyAnim.TabIndex = 111;
-        // 
-        // L_CopyAnim
-        // 
-        this.L_CopyAnim.AutoSize = true;
-        this.L_CopyAnim.Location = new System.Drawing.Point(10, 110);
-        this.L_CopyAnim.Name = "L_CopyAnim";
-        this.L_CopyAnim.Size = new System.Drawing.Size(59, 13);
-        this.L_CopyAnim.TabIndex = 110;
-        this.L_CopyAnim.Text = "Copy From:";
-        // 
-        // B_CopyAnim
-        // 
-        this.B_CopyAnim.Location = new System.Drawing.Point(10, 133);
-        this.B_CopyAnim.Name = "B_CopyAnim";
-        this.B_CopyAnim.Size = new System.Drawing.Size(145, 23);
-        this.B_CopyAnim.TabIndex = 112;
-        this.B_CopyAnim.Text = "Clone to Selected";
-        this.B_CopyAnim.UseVisualStyleBackColor = true;
-        this.B_CopyAnim.Click += new System.EventHandler(this.B_CopyAnim_Click);
-        // 
-        // L_AnimID
-        // 
-        this.L_AnimID.AutoSize = true;
-        this.L_AnimID.Location = new System.Drawing.Point(10, 165);
-        this.L_AnimID.Name = "L_AnimID";
-        this.L_AnimID.Size = new System.Drawing.Size(70, 13);
-        this.L_AnimID.TabIndex = 113;
-        this.L_AnimID.Text = "Animation ID:";
-        // 
-        // NUD_AnimID
-        // 
-        this.NUD_AnimID.Location = new System.Drawing.Point(85, 163);
-        this.NUD_AnimID.Maximum = new decimal(new int[] {
-            2000,
-            0,
-            0,
-            0});
-        this.NUD_AnimID.Name = "NUD_AnimID";
-        this.NUD_AnimID.Size = new System.Drawing.Size(70, 20);
-        this.NUD_AnimID.TabIndex = 114;
-        // 
-        // RTB_MoveDesc
-        // 
-        this.RTB_MoveDesc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-        this.RTB_MoveDesc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(25)))), ((int)(((byte)(25)))), ((int)(((byte)(35)))));
-        this.RTB_MoveDesc.BorderStyle = System.Windows.Forms.BorderStyle.None;
-        this.RTB_MoveDesc.ForeColor = System.Drawing.Color.LightCyan;
-        this.RTB_MoveDesc.Location = new System.Drawing.Point(12, 370);
-        this.RTB_MoveDesc.Name = "RTB_MoveDesc";
-        this.RTB_MoveDesc.ReadOnly = true;
-        this.RTB_MoveDesc.Size = new System.Drawing.Size(316, 160);
-        this.RTB_MoveDesc.TabIndex = 200;
-        this.RTB_MoveDesc.Text = "Move Description Load...";
-        // 
         // GB_Expansion
         // 
-        this.GB_Expansion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
         this.GB_Expansion.Controls.Add(this.B_AddMove);
         this.GB_Expansion.Controls.Add(this.B_SyncAnim);
         this.GB_Expansion.Controls.Add(this.B_SyncBSEQ);
@@ -941,33 +900,127 @@ partial class MoveEditor7
         this.GB_Expansion.Controls.Add(this.NUD_AnimID);
         this.GB_Expansion.Controls.Add(this.B_ExportTxt);
         this.GB_Expansion.Controls.Add(this.B_ImportTxt);
+        this.GB_Expansion.Controls.Add(this.B_VanillaLog);
         this.GB_Expansion.Controls.Add(this.B_SaveExport);
         this.GB_Expansion.Controls.Add(this.L_SaveReminder);
-        this.GB_Expansion.Controls.Add(this.B_VanillaLog);
-        this.GB_Expansion.Location = new System.Drawing.Point(720, 5);
+        this.GB_Expansion.Location = new System.Drawing.Point(655, 10);
         this.GB_Expansion.Name = "GB_Expansion";
-        this.GB_Expansion.Size = new System.Drawing.Size(320, 500);
+        this.GB_Expansion.Size = new System.Drawing.Size(140, 490);
         this.GB_Expansion.TabIndex = 116;
         this.GB_Expansion.TabStop = false;
         this.GB_Expansion.Text = "Move Expansion Tools";
         // 
-        // B_RandAll
+        // B_AddMove
         // 
-        this.B_RandAll.Location = new System.Drawing.Point(540, 110);
-        this.B_RandAll.Name = "B_RandAll";
-        this.B_RandAll.Size = new System.Drawing.Size(160, 23);
-        this.B_RandAll.TabIndex = 63;
-        this.B_RandAll.Text = "Randomize!";
-        this.B_RandAll.UseVisualStyleBackColor = true;
-        this.B_RandAll.Click += new System.EventHandler(this.B_RandAll_Click);
+        this.B_AddMove.Location = new System.Drawing.Point(8, 20);
+        this.B_AddMove.Name = "B_AddMove";
+        this.B_AddMove.Size = new System.Drawing.Size(124, 25);
+        this.B_AddMove.TabIndex = 102;
+        this.B_AddMove.Text = "Add New Move Slot";
+        this.B_AddMove.UseVisualStyleBackColor = true;
+        this.B_AddMove.Click += new System.EventHandler(this.B_AddMove_Click);
+        // 
+        // B_SyncAnim
+        // 
+        this.B_SyncAnim.Location = new System.Drawing.Point(8, 48);
+        this.B_SyncAnim.Name = "B_SyncAnim";
+        this.B_SyncAnim.Size = new System.Drawing.Size(124, 25);
+        this.B_SyncAnim.TabIndex = 103;
+        this.B_SyncAnim.Text = "Sync Animations";
+        this.B_SyncAnim.UseVisualStyleBackColor = true;
+        this.B_SyncAnim.Click += new System.EventHandler(this.B_SyncAnim_Click);
+        // 
+        // B_SyncBSEQ
+        // 
+        this.B_SyncBSEQ.Location = new System.Drawing.Point(8, 76);
+        this.B_SyncBSEQ.Name = "B_SyncBSEQ";
+        this.B_SyncBSEQ.Size = new System.Drawing.Size(124, 25);
+        this.B_SyncBSEQ.TabIndex = 104;
+        this.B_SyncBSEQ.Text = "Sync BSEQ Files";
+        this.B_SyncBSEQ.UseVisualStyleBackColor = true;
+        this.B_SyncBSEQ.Click += new System.EventHandler(this.B_SyncBSEQ_Click);
+        // 
+        // L_CopyAnim
+        // 
+        this.L_CopyAnim.AutoSize = true;
+        this.L_CopyAnim.Location = new System.Drawing.Point(8, 104);
+        this.L_CopyAnim.Name = "L_CopyAnim";
+        this.L_CopyAnim.Size = new System.Drawing.Size(59, 13);
+        this.L_CopyAnim.TabIndex = 110;
+        this.L_CopyAnim.Text = "Copy From:";
+        // 
+        // NUD_CopyAnim
+        // 
+        this.NUD_CopyAnim.Location = new System.Drawing.Point(8, 120);
+        this.NUD_CopyAnim.Maximum = new decimal(new int[] { 2000, 0, 0, 0 });
+        this.NUD_CopyAnim.Name = "NUD_CopyAnim";
+        this.NUD_CopyAnim.Size = new System.Drawing.Size(124, 20);
+        this.NUD_CopyAnim.TabIndex = 111;
+        // 
+        // B_CopyAnim
+        // 
+        this.B_CopyAnim.Location = new System.Drawing.Point(8, 143);
+        this.B_CopyAnim.Name = "B_CopyAnim";
+        this.B_CopyAnim.Size = new System.Drawing.Size(124, 25);
+        this.B_CopyAnim.TabIndex = 112;
+        this.B_CopyAnim.Text = "Clone to Selected";
+        this.B_CopyAnim.UseVisualStyleBackColor = true;
+        this.B_CopyAnim.Click += new System.EventHandler(this.B_CopyAnim_Click);
+        // 
+        // L_AnimID
+        // 
+        this.L_AnimID.AutoSize = true;
+        this.L_AnimID.Location = new System.Drawing.Point(8, 171);
+        this.L_AnimID.Name = "L_AnimID";
+        this.L_AnimID.Size = new System.Drawing.Size(70, 13);
+        this.L_AnimID.TabIndex = 113;
+        this.L_AnimID.Text = "Animation ID:";
+        // 
+        // NUD_AnimID
+        // 
+        this.NUD_AnimID.Location = new System.Drawing.Point(8, 187);
+        this.NUD_AnimID.Maximum = new decimal(new int[] { 2000, 0, 0, 0 });
+        this.NUD_AnimID.Name = "NUD_AnimID";
+        this.NUD_AnimID.Size = new System.Drawing.Size(124, 20);
+        this.NUD_AnimID.TabIndex = 114;
+        // 
+        // B_ExportTxt
+        // 
+        this.B_ExportTxt.Location = new System.Drawing.Point(8, 211);
+        this.B_ExportTxt.Name = "B_ExportTxt";
+        this.B_ExportTxt.Size = new System.Drawing.Size(124, 25);
+        this.B_ExportTxt.TabIndex = 115;
+        this.B_ExportTxt.Text = "Export Moves .txt";
+        this.B_ExportTxt.UseVisualStyleBackColor = true;
+        this.B_ExportTxt.Click += new System.EventHandler(this.B_ExportTxt_Click);
+        // 
+        // B_ImportTxt
+        // 
+        this.B_ImportTxt.Location = new System.Drawing.Point(8, 239);
+        this.B_ImportTxt.Name = "B_ImportTxt";
+        this.B_ImportTxt.Size = new System.Drawing.Size(124, 25);
+        this.B_ImportTxt.TabIndex = 116;
+        this.B_ImportTxt.Text = "Import Moves .txt";
+        this.B_ImportTxt.UseVisualStyleBackColor = true;
+        this.B_ImportTxt.Click += new System.EventHandler(this.B_ImportTxt_Click);
+        // 
+        // B_VanillaLog
+        // 
+        this.B_VanillaLog.Location = new System.Drawing.Point(8, 267);
+        this.B_VanillaLog.Name = "B_VanillaLog";
+        this.B_VanillaLog.Size = new System.Drawing.Size(124, 25);
+        this.B_VanillaLog.TabIndex = 117;
+        this.B_VanillaLog.Text = "Load Baseline";
+        this.B_VanillaLog.UseVisualStyleBackColor = true;
+        this.B_VanillaLog.Click += new System.EventHandler(this.B_VanillaLog_Click);
         // 
         // B_SaveExport
         // 
         this.B_SaveExport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(100)))), ((int)(((byte)(60)))));
         this.B_SaveExport.ForeColor = System.Drawing.Color.White;
-        this.B_SaveExport.Location = new System.Drawing.Point(165, 25);
+        this.B_SaveExport.Location = new System.Drawing.Point(8, 305);
         this.B_SaveExport.Name = "B_SaveExport";
-        this.B_SaveExport.Size = new System.Drawing.Size(145, 48);
+        this.B_SaveExport.Size = new System.Drawing.Size(124, 45);
         this.B_SaveExport.TabIndex = 108;
         this.B_SaveExport.Text = "Save / Export to ROM";
         this.B_SaveExport.UseVisualStyleBackColor = false;
@@ -976,183 +1029,12 @@ partial class MoveEditor7
         // L_SaveReminder
         // 
         this.L_SaveReminder.AutoSize = false;
-        this.L_SaveReminder.Location = new System.Drawing.Point(165, 75);
+        this.L_SaveReminder.Location = new System.Drawing.Point(8, 355);
         this.L_SaveReminder.Name = "L_SaveReminder";
-        this.L_SaveReminder.Size = new System.Drawing.Size(145, 40);
+        this.L_SaveReminder.Size = new System.Drawing.Size(124, 130);
         this.L_SaveReminder.TabIndex = 118;
-        this.L_SaveReminder.Text = "New moves will autosave, but click this button to actually save them to the game!";
+        this.L_SaveReminder.Text = "New moves autosave internally, but click Save to write out to ROM!";
         this.L_SaveReminder.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-        // 
-        // groupBox1
-        // 
-        this.groupBox1.Controls.Add(this.CHK_Category);
-        this.groupBox1.Controls.Add(this.CHK_Type);
-        this.groupBox1.Location = new System.Drawing.Point(540, 140);
-        this.groupBox1.Name = "groupBox1";
-        this.groupBox1.Size = new System.Drawing.Size(160, 55);
-        this.groupBox1.TabIndex = 64;
-        this.groupBox1.TabStop = false;
-        this.groupBox1.Text = "Randomizer Options";
-        // 
-        // CHK_Category
-        // 
-        this.CHK_Category.AutoSize = true;
-        this.CHK_Category.Location = new System.Drawing.Point(6, 34);
-        this.CHK_Category.Name = "CHK_Category";
-        this.CHK_Category.Size = new System.Drawing.Size(68, 17);
-        this.CHK_Category.TabIndex = 1;
-        this.CHK_Category.Text = "Category";
-        this.CHK_Category.UseVisualStyleBackColor = true;
-        // 
-        // CHK_Type
-        // 
-        this.CHK_Type.AutoSize = true;
-        this.CHK_Type.Location = new System.Drawing.Point(6, 19);
-        this.CHK_Type.Name = "CHK_Type";
-        this.CHK_Type.Size = new System.Drawing.Size(50, 17);
-        this.CHK_Type.TabIndex = 0;
-        this.CHK_Type.Text = "Type";
-        this.CHK_Type.UseVisualStyleBackColor = true;
-        // 
-        // B_Metronome
-        // 
-        this.B_Metronome.Location = new System.Drawing.Point(540, 200);
-        this.B_Metronome.Name = "B_Metronome";
-        this.B_Metronome.Size = new System.Drawing.Size(160, 23);
-        this.B_Metronome.TabIndex = 66;
-        this.B_Metronome.Text = "Metronome Mode";
-        this.B_Metronome.UseVisualStyleBackColor = true;
-        this.B_Metronome.Click += new System.EventHandler(this.B_Metronome_Click);
-        // 
-        // B_Table
-        // 
-        this.B_Table.Location = new System.Drawing.Point(540, 230);
-        this.B_Table.Name = "B_Table";
-        this.B_Table.Size = new System.Drawing.Size(160, 23);
-        this.B_Table.TabIndex = 67;
-        this.B_Table.Text = "Export Table";
-        this.B_Table.UseVisualStyleBackColor = true;
-        this.B_Table.Click += new System.EventHandler(this.B_Table_Click);
-        // 
-        // CLB_Flags
-        // 
-        this.CLB_Flags.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-        this.CLB_Flags.FormattingEnabled = true;
-        this.CLB_Flags.Location = new System.Drawing.Point(340, 20);
-        this.CLB_Flags.Name = "CLB_Flags";
-        this.CLB_Flags.Size = new System.Drawing.Size(185, 484);
-        this.CLB_Flags.TabIndex = 71;
-        // 
-        // B_RenameFlags
-        // 
-        this.B_RenameFlags.Location = new System.Drawing.Point(340, 508);
-        this.B_RenameFlags.Name = "B_RenameFlags";
-        this.B_RenameFlags.Size = new System.Drawing.Size(185, 23);
-        this.B_RenameFlags.TabIndex = 109;
-        this.B_RenameFlags.Text = "Rename Flags (F18-F32)";
-        this.B_RenameFlags.UseVisualStyleBackColor = true;
-        this.B_RenameFlags.Click += new System.EventHandler(this.B_RenameFlags_Click);
-        // 
-        // NUD_ZPower
-        // 
-        this.NUD_ZPower.Location = new System.Drawing.Point(71, 343);
-        this.NUD_ZPower.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_ZPower.Name = "NUD_ZPower";
-        this.NUD_ZPower.Size = new System.Drawing.Size(40, 20);
-        this.NUD_ZPower.TabIndex = 72;
-        // 
-        // NUD_RefreshAfflictPercent
-        // 
-        this.NUD_RefreshAfflictPercent.Location = new System.Drawing.Point(282, 284);
-        this.NUD_RefreshAfflictPercent.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-        this.NUD_RefreshAfflictPercent.Name = "NUD_RefreshAfflictPercent";
-        this.NUD_RefreshAfflictPercent.Size = new System.Drawing.Size(40, 20);
-        this.NUD_RefreshAfflictPercent.TabIndex = 73;
-        // 
-        // CB_ZMove
-        // 
-        this.CB_ZMove.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
-        this.CB_ZMove.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-        this.CB_ZMove.DropDownWidth = 150;
-        this.CB_ZMove.FormattingEnabled = true;
-        this.CB_ZMove.Location = new System.Drawing.Point(71, 320);
-        this.CB_ZMove.Name = "CB_ZMove";
-        this.CB_ZMove.Size = new System.Drawing.Size(157, 21);
-        this.CB_ZMove.TabIndex = 75;
-        // 
-        // L_ZMove
-        // 
-        this.L_ZMove.AutoSize = true;
-        this.L_ZMove.Location = new System.Drawing.Point(18, 323);
-        this.L_ZMove.Name = "L_ZMove";
-        this.L_ZMove.Size = new System.Drawing.Size(47, 13);
-        this.L_ZMove.TabIndex = 76;
-        this.L_ZMove.Text = "Z Move:";
-        // 
-        // L_ZPower
-        // 
-        this.L_ZPower.AutoSize = true;
-        this.L_ZPower.Location = new System.Drawing.Point(25, 345);
-        this.L_ZPower.Name = "L_ZPower";
-        this.L_ZPower.Size = new System.Drawing.Size(40, 13);
-        this.L_ZPower.TabIndex = 78;
-        this.L_ZPower.Text = "Power:";
-        // 
-        // L_ZEffect
-        // 
-        this.L_ZEffect.AutoSize = true;
-        this.L_ZEffect.Location = new System.Drawing.Point(117, 345);
-        this.L_ZEffect.Name = "L_ZEffect";
-        this.L_ZEffect.Size = new System.Drawing.Size(38, 13);
-        this.L_ZEffect.TabIndex = 79;
-        this.L_ZEffect.Text = "Effect:";
-        // 
-        // CB_ZEffect
-        // 
-        this.CB_ZEffect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_ZEffect.DropDownWidth = 350;
-        this.CB_ZEffect.FormattingEnabled = true;
-        this.CB_ZEffect.Location = new System.Drawing.Point(159, 342);
-        this.CB_ZEffect.Name = "CB_ZEffect";
-        this.CB_ZEffect.Size = new System.Drawing.Size(129, 21);
-        this.CB_ZEffect.TabIndex = 80;
-        // 
-        // CB_AfflictRefresh
-        // 
-        this.CB_AfflictRefresh.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-        this.CB_AfflictRefresh.DropDownWidth = 130;
-        this.CB_AfflictRefresh.FormattingEnabled = true;
-        this.CB_AfflictRefresh.Location = new System.Drawing.Point(227, 261);
-        this.CB_AfflictRefresh.Name = "CB_AfflictRefresh";
-        this.CB_AfflictRefresh.Size = new System.Drawing.Size(95, 21);
-        this.CB_AfflictRefresh.TabIndex = 81;
-        // 
-        // L_Refresh
-        // 
-        this.L_Refresh.AutoSize = true;
-        this.L_Refresh.Location = new System.Drawing.Point(229, 245);
-        this.L_Refresh.Name = "L_Refresh";
-        this.L_Refresh.Size = new System.Drawing.Size(76, 13);
-        this.L_Refresh.TabIndex = 82;
-        this.L_Refresh.Text = "Afflict Refresh:";
-        // 
-        // label1
-        // 
-        this.label1.AutoSize = true;
-        this.label1.Location = new System.Drawing.Point(229, 286);
-        this.label1.Name = "label1";
-        this.label1.Size = new System.Drawing.Size(47, 13);
-        this.label1.TabIndex = 83;
-        this.label1.Text = "Percent:";
         // 
         // tcMain
         // 
@@ -1162,7 +1044,7 @@ partial class MoveEditor7
         this.tcMain.Location = new System.Drawing.Point(0, 0);
         this.tcMain.Name = "tcMain";
         this.tcMain.SelectedIndex = 0;
-        this.tcMain.Size = new System.Drawing.Size(1050, 560);
+        this.tcMain.Size = new System.Drawing.Size(805, 540);
         this.tcMain.TabIndex = 1280;
         // 
         // tpEditor
@@ -1234,7 +1116,7 @@ partial class MoveEditor7
         this.tpEditor.Location = new System.Drawing.Point(4, 22);
         this.tpEditor.Name = "tpEditor";
         this.tpEditor.Padding = new System.Windows.Forms.Padding(3);
-        this.tpEditor.Size = new System.Drawing.Size(1042, 534);
+        this.tpEditor.Size = new System.Drawing.Size(797, 514);
         this.tpEditor.TabIndex = 0;
         this.tpEditor.Text = "Move Data";
         this.tpEditor.UseVisualStyleBackColor = true;
@@ -1245,7 +1127,7 @@ partial class MoveEditor7
         this.tpLog.Location = new System.Drawing.Point(4, 22);
         this.tpLog.Name = "tpLog";
         this.tpLog.Padding = new System.Windows.Forms.Padding(3);
-        this.tpLog.Size = new System.Drawing.Size(1042, 534);
+        this.tpLog.Size = new System.Drawing.Size(797, 514);
         this.tpLog.TabIndex = 1;
         this.tpLog.Text = "Change Log";
         this.tpLog.UseVisualStyleBackColor = true;
@@ -1259,7 +1141,7 @@ partial class MoveEditor7
         this.rtbLog.Location = new System.Drawing.Point(3, 3);
         this.rtbLog.Name = "rtbLog";
         this.rtbLog.ReadOnly = false;
-        this.rtbLog.Size = new System.Drawing.Size(1036, 528);
+        this.rtbLog.Size = new System.Drawing.Size(791, 508);
         this.rtbLog.TabIndex = 0;
         this.rtbLog.Text = "";
         this.rtbLog.TextChanged += new System.EventHandler(this.OnLogChanged);
@@ -1268,7 +1150,7 @@ partial class MoveEditor7
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(1050, 560);
+        this.ClientSize = new System.Drawing.Size(805, 540);
         this.Controls.Add(this.tcMain);
         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;

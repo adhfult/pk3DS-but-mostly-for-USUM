@@ -1,0 +1,48 @@
+Ability: Moody (ID: 141)
+==================================================
+
+Effect:
+Raises a random stat two stages and lowers another one stage after each turn.
+
+Dynamic ARM Mechanic:
+- **Negative Stat Modifier:** The code loads a negative integer (e.g., `mov rX, #-1`) into the stat stage parameter register.
+- **Targeting:** It calls the stat-modifier subroutine (`bl`), applying the negative stage to the target's stat array.
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x00077914 (ARM)
+Raw Assembly:
+0x77914: 8D0052E3  cmp	r2, #0x8d
+0x77918: E20FA003  moveq	r0, #0x388
+0x7791C: 1EFF2FE1  bx	lr
+0x77920: D70052E3  cmp	r2, #0xd7
+
+Logic Translation:
+- `0x77914`: Compares the loaded ability ID against 0x8d. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77918`: Loads literal `#0x388` into `r0`.
+- `0x7791C`: Executes `bx lr`.
+- `0x77920`: Compares the loaded ability ID against 0xd7. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x0003A81C (THUMB)
+Raw Assembly:
+0x3A81C: 8D2F      cmp	r7, #0x8d
+0x3A81E: 84E2      b	#0x3ad2a
+0x3A820: 821F      subs	r2, r0, #6
+0x3A822: 84E2      b	#0x3ad2e
+0x3A824: 5CE5      b	#0x3a2e0
+
+Logic Translation:
+- `0x3A81C`: Compares the loaded ability ID against 0x8d. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3A81E`: Executes `b #0x3ad2a`.
+- `0x3A820`: Executes `subs r2, r0, #6`.
+- `0x3A822`: Executes `b #0x3ad2e`.
+- `0x3A824`: Executes `b #0x3a2e0`.
+--------------------
+Address: 0x000B26B8 (THUMB)
+Raw Assembly:
+0xB26B8: 8D29      cmp	r1, #0x8d
+
+Logic Translation:
+- `0xB26B8`: Compares the loaded ability ID against 0x8d. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

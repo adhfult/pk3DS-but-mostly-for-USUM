@@ -182,9 +182,11 @@ private int PromptFormMapping(string formName)
         int s = baseForms[entry];
         int f = formVal[entry];
         if (entry <= Main.Config.MaxSpeciesID)
+        {
             s = entry;
-        string filename = "_" + s + (entry > Main.Config.MaxSpeciesID ? "_" + (f + 1) : "");
-        PB_MonSprite.Image = (Bitmap)Resources.ResourceManager.GetObject(filename);
+            f = 0;
+        }
+        PB_MonSprite.Image = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
 
         int dataIndex = entry < files.Length ? entry : baseForms[entry];
         dgv.Rows.Clear();
@@ -247,6 +249,9 @@ private int PromptFormMapping(string formName)
     private void SetList()
     {
         if (entry < 1 || pkm == null) return;
+        // Force any in-progress cell edit to commit before reading values
+        dgv.EndEdit();
+        dgv.CommitEdit(DataGridViewDataErrorContexts.Commit);
         var levels = new List<int>();
         var moves = new List<int>();
         for (int i = 0; i < dgv.Rows.Count; i++)
@@ -597,7 +602,20 @@ private int PromptFormMapping(string formName)
     {
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Randomize ALL Pokémon learnsets based on current options?") != DialogResult.Yes) return;
         var sets = files.Select(z => new Learnset6(z)).Cast<Learnset>().ToArray();
-        var rand = new LearnsetRandomizer(Main.Config, sets);
+        int[] banned = [.. Legal.Z_Moves, 165, 621, 464];
+        if (!CHK_HMs.Checked) banned = [.. banned, 15, 19, 57, 70, 127, 249, 291, 148];
+
+        var rand = new LearnsetRandomizer(Main.Config, sets)
+        {
+            Expand = CHK_Expand.Checked,
+            ExpandTo = (int)NUD_Moves.Value,
+            Spread = CHK_Spread.Checked,
+            SpreadTo = (int)NUD_Level.Value,
+            STABPercent = NUD_STAB.Value,
+            STABFirst = CHK_STAB.Checked,
+            BannedMoves = [.. banned],
+            Learn4Level1 = CHK_4MovesLvl1.Checked,
+        };
         rand.Execute();
         for (int i = 0; i < files.Length; i++)
             files[i] = ((Learnset6)sets[i]).Write();
@@ -613,9 +631,13 @@ private int PromptFormMapping(string formName)
         for (int i = 0; i < files.Length; i++)
         {
             var p = new Learnset6(files[i]);
-            sb.AppendLine($"{i:000} {specieslist[i]}");
+            string speciesName = i < specieslist.Length ? specieslist[i] : $"Species {i}";
+            sb.AppendLine($"{i:000} {speciesName}");
             for (int j = 0; j < p.Count; j++)
-                sb.AppendLine($"{p.Levels[j]} - {movelist[p.Moves[j]]}");
+            {
+                string moveName = p.Moves[j] < movelist.Length ? movelist[p.Moves[j]] : $"Move {p.Moves[j]}";
+                sb.AppendLine($"{p.Levels[j]} - {moveName}");
+            }
             sb.AppendLine();
         }
         File.WriteAllText(sfd.FileName, sb.ToString());

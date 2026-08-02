@@ -1,0 +1,50 @@
+Ability: Comatose (ID: 213)
+==================================================
+
+Effect:
+This Pokémon always  acts as though it were Asleep.
+
+Dynamic ARM Mechanic:
+- **Status Affliction/Check:** The code loads the specific bitflag representing the status condition (e.g., `0x8` for Poison, `0x10` for Burn) into a register. It either bitwise-ANDs (`and`) it to check for the status, or bitwise-ORs (`orr`) it into the target's volatile status memory block to inflict it.
+
+Execution Hooks:
+--------------------
+Address: 0x0007797C (ARM)
+Raw Assembly:
+0x7797C: D50052E3  cmp	r2, #0xd5
+0x77980: 7C019F05  ldreq	r0, [pc, #0x17c]
+0x77984: 1EFF2FE1  bx	lr
+0x77988: FA0052E3  cmp	r2, #0xfa
+
+Logic Translation:
+- `0x7797C`: Compares the loaded ability ID against 0xd5. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77980`: Loads memory data into `r0`.
+- `0x77984`: Executes `bx lr`.
+- `0x77988`: Compares the loaded ability ID against 0xfa. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00090AE4 (ARM)
+Raw Assembly:
+0x90AE4: D50050E3  cmp	r0, #0xd5
+0x90AE8: 0200000A  beq	#0x90af8
+0x90AEC: 300094E5  ldr	r0, [r4, #0x30]
+0x90AF0: 070010E2  ands	r0, r0, #7
+
+Logic Translation:
+- `0x90AE4`: Compares the loaded ability ID against 0xd5. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x90AE8`: If it matches, branches to `0x0x90af8` to apply the effect.
+- `0x90AEC`: Loads memory data into `r0`.
+- `0x90AF0`: Executes `ands r0, r0, #7`.
+--------------------
+Address: 0x000E24C8 (ARM)
+Raw Assembly:
+0xE24C8: D50050E3  cmp	r0, #0xd5
+0xE24CC: 00F020E3  nop	
+0xE24D0: 0200000A  beq	#0xe24e0
+0xE24D4: 300094E5  ldr	r0, [r4, #0x30]
+
+Logic Translation:
+- `0xE24C8`: Compares the loaded ability ID against 0xd5. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xE24CC`: Executes `nop `.
+- `0xE24D0`: If it matches, branches to `0x0xe24e0` to apply the effect.
+- `0xE24D4`: Loads memory data into `r0`.
+--------------------

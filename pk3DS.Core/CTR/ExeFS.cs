@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,7 +16,9 @@ public class ExeFS
     {
         if (Directory.Exists(path))
         {
-            var files = new DirectoryInfo(path).GetFiles().Select(f => f.FullName).ToArray();
+            var files = new DirectoryInfo(path).GetFiles()
+                .Where(f => !f.Name.EndsWith(".bak", StringComparison.OrdinalIgnoreCase) && !f.Name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) && !f.Name.StartsWith("."))
+                .Select(f => f.FullName).ToArray();
             SetData(files);
         }
         else if (File.Exists(path))
@@ -56,8 +58,23 @@ public class ExeFS
         catch { return false; }
     }
 
+    public static string[] GetExeFSFiles(string path)
+    {
+        return new DirectoryInfo(path).GetFiles()
+            .Where(f => !f.Name.EndsWith(".bak", StringComparison.OrdinalIgnoreCase) && !f.Name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) && !f.Name.StartsWith("."))
+            .Select(f => f.FullName).ToArray();
+    }
+
     public static bool PackExeFS(string[] files, string outFile)
     {
+        files = files.Where(f =>
+        {
+            var name = Path.GetFileName(f);
+            return !name.EndsWith(".bak", StringComparison.OrdinalIgnoreCase) &&
+                   !name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase) &&
+                   !name.StartsWith(".");
+        }).ToArray();
+
         if (files.Length > 10) { Console.WriteLine("Cannot package more than 10 files to exefs."); return false; }
 
         try
@@ -71,6 +88,7 @@ public class ExeFS
             {
                 // Do the Top (File Info)
                 string fileName = Path.GetFileNameWithoutExtension(files[i]);
+                if (fileName.Equals("code", StringComparison.OrdinalIgnoreCase)) fileName = ".code";
                 byte[] nameData = Encoding.ASCII.GetBytes(fileName); Array.Resize(ref nameData, 0x8);
                 Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
 
@@ -113,6 +131,7 @@ public class ExeFS
         {
             // Do the Top (File Info)
             string fileName = Path.GetFileNameWithoutExtension(files[i]);
+            if (fileName.Equals("code", StringComparison.OrdinalIgnoreCase)) fileName = ".code";
             byte[] nameData = Encoding.ASCII.GetBytes(fileName); Array.Resize(ref nameData, 0x8);
             Array.Copy(nameData, 0, headerData, i * 0x10, 0x8);
 

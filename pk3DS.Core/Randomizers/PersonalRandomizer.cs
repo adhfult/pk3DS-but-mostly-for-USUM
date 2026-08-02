@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -207,6 +207,13 @@ public class PersonalRandomizer : IRandomizer
 
     private void RandomizeTypeTutors(PersonalInfo z, int index)
     {
+        if (z is PersonalInfoSM sm)
+        {
+            for (int i = 0; i < 8 && i < sm.TutorFlags.Length; i++)
+                sm.TutorFlags[i] = rnd.Next(0, 100) < LearnTypeTutorPercent;
+            return;
+        }
+
         var t = z.TypeTutors;
         for (int i = 0; i < t.Length; i++)
             t[i] = rnd.Next(0, 100) < LearnTypeTutorPercent;
@@ -220,6 +227,13 @@ public class PersonalRandomizer : IRandomizer
 
     private void RandomizeSpecialTutors(PersonalInfo z)
     {
+        if (z is PersonalInfoSM sm)
+        {
+            for (int i = 8; i < sm.TutorFlags.Length; i++)
+                sm.TutorFlags[i] = rnd.Next(0, 100) < LearnMoveTutorPercent;
+            return;
+        }
+
         var tutors = z.SpecialTutors;
         foreach (bool[] tutor in tutors)
         {

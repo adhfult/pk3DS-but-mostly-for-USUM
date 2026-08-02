@@ -161,6 +161,8 @@ partial class StaticEncounterEditor7
         this.CHK_AllowMega = new System.Windows.Forms.CheckBox();
         this.CHK_Item = new System.Windows.Forms.CheckBox();
         this.CHK_G7 = new System.Windows.Forms.CheckBox();
+        this.CHK_G8 = new System.Windows.Forms.CheckBox();
+        this.CHK_G9 = new System.Windows.Forms.CheckBox();
         this.CHK_BST = new System.Windows.Forms.CheckBox();
         this.CHK_E = new System.Windows.Forms.CheckBox();
         this.CHK_L = new System.Windows.Forms.CheckBox();
@@ -1951,6 +1953,8 @@ partial class StaticEncounterEditor7
         this.GB_Rand.Controls.Add(this.CHK_RandomAura);
         this.GB_Rand.Controls.Add(this.CHK_AllowMega);
         this.GB_Rand.Controls.Add(this.CHK_Item);
+        this.GB_Rand.Controls.Add(this.CHK_G9);
+        this.GB_Rand.Controls.Add(this.CHK_G8);
         this.GB_Rand.Controls.Add(this.CHK_G7);
         this.GB_Rand.Controls.Add(this.CHK_BST);
         this.GB_Rand.Controls.Add(this.CHK_E);
@@ -1965,182 +1969,10 @@ partial class StaticEncounterEditor7
         this.GB_Rand.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
         this.GB_Rand.Name = "GB_Rand";
         this.GB_Rand.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.GB_Rand.Size = new System.Drawing.Size(344, 191);
-        this.GB_Rand.TabIndex = 508;
+        this.GB_Rand.Size = new System.Drawing.Size(340, 160);
+        this.GB_Rand.TabIndex = 4;
         this.GB_Rand.TabStop = false;
         this.GB_Rand.Text = "Randomizer Options";
-        // 
-        // CHK_SpecialMove
-        // 
-        this.CHK_SpecialMove.AutoSize = true;
-        this.CHK_SpecialMove.Location = new System.Drawing.Point(12, 166);
-        this.CHK_SpecialMove.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_SpecialMove.Name = "CHK_SpecialMove";
-        this.CHK_SpecialMove.Size = new System.Drawing.Size(239, 20);
-        this.CHK_SpecialMove.TabIndex = 301;
-        this.CHK_SpecialMove.Text = "Random Gift Move for Gift Pokémon";
-        this.CHK_SpecialMove.UseVisualStyleBackColor = true;
-        // 
-        // CHK_RandomAbility
-        // 
-        this.CHK_RandomAbility.AutoSize = true;
-        this.CHK_RandomAbility.Location = new System.Drawing.Point(12, 148);
-        this.CHK_RandomAbility.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_RandomAbility.Name = "CHK_RandomAbility";
-        this.CHK_RandomAbility.Size = new System.Drawing.Size(225, 20);
-        this.CHK_RandomAbility.TabIndex = 302;
-        this.CHK_RandomAbility.Text = "Random Abilities (1, 2, or Hidden)";
-        this.CHK_RandomAbility.UseVisualStyleBackColor = true;
-        // 
-        // CHK_RandomAura
-        // 
-        this.CHK_RandomAura.AutoSize = true;
-        this.CHK_RandomAura.Location = new System.Drawing.Point(12, 129);
-        this.CHK_RandomAura.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_RandomAura.Name = "CHK_RandomAura";
-        this.CHK_RandomAura.Size = new System.Drawing.Size(213, 20);
-        this.CHK_RandomAura.TabIndex = 300;
-        this.CHK_RandomAura.Text = "Random Totem Pokémon Aura";
-        this.CHK_RandomAura.UseVisualStyleBackColor = true;
-        // 
-        // CHK_AllowMega
-        // 
-        this.CHK_AllowMega.AutoSize = true;
-        this.CHK_AllowMega.Location = new System.Drawing.Point(12, 111);
-        this.CHK_AllowMega.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_AllowMega.Name = "CHK_AllowMega";
-        this.CHK_AllowMega.Size = new System.Drawing.Size(193, 20);
-        this.CHK_AllowMega.TabIndex = 298;
-        this.CHK_AllowMega.Text = "Allow Random Mega Forms";
-        this.CHK_AllowMega.UseVisualStyleBackColor = true;
-        // 
-        // CHK_Item
-        // 
-        this.CHK_Item.AutoSize = true;
-        this.CHK_Item.Checked = true;
-        this.CHK_Item.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_Item.Location = new System.Drawing.Point(12, 92);
-        this.CHK_Item.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_Item.Name = "CHK_Item";
-        this.CHK_Item.Size = new System.Drawing.Size(146, 20);
-        this.CHK_Item.TabIndex = 297;
-        this.CHK_Item.Text = "Random Held Items";
-        this.CHK_Item.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G7
-        // 
-        this.CHK_G7.AutoSize = true;
-        this.CHK_G7.Checked = true;
-        this.CHK_G7.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G7.Location = new System.Drawing.Point(12, 70);
-        this.CHK_G7.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G7.Name = "CHK_G7";
-        this.CHK_G7.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G7.TabIndex = 296;
-        this.CHK_G7.Text = "Gen 7";
-        this.CHK_G7.UseVisualStyleBackColor = true;
-        // 
-        // CHK_BST
-        // 
-        this.CHK_BST.AutoSize = true;
-        this.CHK_BST.Location = new System.Drawing.Point(171, 53);
-        this.CHK_BST.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_BST.Name = "CHK_BST";
-        this.CHK_BST.Size = new System.Drawing.Size(144, 20);
-        this.CHK_BST.TabIndex = 288;
-        this.CHK_BST.Text = "Randomize by BST";
-        this.CHK_BST.UseVisualStyleBackColor = true;
-        // 
-        // CHK_E
-        // 
-        this.CHK_E.AutoSize = true;
-        this.CHK_E.Checked = true;
-        this.CHK_E.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_E.Location = new System.Drawing.Point(171, 36);
-        this.CHK_E.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_E.Name = "CHK_E";
-        this.CHK_E.Size = new System.Drawing.Size(117, 20);
-        this.CHK_E.TabIndex = 287;
-        this.CHK_E.Text = "Event Legends";
-        this.CHK_E.UseVisualStyleBackColor = true;
-        // 
-        // CHK_L
-        // 
-        this.CHK_L.AutoSize = true;
-        this.CHK_L.Checked = true;
-        this.CHK_L.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_L.Location = new System.Drawing.Point(171, 18);
-        this.CHK_L.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_L.Name = "CHK_L";
-        this.CHK_L.Size = new System.Drawing.Size(120, 20);
-        this.CHK_L.TabIndex = 286;
-        this.CHK_L.Text = "Game Legends";
-        this.CHK_L.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G6
-        // 
-        this.CHK_G6.AutoSize = true;
-        this.CHK_G6.Checked = true;
-        this.CHK_G6.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G6.Location = new System.Drawing.Point(89, 53);
-        this.CHK_G6.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G6.Name = "CHK_G6";
-        this.CHK_G6.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G6.TabIndex = 285;
-        this.CHK_G6.Text = "Gen 6";
-        this.CHK_G6.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G5
-        // 
-        this.CHK_G5.AutoSize = true;
-        this.CHK_G5.Checked = true;
-        this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G5.Location = new System.Drawing.Point(89, 36);
-        this.CHK_G5.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G5.Name = "CHK_G5";
-        this.CHK_G5.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G5.TabIndex = 284;
-        this.CHK_G5.Text = "Gen 5";
-        this.CHK_G5.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G4
-        // 
-        this.CHK_G4.AutoSize = true;
-        this.CHK_G4.Checked = true;
-        this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G4.Location = new System.Drawing.Point(89, 18);
-        this.CHK_G4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G4.Name = "CHK_G4";
-        this.CHK_G4.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G4.TabIndex = 283;
-        this.CHK_G4.Text = "Gen 4";
-        this.CHK_G4.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G3
-        // 
-        this.CHK_G3.AutoSize = true;
-        this.CHK_G3.Checked = true;
-        this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G3.Location = new System.Drawing.Point(12, 53);
-        this.CHK_G3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G3.Name = "CHK_G3";
-        this.CHK_G3.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G3.TabIndex = 282;
-        this.CHK_G3.Text = "Gen 3";
-        this.CHK_G3.UseVisualStyleBackColor = true;
-        // 
-        // CHK_G2
-        // 
-        this.CHK_G2.AutoSize = true;
-        this.CHK_G2.Checked = true;
-        this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G2.Location = new System.Drawing.Point(12, 36);
-        this.CHK_G2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
-        this.CHK_G2.Name = "CHK_G2";
-        this.CHK_G2.Size = new System.Drawing.Size(62, 20);
-        this.CHK_G2.TabIndex = 281;
-        this.CHK_G2.Text = "Gen 2";
-        this.CHK_G2.UseVisualStyleBackColor = true;
         // 
         // CHK_G1
         // 
@@ -2155,6 +1987,261 @@ partial class StaticEncounterEditor7
         this.CHK_G1.Text = "Gen 1";
         this.CHK_G1.UseVisualStyleBackColor = true;
         // 
+        // CHK_G2
+        // 
+        this.CHK_G2.AutoSize = true;
+        this.CHK_G2.Checked = true;
+        this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G2.Location = new System.Drawing.Point(12, 36);
+        this.CHK_G2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+        this.CHK_G2.Name = "CHK_G2";
+        this.CHK_G2.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G2.TabIndex = 281;
+        this.CHK_G2.Text = "Gen 2";
+        this.CHK_G2.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G3
+        // 
+        this.CHK_G3.AutoSize = true;
+        this.CHK_G3.Checked = true;
+        this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G3.Location = new System.Drawing.Point(12, 54);
+        this.CHK_G3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+        this.CHK_G3.Name = "CHK_G3";
+        this.CHK_G3.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G3.TabIndex = 282;
+        this.CHK_G3.Text = "Gen 3";
+        this.CHK_G3.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G4
+        // 
+        this.CHK_G4.AutoSize = true;
+        this.CHK_G4.Checked = true;
+        this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G4.Location = new System.Drawing.Point(75, 18);
+        this.CHK_G4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+        this.CHK_G4.Name = "CHK_G4";
+        this.CHK_G4.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G4.TabIndex = 283;
+        this.CHK_G4.Text = "Gen 4";
+        this.CHK_G4.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G5
+        // 
+        this.CHK_G5.AutoSize = true;
+        this.CHK_G5.Checked = true;
+        this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G5.Location = new System.Drawing.Point(75, 36);
+        // CHK_G6
+        // 
+        this.CHK_G6.AutoSize = true;
+        this.CHK_G6.Checked = true;
+        this.CHK_G6.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G6.Location = new System.Drawing.Point(85, 36);
+        this.CHK_G6.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G6.Name = "CHK_G6";
+        this.CHK_G6.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G6.TabIndex = 285;
+        this.CHK_G6.Text = "Gen 6";
+        this.CHK_G6.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G7
+        // 
+        this.CHK_G7.AutoSize = true;
+        this.CHK_G7.Checked = true;
+        this.CHK_G7.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G7.Location = new System.Drawing.Point(85, 54);
+        this.CHK_G7.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G7.Name = "CHK_G7";
+        this.CHK_G7.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G7.TabIndex = 296;
+        this.CHK_G7.Text = "Gen 7";
+        this.CHK_G7.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G8
+        // 
+        this.CHK_G8.AutoSize = true;
+        this.CHK_G8.Checked = true;
+        this.CHK_G8.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G8.Location = new System.Drawing.Point(85, 72);
+        this.CHK_G8.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G8.Name = "CHK_G8";
+        this.CHK_G8.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G8.TabIndex = 297;
+        this.CHK_G8.Text = "Gen 8";
+        this.CHK_G8.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G9
+        // 
+        this.CHK_G9.AutoSize = true;
+        this.CHK_G9.Checked = true;
+        this.CHK_G9.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G9.Location = new System.Drawing.Point(85, 90);
+        this.CHK_G9.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G9.Name = "CHK_G9";
+        this.CHK_G9.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G9.TabIndex = 298;
+        this.CHK_G9.Text = "Gen 9";
+        this.CHK_G9.UseVisualStyleBackColor = true;
+        // 
+        // CHK_L
+        // 
+        this.CHK_L.AutoSize = true;
+        this.CHK_L.Checked = true;
+        this.CHK_L.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_L.Location = new System.Drawing.Point(160, 18);
+        this.CHK_L.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_L.Name = "CHK_L";
+        this.CHK_L.Size = new System.Drawing.Size(120, 20);
+        this.CHK_L.TabIndex = 286;
+        this.CHK_L.Text = "Game Legends";
+        this.CHK_L.UseVisualStyleBackColor = true;
+        // 
+        // CHK_E
+        // 
+        this.CHK_E.AutoSize = true;
+        this.CHK_E.Checked = true;
+        this.CHK_E.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_E.Location = new System.Drawing.Point(160, 36);
+        this.CHK_E.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_E.Name = "CHK_E";
+        this.CHK_E.Size = new System.Drawing.Size(117, 20);
+        this.CHK_E.TabIndex = 287;
+        this.CHK_E.Text = "Event Legends";
+        this.CHK_E.UseVisualStyleBackColor = true;
+        // 
+        // CHK_BST
+        // 
+        this.CHK_BST.AutoSize = true;
+        this.CHK_BST.Location = new System.Drawing.Point(160, 54);
+        this.CHK_BST.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_BST.Name = "CHK_BST";
+        this.CHK_BST.Size = new System.Drawing.Size(144, 20);
+        this.CHK_BST.TabIndex = 288;
+        this.CHK_BST.Text = "Randomize by BST";
+        this.CHK_BST.UseVisualStyleBackColor = true;
+        // 
+        // CHK_Item
+        // 
+        this.CHK_Item.AutoSize = true;
+        this.CHK_Item.Checked = true;
+        this.CHK_Item.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_Item.Location = new System.Drawing.Point(160, 72);
+        this.CHK_Item.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_Item.Name = "CHK_Item";
+        this.CHK_Item.Size = new System.Drawing.Size(146, 20);
+        this.CHK_Item.TabIndex = 297;
+        this.CHK_Item.Text = "Random Held Items";
+        this.CHK_Item.UseVisualStyleBackColor = true;
+        // 
+        // CHK_AllowMega
+        // 
+        this.CHK_AllowMega.AutoSize = true;
+        this.CHK_AllowMega.Location = new System.Drawing.Point(12, 118);
+        this.CHK_AllowMega.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_AllowMega.Name = "CHK_AllowMega";
+        this.CHK_AllowMega.Size = new System.Drawing.Size(193, 20);
+        this.CHK_AllowMega.TabIndex = 298;
+        this.CHK_AllowMega.Text = "Allow Random Mega Forms";
+        this.CHK_AllowMega.UseVisualStyleBackColor = true;
+        // 
+        // CHK_RandomAura
+        // 
+        this.CHK_RandomAura.AutoSize = true;
+        this.CHK_RandomAura.Location = new System.Drawing.Point(12, 138);
+        this.CHK_RandomAura.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_RandomAura.Name = "CHK_RandomAura";
+        this.CHK_RandomAura.Size = new System.Drawing.Size(213, 20);
+        this.CHK_RandomAura.TabIndex = 300;
+        this.CHK_RandomAura.Text = "Random Totem Pokémon Aura";
+        this.CHK_RandomAura.UseVisualStyleBackColor = true;
+        // 
+        // CHK_RandomAbility
+        // 
+        this.CHK_RandomAbility.AutoSize = true;
+        this.CHK_RandomAbility.Location = new System.Drawing.Point(12, 158);
+        this.CHK_RandomAbility.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_RandomAbility.Name = "CHK_RandomAbility";
+        this.CHK_RandomAbility.Size = new System.Drawing.Size(225, 20);
+        this.CHK_RandomAbility.TabIndex = 302;
+        this.CHK_RandomAbility.Text = "Random Abilities (1, 2, or Hidden)";
+        this.CHK_RandomAbility.UseVisualStyleBackColor = true;
+        // 
+        // CHK_SpecialMove
+        // 
+        this.CHK_SpecialMove.AutoSize = true;
+        this.CHK_SpecialMove.Location = new System.Drawing.Point(12, 178);
+        this.CHK_SpecialMove.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_SpecialMove.Name = "CHK_SpecialMove";
+        this.CHK_SpecialMove.Size = new System.Drawing.Size(239, 20);
+        this.CHK_SpecialMove.TabIndex = 301;
+        this.CHK_SpecialMove.Text = "Random Gift Move for Gift Pokémon";
+        this.CHK_SpecialMove.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G5
+        // 
+        this.CHK_G5.AutoSize = true;
+        this.CHK_G5.Checked = true;
+        this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G5.Location = new System.Drawing.Point(85, 18);
+        this.CHK_G5.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G5.Name = "CHK_G5";
+        this.CHK_G5.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G5.TabIndex = 284;
+        this.CHK_G5.Text = "Gen 5";
+        this.CHK_G5.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G4
+        // 
+        this.CHK_G4.AutoSize = true;
+        this.CHK_G4.Checked = true;
+        this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G4.Location = new System.Drawing.Point(12, 72);
+        this.CHK_G4.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G4.Name = "CHK_G4";
+        this.CHK_G4.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G4.TabIndex = 283;
+        this.CHK_G4.Text = "Gen 4";
+        this.CHK_G4.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G3
+        // 
+        this.CHK_G3.AutoSize = true;
+        this.CHK_G3.Checked = true;
+        this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G3.Location = new System.Drawing.Point(12, 54);
+        this.CHK_G3.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G3.Name = "CHK_G3";
+        this.CHK_G3.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G3.TabIndex = 282;
+        this.CHK_G3.Text = "Gen 3";
+        this.CHK_G3.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G2
+        // 
+        this.CHK_G2.AutoSize = true;
+        this.CHK_G2.Checked = true;
+        this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G2.Location = new System.Drawing.Point(12, 36);
+        this.CHK_G2.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G2.Name = "CHK_G2";
+        this.CHK_G2.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G2.TabIndex = 281;
+        this.CHK_G2.Text = "Gen 2";
+        this.CHK_G2.UseVisualStyleBackColor = true;
+        // 
+        // CHK_G1
+        // 
+        this.CHK_G1.AutoSize = true;
+        this.CHK_G1.Checked = true;
+        this.CHK_G1.CheckState = System.Windows.Forms.CheckState.Checked;
+        this.CHK_G1.Location = new System.Drawing.Point(12, 18);
+        this.CHK_G1.Margin = new System.Windows.Forms.Padding(4);
+        this.CHK_G1.Name = "CHK_G1";
+        this.CHK_G1.Size = new System.Drawing.Size(62, 20);
+        this.CHK_G1.TabIndex = 280;
+        this.CHK_G1.Text = "Gen 1";
+        this.CHK_G1.UseVisualStyleBackColor = true;
         // 
         // B_Save
         // 
@@ -2286,6 +2373,8 @@ partial class StaticEncounterEditor7
     private System.Windows.Forms.TabPage Tab_Randomizer;
     private System.Windows.Forms.GroupBox GB_Rand;
     private System.Windows.Forms.CheckBox CHK_G7;
+    private System.Windows.Forms.CheckBox CHK_G8;
+    private System.Windows.Forms.CheckBox CHK_G9;
     private System.Windows.Forms.CheckBox CHK_BST;
     private System.Windows.Forms.CheckBox CHK_E;
     private System.Windows.Forms.CheckBox CHK_L;

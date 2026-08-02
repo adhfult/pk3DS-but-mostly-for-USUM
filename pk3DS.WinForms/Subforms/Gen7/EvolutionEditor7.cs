@@ -21,9 +21,12 @@ public partial class EvolutionEditor7 : Form
         InitializeComponent();
 
         specieslist[0] = movelist[0] = itemlist[0] = "";
-        Array.Resize(ref specieslist, Main.Config.MaxSpeciesID + 1);
         string[][] AltForms = Main.Config.Personal.GetFormList(specieslist, Main.Config.MaxSpeciesID);
         specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, specieslist, Main.Config.MaxSpeciesID, out baseForms, out formVal);
+        for (int i = 0; i < specieslist.Length; i++) specieslist[i] ??= "";
+
+        string GetSpec(int id) => (id >= 0 && id < specieslist.Length && !string.IsNullOrEmpty(specieslist[id])) ? specieslist[id] : $"Species {id}";
+        string GetType(int id) => (typelist != null && id >= 0 && id < typelist.Length && !string.IsNullOrEmpty(typelist[id])) ? typelist[id] : $"Type {id}";
 
         string[] evolutionMethods =
         [
@@ -34,15 +37,15 @@ public partial class EvolutionEditor7 : Form
             "Level Up",
             "Trade",
             "Trade with Held Item",
-            $"Trade for opposite {specieslist[588]}/{specieslist[616]}", // Shelmet&Karrablast
+            $"Trade for opposite {GetSpec(588)}/{GetSpec(616)}", // Shelmet&Karrablast
             "Used Item",
             "Level Up (Attack > Defense)",
             "Level Up (Attack = Defense)",
             "Level Up (Attack < Defense)",
             "Level Up (Random < 5)",
             "Level Up (Random > 5)",
-            $"Level Up ({specieslist[291]})", // Ninjask
-            $"Level Up ({specieslist[292]})", // Shedinja
+            $"Level Up ({GetSpec(291)})", // Ninjask
+            $"Level Up ({GetSpec(292)})", // Shedinja
             "Level Up (Beauty)",
             "Used Item (Male)", // Kirlia->Gallade
             "Used Item (Female)", // Snorunt->Froslass
@@ -57,7 +60,7 @@ public partial class EvolutionEditor7 : Form
             "Level Up at Cold",
             "Level Up with 3DS Upside Down",
             "Level Up with 50 Affection + MoveType",
-            $"{typelist[16]} Type in Party",
+            $"{GetType(16)} Type in Party",
             "Overworld Rain",
             "Level Up (@) at Morning",
             "Level Up (@) at Night",
@@ -87,11 +90,20 @@ public partial class EvolutionEditor7 : Form
         pic = [PB_1, PB_2, PB_3, PB_4, PB_5, PB_6, PB_7, PB_8];
 
         maxEvoMethod = evos.Count;
-        foreach (ComboBox cb in mb) { cb.Items.AddRange(evos.ToArray()); }
-        foreach (ComboBox cb in rb) { cb.Items.AddRange(specieslist.Take(Main.Config.MaxSpeciesID + 1).ToArray()); }
+        foreach (ComboBox cb in mb)
+        {
+            cb.Items.Clear();
+            cb.Items.AddRange(evos.Select(e => e ?? "").ToArray());
+        }
+
+        foreach (ComboBox cb in rb)
+        {
+            cb.Items.Clear();
+            cb.Items.AddRange(specieslist.Select(s => s ?? "").ToArray());
+        }
 
         CB_Species.Items.Clear();
-        CB_Species.Items.AddRange(specieslist);
+        CB_Species.Items.AddRange(specieslist.Select(s => s ?? "").ToArray());
 
         CB_Species.SelectedIndex = 1;
         RTB_Changelog.ReadOnly = true;
@@ -116,7 +128,14 @@ public partial class EvolutionEditor7 : Form
 
     private void GetList()
     {
-        entry = Array.IndexOf(specieslist, CB_Species.Text);
+        // Use SelectedIndex when it matches the visible text (explicit dropdown selection or form entry).
+        // Fall back to name search when the user typed a species name without selecting from the dropdown,
+        // in which case SelectedIndex still points to the previously selected entry.
+        int idx = CB_Species.SelectedIndex;
+        if (idx < 0 || idx >= specieslist.Length || specieslist[idx] != CB_Species.Text)
+            idx = Array.IndexOf(specieslist, CB_Species.Text);
+        entry = idx;
+        if (entry < 0 || entry >= files.Length) return;
         byte[] input = files[entry];
         if (input.Length != EvolutionSet7.SIZE) return; // error
         evo = new EvolutionSet7(input);
@@ -129,9 +148,15 @@ public partial class EvolutionEditor7 : Form
             loading = true;
             fb[i].Value = evo.PossibleEvolutions[i].Form;
             lb[i].Value = evo.PossibleEvolutions[i].Level;
-            mb[i].SelectedIndex = evo.PossibleEvolutions[i].Method; // Which will trigger the params cb to reload the valid params list
-            pb[i].SelectedIndex = evo.PossibleEvolutions[i].Argument;
-            rb[i].SelectedIndex = evo.PossibleEvolutions[i].Species; // Triggers sprite to reload
+
+            int m = evo.PossibleEvolutions[i].Method;
+            int a = evo.PossibleEvolutions[i].Argument;
+            int s = evo.PossibleEvolutions[i].Species;
+
+            mb[i].SelectedIndex = (m >= 0 && m < mb[i].Items.Count) ? m : 0;
+            pb[i].SelectedIndex = (a >= 0 && a < pb[i].Items.Count) ? a : 0;
+            rb[i].SelectedIndex = (s >= 0 && s < rb[i].Items.Count) ? s : 0;
+
             loading = false;
             ChangeInto(rb[i], null); // refresh sprite
         }
@@ -277,9 +302,9 @@ public partial class EvolutionEditor7 : Form
 
         dumping = true;
         string result = "";
-        for (int i = 0; i < CB_Species.Items.Count; i++)
+        for (int i = 0; i < Math.Min(CB_Species.Items.Count, files.Length); i++)
         {
-            CB_Species.Text = specieslist[i]; // Get new Species
+            CB_Species.SelectedIndex = i; // Get new Species (use index so alt forms select correctly)
             result += "======" + Environment.NewLine + entry + " " + CB_Species.Text + Environment.NewLine + "======" + Environment.NewLine;
             for (int j = 0; j < 8; j++)
             {
@@ -376,7 +401,7 @@ public partial class EvolutionEditor7 : Form
         int species = Array.IndexOf(specieslist, rb[index].Text);
         int form = (int)fb[index].Value;
         if (form == -1)
-            form = baseForms[species];
+            form = formVal[entry];
 
         pic[index].Image = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
     }

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows.Forms;
 using pk3DS.Core;
 using pk3DS.Core.CTR;
+using pk3DS.Core.Modding;
+
 
 namespace pk3DS.WinForms
 {
@@ -53,8 +55,11 @@ namespace pk3DS.WinForms
             if (!File.Exists(path)) return;
             Data = File.ReadAllBytes(path);
             LoadedPath = path;
-            L_Status.Text = $"Loaded: {Path.GetFileName(path)} ({Data.Length:X} bytes)";
+            bool expanded = ResearchEngine.IsFileExpanded(path, Data);
+            string stateStr = expanded ? " [Expanded Mod Active]" : "";
+            L_Status.Text = $"Loaded: {Path.GetFileName(path)} ({Data.Length:X} bytes){stateStr}";
         }
+
 
         #region CRO Logic (Using CROUtil)
 

@@ -1,0 +1,54 @@
+Ability: Shadow Shield (ID: 231)
+==================================================
+
+Effect:
+When this Pokémon has full HP, regular damage from moves is halved.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x0002BC54 (ARM)
+Raw Assembly:
+0x2BC54: E70050E3  cmp	r0, #0xe7
+0x2BC58: 0000A013  movne	r0, #0
+0x2BC5C: 0100A003  moveq	r0, #1
+0x2BC60: 2E00CDE5  strb	r0, [sp, #0x2e]
+
+Logic Translation:
+- `0x2BC54`: Compares the loaded ability ID against 0xe7. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2BC58`: Loads literal `#0` into `r0`.
+- `0x2BC5C`: Loads literal `#1` into `r0`.
+- `0x2BC60`: Stores `r0` into memory.
+--------------------
+Address: 0x00062A40 (THUMB)
+Raw Assembly:
+0x62A40: E72A      cmp	r2, #0xe7
+0x62A42: 00EB0200  add.w	r0, r0, r2
+0x62A46: 00EA0610  and.w	r0, r0, r6, lsl #4
+0x62A4A: A0E3      b	#0x6318e
+0x62A4C: 0400      movs	r4, r0
+
+Logic Translation:
+- `0x62A40`: Compares the loaded ability ID against 0xe7. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x62A42`: Adds `r0, r0, r2` to calculate the modifier.
+- `0x62A46`: Executes `and.w r0, r0, r6, lsl #4`.
+- `0x62A4A`: Executes `b #0x6318e`.
+- `0x62A4C`: Loads literal `r0` into `r4`.
+--------------------
+Address: 0x0007BB60 (THUMB)
+Raw Assembly:
+0x7BB60: E72D      cmp	r5, #0xe7
+0x7BB62: 00EB0600  add.w	r0, r0, r6
+0x7BB66: A0E1      b	#0x7beaa
+0x7BB68: 00F020E3  blx	#0x47c1ac
+0x7BB6C: 1E31      adds	r1, #0x1e
+
+Logic Translation:
+- `0x7BB60`: Compares the loaded ability ID against 0xe7. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x7BB62`: Adds `r0, r0, r6` to calculate the modifier.
+- `0x7BB66`: Executes `b #0x7beaa`.
+- `0x7BB68`: Calls the engine subroutine at `#0x47c1ac` to commit the math.
+- `0x7BB6C`: Adds `r1, #0x1e` to calculate the modifier.
+--------------------

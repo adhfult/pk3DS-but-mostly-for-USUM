@@ -61,6 +61,8 @@ sealed partial class Main
         this.randomizationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         this.setInt32SeedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         this.Menu_Options = new System.Windows.Forms.ToolStripMenuItem();
+        this.Menu_CustomSprites = new System.Windows.Forms.ToolStripMenuItem();
+        this.Menu_CustomNames = new System.Windows.Forms.ToolStripMenuItem();
         this.Menu_Language = new System.Windows.Forms.ToolStripMenuItem();
         this.CB_Lang = new System.Windows.Forms.ToolStripComboBox();
         this.Menu_About = new System.Windows.Forms.ToolStripMenuItem();
@@ -144,7 +146,7 @@ sealed partial class Main
         // 
         this.B_OPower.Location = new System.Drawing.Point(215, 32);
         this.B_OPower.Name = "B_OPower";
-        this.B_OPower.Size = new System.Drawing.Size(160, 45);
+        this.B_OPower.Size = new System.Drawing.Size(150, 42);
         this.B_OPower.TabIndex = 4;
         this.B_OPower.Text = "O-Powers";
         this.B_OPower.UseVisualStyleBackColor = true;
@@ -154,7 +156,7 @@ sealed partial class Main
         // 
         this.B_Pickup.Location = new System.Drawing.Point(109, 32);
         this.B_Pickup.Name = "B_Pickup";
-        this.B_Pickup.Size = new System.Drawing.Size(160, 45);
+        this.B_Pickup.Size = new System.Drawing.Size(150, 42);
         this.B_Pickup.TabIndex = 0;
         this.B_Pickup.Text = "Pickup Items";
         this.B_Pickup.UseVisualStyleBackColor = true;
@@ -164,7 +166,7 @@ sealed partial class Main
         // 
         this.B_Mart.Location = new System.Drawing.Point(3, 32);
         this.B_Mart.Name = "B_Mart";
-        this.B_Mart.Size = new System.Drawing.Size(160, 45);
+        this.B_Mart.Size = new System.Drawing.Size(150, 42);
         this.B_Mart.TabIndex = 2;
         this.B_Mart.Text = "Poké Mart";
         this.B_Mart.UseVisualStyleBackColor = true;
@@ -174,7 +176,7 @@ sealed partial class Main
         // 
         this.B_MoveTutor.Location = new System.Drawing.Point(3, 3);
         this.B_MoveTutor.Name = "B_MoveTutor";
-        this.B_MoveTutor.Size = new System.Drawing.Size(160, 45);
+        this.B_MoveTutor.Size = new System.Drawing.Size(150, 42);
         this.B_MoveTutor.TabIndex = 3;
         this.B_MoveTutor.Text = "Move Tutors";
         this.B_MoveTutor.UseVisualStyleBackColor = true;
@@ -184,7 +186,7 @@ sealed partial class Main
         // 
         this.B_TMHM.Location = new System.Drawing.Point(109, 3);
         this.B_TMHM.Name = "B_TMHM";
-        this.B_TMHM.Size = new System.Drawing.Size(160, 45);
+        this.B_TMHM.Size = new System.Drawing.Size(150, 42);
         this.B_TMHM.TabIndex = 1;
         this.B_TMHM.Text = "TMs/HMs";
         this.B_TMHM.UseVisualStyleBackColor = true;
@@ -405,6 +407,8 @@ sealed partial class Main
         // 
         this.Menu_Options.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Menu_Language,
+            this.Menu_CustomSprites,
+            this.Menu_CustomNames,
             this.Menu_About,
             this.Menu_GARCs});
         this.Menu_Options.Name = "Menu_Options";
@@ -452,6 +456,22 @@ sealed partial class Main
         this.Menu_GARCs.Size = new System.Drawing.Size(146, 22);
         this.Menu_GARCs.Text = "About GARCs";
         this.Menu_GARCs.Click += new System.EventHandler(this.L_GARCInfo_Click);
+        // 
+        // Menu_CustomSprites
+        // 
+        this.Menu_CustomSprites.Name = "Menu_CustomSprites";
+        this.Menu_CustomSprites.Size = new System.Drawing.Size(146, 22);
+        this.Menu_CustomSprites.Text = "Custom Sprites";
+        this.Menu_CustomSprites.Enabled = false;
+        this.Menu_CustomSprites.Click += new System.EventHandler(this.Menu_CustomSprites_Click);
+        // 
+        // Menu_CustomNames
+        // 
+        this.Menu_CustomNames.Name = "Menu_CustomNames";
+        this.Menu_CustomNames.Size = new System.Drawing.Size(146, 22);
+        this.Menu_CustomNames.Text = "Custom Names";
+        this.Menu_CustomNames.Enabled = false;
+        this.Menu_CustomNames.Click += new System.EventHandler(this.Menu_CustomNames_Click);
         // 
         // TC_RomFS
         // 
@@ -507,7 +527,7 @@ sealed partial class Main
         // 
         this.B_GameText.Location = new System.Drawing.Point(3, 3);
         this.B_GameText.Name = "B_GameText";
-        this.B_GameText.Size = new System.Drawing.Size(160, 45);
+        this.B_GameText.Size = new System.Drawing.Size(150, 42);
         this.B_GameText.TabIndex = 0;
         this.B_GameText.Text = "Game Text";
         this.B_GameText.UseVisualStyleBackColor = true;
@@ -517,7 +537,7 @@ sealed partial class Main
         // 
         this.B_StoryText.Location = new System.Drawing.Point(109, 3);
         this.B_StoryText.Name = "B_StoryText";
-        this.B_StoryText.Size = new System.Drawing.Size(160, 45);
+        this.B_StoryText.Size = new System.Drawing.Size(150, 42);
         this.B_StoryText.TabIndex = 1;
         this.B_StoryText.Text = "Story Text";
         this.B_StoryText.UseVisualStyleBackColor = true;
@@ -527,7 +547,7 @@ sealed partial class Main
         // 
         this.B_Personal.Location = new System.Drawing.Point(215, 3);
         this.B_Personal.Name = "B_Personal";
-        this.B_Personal.Size = new System.Drawing.Size(160, 45);
+        this.B_Personal.Size = new System.Drawing.Size(150, 42);
         this.B_Personal.TabIndex = 3;
         this.B_Personal.Text = "Personal Stats";
         this.B_Personal.UseVisualStyleBackColor = true;
@@ -537,7 +557,7 @@ sealed partial class Main
         // 
         this.B_Evolution.Location = new System.Drawing.Point(3, 32);
         this.B_Evolution.Name = "B_Evolution";
-        this.B_Evolution.Size = new System.Drawing.Size(160, 45);
+        this.B_Evolution.Size = new System.Drawing.Size(150, 42);
         this.B_Evolution.TabIndex = 6;
         this.B_Evolution.Text = "Evolutions";
         this.B_Evolution.UseVisualStyleBackColor = true;
@@ -547,7 +567,7 @@ sealed partial class Main
         // 
         this.B_LevelUp.Location = new System.Drawing.Point(109, 32);
         this.B_LevelUp.Name = "B_LevelUp";
-        this.B_LevelUp.Size = new System.Drawing.Size(160, 45);
+        this.B_LevelUp.Size = new System.Drawing.Size(150, 42);
         this.B_LevelUp.TabIndex = 9;
         this.B_LevelUp.Text = "Level Up Moves";
         this.B_LevelUp.UseVisualStyleBackColor = true;
@@ -557,7 +577,7 @@ sealed partial class Main
         // 
         this.B_Wild.Location = new System.Drawing.Point(215, 32);
         this.B_Wild.Name = "B_Wild";
-        this.B_Wild.Size = new System.Drawing.Size(160, 45);
+        this.B_Wild.Size = new System.Drawing.Size(150, 42);
         this.B_Wild.TabIndex = 4;
         this.B_Wild.Text = "Wild Encounters";
         this.B_Wild.UseVisualStyleBackColor = true;
@@ -567,7 +587,7 @@ sealed partial class Main
         // 
         this.B_MegaEvo.Location = new System.Drawing.Point(3, 61);
         this.B_MegaEvo.Name = "B_MegaEvo";
-        this.B_MegaEvo.Size = new System.Drawing.Size(160, 45);
+        this.B_MegaEvo.Size = new System.Drawing.Size(150, 42);
         this.B_MegaEvo.TabIndex = 7;
         this.B_MegaEvo.Text = "Mega Evolutions";
         this.B_MegaEvo.UseVisualStyleBackColor = true;
@@ -577,7 +597,7 @@ sealed partial class Main
         // 
         this.B_EggMove.Location = new System.Drawing.Point(109, 61);
         this.B_EggMove.Name = "B_EggMove";
-        this.B_EggMove.Size = new System.Drawing.Size(160, 45);
+        this.B_EggMove.Size = new System.Drawing.Size(150, 42);
         this.B_EggMove.TabIndex = 10;
         this.B_EggMove.Text = "Egg Moves";
         this.B_EggMove.UseVisualStyleBackColor = true;
@@ -587,7 +607,7 @@ sealed partial class Main
         // 
         this.B_Trainer.Location = new System.Drawing.Point(215, 61);
         this.B_Trainer.Name = "B_Trainer";
-        this.B_Trainer.Size = new System.Drawing.Size(160, 45);
+        this.B_Trainer.Size = new System.Drawing.Size(150, 42);
         this.B_Trainer.TabIndex = 2;
         this.B_Trainer.Text = "Trainers";
         this.B_Trainer.UseVisualStyleBackColor = true;
@@ -595,7 +615,7 @@ sealed partial class Main
         // 
         // B_Maison
         // 
-        this.B_Maison.Size = new System.Drawing.Size(160, 45);
+        this.B_Maison.Size = new System.Drawing.Size(150, 42);
         this.B_Maison.TabIndex = 5;
         this.B_Maison.Text = "Battle Maison";
         this.B_Maison.UseVisualStyleBackColor = true;
@@ -605,7 +625,7 @@ sealed partial class Main
         // 
         this.B_Royal.Location = new System.Drawing.Point(109, 90);
         this.B_Royal.Name = "B_Royal";
-        this.B_Royal.Size = new System.Drawing.Size(160, 45);
+        this.B_Royal.Size = new System.Drawing.Size(150, 42);
         this.B_Royal.TabIndex = 14;
         this.B_Royal.Text = "Battle Royal/Tree";
         this.B_Royal.UseVisualStyleBackColor = true;
@@ -615,7 +635,7 @@ sealed partial class Main
         // 
         this.B_Item.Location = new System.Drawing.Point(215, 90);
         this.B_Item.Name = "B_Item";
-        this.B_Item.Size = new System.Drawing.Size(160, 45);
+        this.B_Item.Size = new System.Drawing.Size(150, 42);
         this.B_Item.TabIndex = 8;
         this.B_Item.Text = "Item Stats";
         this.B_Item.UseVisualStyleBackColor = true;
@@ -623,7 +643,7 @@ sealed partial class Main
         // 
         // B_Move
         // 
-        this.B_Move.Size = new System.Drawing.Size(160, 45);
+        this.B_Move.Size = new System.Drawing.Size(150, 42);
         this.B_Move.TabIndex = 11;
         this.B_Move.Text = "Move Stats";
         this.B_Move.UseVisualStyleBackColor = true;
@@ -633,7 +653,7 @@ sealed partial class Main
         // 
         this.B_TitleScreen.Location = new System.Drawing.Point(109, 119);
         this.B_TitleScreen.Name = "B_TitleScreen";
-        this.B_TitleScreen.Size = new System.Drawing.Size(160, 45);
+        this.B_TitleScreen.Size = new System.Drawing.Size(150, 42);
         this.B_TitleScreen.TabIndex = 12;
         this.B_TitleScreen.Text = "Title Screen";
         this.B_TitleScreen.UseVisualStyleBackColor = true;
@@ -643,7 +663,7 @@ sealed partial class Main
         // 
         this.B_OWSE.Location = new System.Drawing.Point(215, 119);
         this.B_OWSE.Name = "B_OWSE";
-        this.B_OWSE.Size = new System.Drawing.Size(160, 45);
+        this.B_OWSE.Size = new System.Drawing.Size(150, 42);
         this.B_OWSE.TabIndex = 13;
         this.B_OWSE.Text = "OWSE";
         this.B_OWSE.UseVisualStyleBackColor = true;
@@ -679,7 +699,7 @@ sealed partial class Main
         // 
         this.B_TM.Location = new System.Drawing.Point(215, 3);
         this.B_TM.Name = "B_TM";
-        this.B_TM.Size = new System.Drawing.Size(160, 45);
+        this.B_TM.Size = new System.Drawing.Size(150, 42);
         this.B_TM.TabIndex = 6;
         this.B_TM.Text = "TMs";
         this.B_TM.UseVisualStyleBackColor = true;
@@ -689,7 +709,7 @@ sealed partial class Main
         // 
         this.B_ShinyRate.Location = new System.Drawing.Point(3, 61);
         this.B_ShinyRate.Name = "B_ShinyRate";
-        this.B_ShinyRate.Size = new System.Drawing.Size(160, 45);
+        this.B_ShinyRate.Size = new System.Drawing.Size(150, 42);
         this.B_ShinyRate.TabIndex = 5;
         this.B_ShinyRate.Text = "Shiny Rate";
         this.B_ShinyRate.UseVisualStyleBackColor = true;
@@ -724,7 +744,7 @@ sealed partial class Main
         // 
         this.B_TypeChart.Location = new System.Drawing.Point(6, 6);
         this.B_TypeChart.Name = "B_TypeChart";
-        this.B_TypeChart.Size = new System.Drawing.Size(160, 45);
+        this.B_TypeChart.Size = new System.Drawing.Size(150, 42);
         this.B_TypeChart.TabIndex = 0;
         this.B_TypeChart.Text = "Type Chart";
         this.B_TypeChart.UseVisualStyleBackColor = true;
@@ -734,7 +754,7 @@ sealed partial class Main
         // 
         this.B_Starter.Location = new System.Drawing.Point(112, 6);
         this.B_Starter.Name = "B_Starter";
-        this.B_Starter.Size = new System.Drawing.Size(160, 45);
+        this.B_Starter.Size = new System.Drawing.Size(150, 42);
         this.B_Starter.TabIndex = 1;
         this.B_Starter.Text = "Starter Pokémon";
         this.B_Starter.UseVisualStyleBackColor = true;
@@ -744,7 +764,7 @@ sealed partial class Main
         // 
         this.B_Gift.Location = new System.Drawing.Point(218, 6);
         this.B_Gift.Name = "B_Gift";
-        this.B_Gift.Size = new System.Drawing.Size(160, 45);
+        this.B_Gift.Size = new System.Drawing.Size(150, 42);
         this.B_Gift.TabIndex = 2;
         this.B_Gift.Text = "Gift Pokémon";
         this.B_Gift.UseVisualStyleBackColor = true;
@@ -754,7 +774,7 @@ sealed partial class Main
         // 
         this.B_Static.Location = new System.Drawing.Point(6, 35);
         this.B_Static.Name = "B_Static";
-        this.B_Static.Size = new System.Drawing.Size(160, 45);
+        this.B_Static.Size = new System.Drawing.Size(150, 42);
         this.B_Static.TabIndex = 3;
         this.B_Static.Text = "Static Encounters";
         this.B_Static.UseVisualStyleBackColor = true;
@@ -764,7 +784,7 @@ sealed partial class Main
         // 
         this.B_CROExpander.Location = new System.Drawing.Point(112, 35);
         this.B_CROExpander.Name = "B_CROExpander";
-        this.B_CROExpander.Size = new System.Drawing.Size(160, 45);
+        this.B_CROExpander.Size = new System.Drawing.Size(150, 42);
         this.B_CROExpander.TabIndex = 4;
         this.B_CROExpander.Text = "CRO Expander";
         this.B_CROExpander.UseVisualStyleBackColor = true;
@@ -774,7 +794,7 @@ sealed partial class Main
         // 
         this.B_GlobalRepair.Location = new System.Drawing.Point(218, 35);
         this.B_GlobalRepair.Name = "B_GlobalRepair";
-        this.B_GlobalRepair.Size = new System.Drawing.Size(160, 45);
+        this.B_GlobalRepair.Size = new System.Drawing.Size(150, 42);
         this.B_GlobalRepair.TabIndex = 5;
         this.B_GlobalRepair.Text = "Global Repair";
         this.B_GlobalRepair.UseVisualStyleBackColor = true;
@@ -784,11 +804,13 @@ sealed partial class Main
         // 
         this.B_ResearchCenter.Location = new System.Drawing.Point(6, 64);
         this.B_ResearchCenter.Name = "B_ResearchCenter";
-        this.B_ResearchCenter.Size = new System.Drawing.Size(160, 45);
+        this.B_ResearchCenter.Size = new System.Drawing.Size(150, 42);
         this.B_ResearchCenter.TabIndex = 6;
         this.B_ResearchCenter.Text = "Research Center";
         this.B_ResearchCenter.UseVisualStyleBackColor = true;
         this.B_ResearchCenter.Click += new System.EventHandler(this.B_ResearchCenter_Click);
+        // 
+        // 
         // 
         // Tab_Output
         // 
@@ -879,6 +901,8 @@ sealed partial class Main
     private System.Windows.Forms.ToolStripComboBox CB_Lang;
     private System.Windows.Forms.ToolStripMenuItem Menu_About;
     private System.Windows.Forms.ToolStripMenuItem Menu_GARCs;
+    private System.Windows.Forms.ToolStripMenuItem Menu_CustomSprites;
+    private System.Windows.Forms.ToolStripMenuItem Menu_CustomNames;
     private System.Windows.Forms.ToolStripMenuItem Menu_SMDH;
     private System.Windows.Forms.ToolStripMenuItem Menu_CRO;
     private System.Windows.Forms.ToolStripMenuItem Menu_Shuffler;

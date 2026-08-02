@@ -1,0 +1,48 @@
+Ability: Victory Star (ID: 162)
+==================================================
+
+Effect:
+Increases moves' accuracy to 1.1× for friendly Pokémon.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x00021C94 (THUMB)
+Raw Assembly:
+0x21C94: A22D      cmp	r5, #0xa2
+0x21C96: A0E1      b	#0x21fda
+0x21C98: 8AC3      stm	r3!, {r1, r3, r7}
+0x21C9A: 01EB021B  add.w	fp, r1, r2, lsl #4
+0x21C9E: 80E3      b	#0x223a2
+
+Logic Translation:
+- `0x21C94`: Compares the loaded ability ID against 0xa2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x21C96`: Executes `b #0x21fda`.
+- `0x21C98`: Executes `stm r3!, {r1, r3, r7}`.
+- `0x21C9A`: Adds `fp, r1, r2, lsl #4` to calculate the modifier.
+- `0x21C9E`: Executes `b #0x223a2`.
+--------------------
+Address: 0x00075450 (THUMB)
+Raw Assembly:
+0x75450: A22E      cmp	r6, #0xa2
+
+Logic Translation:
+- `0x75450`: Compares the loaded ability ID against 0xa2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00081490 (THUMB)
+Raw Assembly:
+0x81490: A22D      cmp	r5, #0xa2
+0x81492: A0E1      b	#0x817d6
+0x81494: AACD      ldm	r5, {r1, r3, r5, r7}
+0x81496: A0E1      b	#0x817da
+0x81498: 1020      movs	r0, #0x10
+
+Logic Translation:
+- `0x81490`: Compares the loaded ability ID against 0xa2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x81492`: Executes `b #0x817d6`.
+- `0x81494`: Executes `ldm r5, {r1, r3, r5, r7}`.
+- `0x81496`: Executes `b #0x817da`.
+- `0x81498`: Loads literal `#0x10` into `r0`.
+--------------------

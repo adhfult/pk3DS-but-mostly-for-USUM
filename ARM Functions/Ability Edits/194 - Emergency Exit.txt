@@ -1,0 +1,53 @@
+Ability: Emergency Exit (ID: 194)
+==================================================
+
+Effect:
+This Pokémon automatically switches out when its HP drops below half.
+
+Dynamic ARM Mechanic:
+- **Negative Stat Modifier:** The code loads a negative integer (e.g., `mov rX, #-1`) into the stat stage parameter register.
+- **Targeting:** It calls the stat-modifier subroutine (`bl`), applying the negative stage to the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x0008EE18 (ARM)
+Raw Assembly:
+0x8EE18: C20050E3  cmp	r0, #0xc2
+0x8EE1C: 48109F05  ldreq	r1, [pc, #0x48]
+0x8EE20: 0300000A  beq	#0x8ee34
+0x8EE24: CE0050E3  cmp	r0, #0xce
+
+Logic Translation:
+- `0x8EE18`: Compares the loaded ability ID against 0xc2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x8EE1C`: Loads memory data into `r1`.
+- `0x8EE20`: If it matches, branches to `0x0x8ee34` to apply the effect.
+- `0x8EE24`: Compares the loaded ability ID against 0xce. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x000CFCF4 (ARM)
+Raw Assembly:
+0xCFCF4: C20050E3  cmp	r0, #0xc2
+0xCFCF8: 0700001A  bne	#0xcfd1c
+0xCFCFC: 0400A0E1  mov	r0, r4
+0xCFD00: D644FEEB  bl	#0x61060
+
+Logic Translation:
+- `0xCFCF4`: Compares the loaded ability ID against 0xc2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xCFCF8`: If it doesn't match, branches to `0x0xcfd1c`.
+- `0xCFCFC`: Loads literal `r4` into `r0`.
+- `0xCFD00`: Calls the engine subroutine at `#0x61060` to commit the math.
+--------------------
+Address: 0x0002D9FC (THUMB)
+Raw Assembly:
+0x2D9FC: C22B      cmp	r3, #0xc2
+0x2D9FE: B81E      subs	r0, r7, #2
+0x2DA00: 0B2B      cmp	r3, #0xb
+0x2DA02: 221E      subs	r2, r4, #0
+0x2DA04: 492B      cmp	r3, #0x49
+
+Logic Translation:
+- `0x2D9FC`: Compares the loaded ability ID against 0xc2. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2D9FE`: Executes `subs r0, r7, #2`.
+- `0x2DA00`: Compares the loaded ability ID against 0xb. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2DA02`: Executes `subs r2, r4, #0`.
+- `0x2DA04`: Compares the loaded ability ID against 0x49. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

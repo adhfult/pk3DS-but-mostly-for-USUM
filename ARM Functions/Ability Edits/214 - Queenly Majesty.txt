@@ -1,0 +1,40 @@
+Ability: Queenly Majesty (ID: 214)
+==================================================
+
+Effect:
+Opposing Pokémon cannot use priority attacks.
+
+Dynamic ARM Mechanic:
+- **Priority Tier Check/Override:** The code reads the priority integer from the move struct. It may compare it (`cmp rX, #0`) to see if it's a priority move, or use an `add` instruction to artificially increase the priority integer before execution order is sorted.
+
+Execution Hooks:
+--------------------
+Address: 0x00035D80 (THUMB)
+Raw Assembly:
+0x35D80: D62A      cmp	r2, #0xd6
+
+Logic Translation:
+- `0x35D80`: Compares the loaded ability ID against 0xd6. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00036520 (THUMB)
+Raw Assembly:
+0x36520: D628      cmp	r0, #0xd6
+0x36522: 01EB00F0  add.w	r0, r1, r0, lsl #28
+0x36526: 20E3      b	#0x36b6a
+0x36528: 00F020E3  blx	#0x436b6c
+0x3652C: EB28      cmp	r0, #0xeb
+
+Logic Translation:
+- `0x36520`: Compares the loaded ability ID against 0xd6. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x36522`: Adds `r0, r1, r0, lsl #28` to calculate the modifier.
+- `0x36526`: Executes `b #0x36b6a`.
+- `0x36528`: Calls the engine subroutine at `#0x436b6c` to commit the math.
+- `0x3652C`: Compares the loaded ability ID against 0xeb. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00074AA8 (THUMB)
+Raw Assembly:
+0x74AA8: D62D      cmp	r5, #0xd6
+
+Logic Translation:
+- `0x74AA8`: Compares the loaded ability ID against 0xd6. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

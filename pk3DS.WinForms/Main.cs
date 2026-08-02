@@ -109,18 +109,27 @@ namespace pk3DS.WinForms;
         var themeToggle = new ToolStripMenuItem("Visual Mode");
         var darkItem = new ToolStripMenuItem("Dark") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Dark };
         var greyItem = new ToolStripMenuItem("Grey") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Grey };
+        var lightItem = new ToolStripMenuItem("Light") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.Light };
+        var purpleItem = new ToolStripMenuItem("Galaxy Purple") { CheckOnClick = true, Checked = WinFormsUtil.CurrentTheme == WinFormsUtil.VisualTheme.GalaxyPurple };
         
-        darkItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Dark; greyItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
-        greyItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Grey; darkItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        darkItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Dark; greyItem.Checked = lightItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        greyItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Grey; darkItem.Checked = lightItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        lightItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.Light; darkItem.Checked = greyItem.Checked = purpleItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
+        purpleItem.Click += (s, e) => { WinFormsUtil.CurrentTheme = WinFormsUtil.VisualTheme.GalaxyPurple; darkItem.Checked = greyItem.Checked = lightItem.Checked = false; WinFormsUtil.RefreshAllThemes(); };
         
         themeToggle.DropDownItems.Add(darkItem);
         themeToggle.DropDownItems.Add(greyItem);
+        themeToggle.DropDownItems.Add(lightItem);
+        themeToggle.DropDownItems.Add(purpleItem);
         Menu_Options.DropDownItems.Add(themeToggle);
+
+        WinFormsUtil.ApplyThemeToMenuItem(themeToggle, WinFormsUtil.CurrentTheme);
 
         LoadQuotes();
         InitializeMascotUI();
         UpdateMascot();
         AddThemeMenu();
+        AddModdingToolsMenu();
     }
 
     private void InitializeMascotUI()
@@ -213,15 +222,19 @@ namespace pk3DS.WinForms;
         this.L_Game.BackColor = System.Drawing.Color.Transparent;
         this.PNL_Sidebar.Controls.Add(this.L_Game);
 
-        // Store button - moved UP
+        // Store button - sleek modern styling aligned with sidebar layout
         this.B_Store.AutoSize = false;
-        this.B_Store.Text = "Store";
-        this.B_Store.Location = new System.Drawing.Point(85, 180);
-        this.B_Store.Size = new System.Drawing.Size(80, 26);
+        this.B_Store.Text = "🛒 Store";
+        this.B_Store.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+        this.B_Store.Location = new System.Drawing.Point(42, 178);
+        this.B_Store.Size = new System.Drawing.Size(130, 28);
         this.B_Store.FlatStyle = FlatStyle.Flat;
         this.B_Store.ForeColor = Color.White;
-        this.B_Store.BackColor = Color.FromArgb(80, 0, 0, 0);
-        this.B_Store.FlatAppearance.BorderSize = 1;
+        this.B_Store.BackColor = Color.FromArgb(40, 160, 220);
+        this.B_Store.FlatAppearance.BorderSize = 0;
+        this.B_Store.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 180, 240);
+        this.B_Store.FlatAppearance.MouseDownBackColor = Color.FromArgb(20, 140, 200);
+        this.B_Store.Cursor = Cursors.Hand;
         this.B_Store.Click += new System.EventHandler(this.B_Store_Click);
         this.PNL_Sidebar.Controls.Add(this.B_Store);
 
@@ -262,11 +275,160 @@ namespace pk3DS.WinForms;
             };
             themeMenu.DropDownItems.Add(item);
         }
+
+        themeMenu.DropDownItems.Add(new ToolStripSeparator());
+
+        var customMascotItem = new ToolStripMenuItem("Set Custom Mascot Image and Nickname...");
+        customMascotItem.Click += (s, e) => {
+            using (var ofd = new OpenFileDialog { Filter = "Image Files (*.png;*.jpg;*.bmp;*.gif)|*.png;*.jpg;*.bmp;*.gif|All Files (*.*)|*.*", Title = "Select Custom Mascot Image" })
+            {
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    Properties.Settings.Default.CustomMascotPath = ofd.FileName;
+                    string nick = WinFormsUtil.PromptInput("Custom Mascot Nickname", "Enter a custom nickname for your mascot:", Properties.Settings.Default.CustomMascotNickname ?? "Custom Mascot");
+                    if (!string.IsNullOrWhiteSpace(nick))
+                        Properties.Settings.Default.CustomMascotNickname = nick;
+                    Properties.Settings.Default.Save();
+                    UpdateMascot();
+                }
+            }
+        };
+        themeMenu.DropDownItems.Add(customMascotItem);
+
+        var clearCustomMascotItem = new ToolStripMenuItem("Clear Custom Mascot");
+        clearCustomMascotItem.Click += (s, e) => {
+            Properties.Settings.Default.CustomMascotPath = "";
+            Properties.Settings.Default.CustomMascotNickname = "";
+            Properties.Settings.Default.Save();
+            UpdateMascot();
+        };
+        themeMenu.DropDownItems.Add(clearCustomMascotItem);
+
         Menu_Options.DropDownItems.Add(themeMenu);
         
         string savedTheme = Properties.Settings.Default.CustomTheme;
         if (!string.IsNullOrEmpty(savedTheme))
             UpdateMascot();
+    }
+
+    private void AddModdingToolsMenu()
+    {
+        var moddingMenu = new ToolStripMenuItem("Modding / Expansion Tools");
+
+        var applyPatchItem = new ToolStripMenuItem("Apply Expansion Patch (Ultra Sun / Ultra Moon)");
+        applyPatchItem.Click += (s, e) => {
+            if (Config == null)
+            {
+                WinFormsUtil.Alert("Please open an Ultra Sun or Ultra Moon v1.0 game workspace before applying the expansion patch.");
+                return;
+            }
+
+            bool detectedIsUS = Config.UltraSun;
+            var versionPrompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel,
+                $"Detected workspace: {(Config.UltraSun ? "Ultra Sun" : Config.UltraMoon ? "Ultra Moon" : "Gen 7 Game")}\n\n" +
+                "Which Expansion Patch version do you want to apply?\n\n" +
+                "YES = Ultra Sun (US folder)\n" +
+                "NO = Ultra Moon (UM folder)\n" +
+                "CANCEL = Abort",
+                "Select Game Version for Patch");
+
+            if (versionPrompt == DialogResult.Cancel) return;
+            bool targetUS = (versionPrompt == DialogResult.Yes);
+
+            string[] candidateFolders = targetUS ? ["US"] : ["UM"];
+
+            string gameName = targetUS ? "Ultra Sun" : "Ultra Moon";
+
+            string patchSource = null;
+            foreach (string folderName in candidateFolders)
+            {
+                string baseCandidate = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, folderName);
+                if (Directory.Exists(baseCandidate)) { patchSource = baseCandidate; break; }
+
+                string cwdCandidate = Path.Combine(Directory.GetCurrentDirectory(), folderName);
+                if (Directory.Exists(cwdCandidate)) { patchSource = cwdCandidate; break; }
+            }
+
+            if (patchSource == null)
+            {
+                WinFormsUtil.Error($"Expansion patch directory '{candidateFolders[0]}' not found for {gameName}.");
+                return;
+            }
+
+            var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, 
+                $"Are you sure you want to apply the Gen 9 expansion patch for {gameName} from '{Path.GetFileName(patchSource)}' to this workspace?\n\n" +
+                "This will patch code.bin, Battle.cro, Bag.cro, Box.cro, expanded GARCs, and apply 4.xdelta model patch to a/0/9/4.");
+            if (dr != DialogResult.Yes) return;
+
+            string xdeltaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "4.xdelta");
+            if (!File.Exists(xdeltaPath))
+                xdeltaPath = Path.Combine(Directory.GetCurrentDirectory(), "4.xdelta");
+
+            bool success = pk3DS.Core.Modding.PokemonPlusPatcher.ApplyPokemonPlusPatch(RomFSPath, ExeFSPath, patchSource, xdeltaPath, out string status);
+            if (success)
+            {
+                if (RomFSPath != null && Directory.Exists(RomFSPath))
+                    CheckIfRomFS(RomFSPath);
+                if (ExeFSPath != null && Directory.Exists(ExeFSPath))
+                    CheckIfExeFS(ExeFSPath);
+                Config?.Info?.RecalculateLimits(Config);
+                WinFormsUtil.Alert(status + "\n\nWorkspace data successfully reloaded!");
+            }
+            else
+            {
+                WinFormsUtil.Error(status);
+            }
+        };
+
+        var configItem = new ToolStripMenuItem("Expansion Options & Custom Offsets");
+        configItem.Click += (s, e) => {
+            var cfg = pk3DS.Core.Modding.ExpansionConfig.Load(Path.Combine(Directory.GetCurrentDirectory(), "ExpansionConfig.json"));
+            string infoStr = $"Max Species: {cfg.MaxSpecies}\nMax Moves: {cfg.MaxMoves}\nMax Items: {cfg.MaxItems}\nMax Abilities: {cfg.MaxAbilities}\n16-Bit Abilities Enabled: {cfg.Enable16BitAbilities}";
+            WinFormsUtil.Alert(infoStr, "Expansion Options & Custom Offsets Configuration");
+        };
+
+        var statusItem = new ToolStripMenuItem("View Modded Game Status");
+        statusItem.Click += (s, e) => {
+            if (Config == null)
+            {
+                WinFormsUtil.Alert("No game workspace currently loaded.");
+                return;
+            }
+            Config.Info.RecalculateLimits(Config);
+            string statusStr = $"Game Version: {Config.Version}\n" +
+                               $"Max Species ID: {Config.Info.MaxSpeciesID}\n" +
+                               $"Max Move ID: {Config.Info.MaxMoveID}\n" +
+                               $"Max Item ID: {Config.Info.MaxItemID}\n" +
+                               $"Max Ability ID: {Config.Info.MaxAbilityID}\n" +
+                               $"Applied Patches: {string.Join(", ", pk3DS.Core.Modding.ProjectState.Instance.AppliedPatches)}";
+            WinFormsUtil.Alert(statusStr, "Modded Game Status");
+        };
+
+        var exportLumaItem = new ToolStripMenuItem("Export Luma3DS / LayeredFS Mod Package (Compact)");
+        exportLumaItem.Click += (s, e) => {
+            if (Config == null)
+            {
+                WinFormsUtil.Alert("Please open a game workspace before exporting a Luma3DS mod package.");
+                return;
+            }
+
+            var fbd = new FolderBrowserDialog { Description = "Select output folder to save the Luma3DS / LayeredFS mod package" };
+            if (fbd.ShowDialog() != DialogResult.OK) return;
+
+            bool success = pk3DS.Core.Modding.PokemonPlusPatcher.ExportLayeredFSModPackage(RomFSPath, ExeFSPath, fbd.SelectedPath, out string status);
+            if (success)
+                WinFormsUtil.Alert(status, "Luma3DS / LayeredFS Patch Export");
+            else
+                WinFormsUtil.Error(status);
+        };
+
+        moddingMenu.DropDownItems.Add(applyPatchItem);
+        moddingMenu.DropDownItems.Add(exportLumaItem);
+        moddingMenu.DropDownItems.Add(configItem);
+        moddingMenu.DropDownItems.Add(statusItem);
+
+        menuStrip1.Items.Add(moddingMenu);
+        WinFormsUtil.ApplyThemeToMenuItem(moddingMenu, WinFormsUtil.CurrentTheme);
     }
 
     private string[] Quotes;
@@ -303,6 +465,10 @@ namespace pk3DS.WinForms;
 
     private string GetMascotName()
     {
+        string customNick = Properties.Settings.Default.CustomMascotNickname;
+        if (!string.IsNullOrWhiteSpace(customNick))
+            return customNick;
+
         string theme = Properties.Settings.Default.CustomTheme;
         if (!string.IsNullOrEmpty(theme))
         {
@@ -422,22 +588,59 @@ namespace pk3DS.WinForms;
         if (species == 386) form = DeoxysForm % 4; // Use persistent Deoxys form counter
 
 
-        // Special fallback for alternate forms of Necrozma if they don't load from GARC
-        Bitmap sprite = (Bitmap)WinFormsUtil.GetSprite(species, form, 0, 0, Config);
+        // Check if a Custom Mascot image is configured by the user
+        Bitmap sprite = null;
+        string customMascotPath = Properties.Settings.Default.CustomMascotPath;
+        if (!string.IsNullOrEmpty(customMascotPath) && File.Exists(customMascotPath))
+        {
+            try
+            {
+                using (var raw = Image.FromFile(customMascotPath))
+                {
+                    Bitmap customImg = new Bitmap(raw);
+                    // Scale to fit within PB_Sprite size (160x160) if larger
+                    if (customImg.Width > 160 || customImg.Height > 160)
+                    {
+                        float scale = Math.Min(160f / customImg.Width, 160f / customImg.Height);
+                        int destW = (int)(customImg.Width * scale);
+                        int destH = (int)(customImg.Height * scale);
+                        Bitmap scaled = new Bitmap(destW, destH);
+                        using (Graphics g = Graphics.FromImage(scaled))
+                        {
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.DrawImage(customImg, 0, 0, destW, destH);
+                        }
+                        sprite = scaled;
+                    }
+                    else
+                    {
+                        sprite = customImg;
+                    }
+                }
+            }
+            catch { }
+        }
+
         if (sprite == null)
         {
-            string resName = $"_{species}";
-            if (form > 0) resName += $"_{form}";
-            object obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject(resName);
-            if (obj is Bitmap resImg) sprite = resImg;
-            else if (obj == null) { // Definitive fallback
-                obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject("_800");
-                if (obj is Bitmap defImg) sprite = defImg;
+            sprite = (Bitmap)WinFormsUtil.GetSprite(species, form, 0, 0, Config);
+            if (sprite == null)
+            {
+                string resName = $"_{species}";
+                if (form > 0) resName += $"_{form}";
+                object obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject(resName);
+                if (obj is Bitmap resImg) sprite = resImg;
+                else if (obj == null) {
+                    obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject("_800");
+                    if (obj is Bitmap defImg) sprite = defImg;
+                }
             }
+            if (sprite != null)
+                sprite = WinFormsUtil.ScaleImage(sprite, 2);
         }
 
         if (sprite != null)
-            PB_Sprite.Image = WinFormsUtil.ScaleImage(sprite, 2);
+            PB_Sprite.Image = sprite;
         
         this.Invalidate(); // Redraw with new gradient
         
@@ -592,6 +795,23 @@ namespace pk3DS.WinForms;
     private void L_About_Click(object sender, EventArgs e)
     {
         new About().ShowDialog();
+    }
+
+    private void Menu_CustomSprites_Click(object sender, EventArgs e)
+    {
+        if (Config == null) return;
+        var ed = new CustomSpriteEditor();
+        WinFormsUtil.ApplyTheme(ed);
+        ed.ShowDialog();
+        UpdateMascot(); // Refresh main menu sprite if we edited the mascot's sprite
+    }
+
+    private void Menu_CustomNames_Click(object sender, EventArgs e)
+    {
+        if (Config == null) return;
+        var ed = new CustomNameEditor();
+        WinFormsUtil.ApplyTheme(ed);
+        ed.ShowDialog();
     }
 
     private void L_GARCInfo_Click(object sender, EventArgs e)
@@ -871,7 +1091,7 @@ namespace pk3DS.WinForms;
         // Enable Rebuilding options if all files have been found
         CheckIfExHeader(path);
         Menu_ExeFS.Enabled = ExeFSPath != null;
-        Menu_RomFS.Enabled = Menu_Restore.Enabled = Menu_GARCs.Enabled = RomFSPath != null;
+        Menu_RomFS.Enabled = Menu_Restore.Enabled = Menu_GARCs.Enabled = Menu_CustomSprites.Enabled = Menu_CustomNames.Enabled = RomFSPath != null;
         Menu_Patch.Enabled = RomFSPath != null && ExeFSPath != null;
         Menu_3DS.Enabled = RomFSPath != null && ExeFSPath != null && ExHeaderPath != null;
         Menu_Trimmed3DS.Enabled = RomFSPath != null && ExeFSPath != null && ExHeaderPath != null;
@@ -1476,8 +1696,20 @@ namespace pk3DS.WinForms;
     {
         if (ThreadActive())
             return;
-        if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "The OverWorld/Script Editor is not recommended for most users and is still a work-in-progress.", "Continue anyway?"))
-            return;
+        if (Properties.Settings.Default.ShowOWSEWarning)
+        {
+            var msg = "The OverWorld/ScriptEditor handles things more advanced that basic data editing; make sure you know what you're doing if you want to edit anything (besides items)!\n\nDo you want to disable this notification in the future?";
+            var result = MessageBox.Show(msg, "Prompt", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+            if (result == DialogResult.Yes)
+            {
+                Properties.Settings.Default.ShowOWSEWarning = false;
+                Properties.Settings.Default.Save();
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                return;
+            }
+        }
         switch (Config.Generation)
         {
             case 6:
@@ -1603,6 +1835,8 @@ namespace pk3DS.WinForms;
         {
             var g = Config.GetGARCData("item");
             byte[][] d = g.Files;
+            int oldLen = d.Length;
+            
             switch (Config.Generation)
             {
                 case 6:
@@ -1616,6 +1850,14 @@ namespace pk3DS.WinForms;
             }
             g.Files = d;
             g.Save();
+            
+            if (Config.Generation == 7 && d.Length > oldLen)
+            {
+                int maxItemID = d.Length - 1;
+                ushort[] emptyItemList = new ushort[0];
+                pk3DS.Core.Modding.ResearchEngine.ApplyExpandedTMBattleBagPatch(Config.RomFS, maxItemID, emptyItemList);
+                pk3DS.Core.Modding.ResearchEngine.ApplyExpandedTMItemAttributesPatch(Config.RomFS, maxItemID, emptyItemList);
+            }
 
             // Persist any game text changes made by the item editor (item names/flavor)
             var gt = Config.GARCGameText;
@@ -1772,7 +2014,7 @@ namespace pk3DS.WinForms;
                 Interlocked.Increment(ref threads);
                 new BLZCoder(["-en", files[file]], pBar1);
                 WinFormsUtil.Alert("Compressed!");
-                ExeFS.PackExeFS(Directory.GetFiles(ExeFSPath), sfd.FileName);
+                ExeFS.PackExeFS(ExeFS.GetExeFSFiles(ExeFSPath), sfd.FileName);
                 HandleFriendship(10);
                 Interlocked.Decrement(ref threads);
             }).Start();
@@ -2025,6 +2267,17 @@ namespace pk3DS.WinForms;
         if (ThreadActive())
             return;
 
+        var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel,
+            "Do you want to add blank 3DS cartridge padding?\n\n" +
+            "Yes = Pad to 8.0 GB (physical cartridge standard, ~3.5 GB blank padding)\n" +
+            "No = Exact Trimmed Size (~4.52 GB, recommended for Citra & CFW)\n" +
+            "Cancel = Abort",
+            "Rebuild 3DS ROM");
+        if (dr == DialogResult.Cancel)
+            return;
+
+        bool trimmed = (dr == DialogResult.No);
+
         var sfd = new SaveFileDialog
         {
             FileName = "newROM.3ds",
@@ -2039,7 +2292,7 @@ namespace pk3DS.WinForms;
             Interlocked.Increment(ref threads);
             var exh = new Exheader(ExHeaderPath);
             CTRUtil.BuildROM(true, "Nintendo", ExeFSPath, RomFSPath, ExHeaderPath, exh.GetSerial(), path,
-                false, pBar1, RTB_Status);
+                trimmed, pBar1, RTB_Status);
             Interlocked.Decrement(ref threads);
         }).Start();
     }

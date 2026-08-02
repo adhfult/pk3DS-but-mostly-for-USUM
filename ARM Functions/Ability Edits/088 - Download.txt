@@ -1,0 +1,54 @@
+Ability: Download (ID: 88)
+==================================================
+
+Effect:
+Raises the attack stat corresponding to the opponents' weaker defense one stage upon entering battle.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+
+Execution Hooks:
+--------------------
+Address: 0x0002AC28 (ARM)
+Raw Assembly:
+0x2AC28: 580050E3  cmp	r0, #0x58
+0x2AC2C: BFFFFF1A  bne	#0x2ab30
+0x2AC30: 0500A0E1  mov	r0, r5
+0x2AC34: 0120A0E3  mov	r2, #1
+
+Logic Translation:
+- `0x2AC28`: Compares the loaded ability ID against 0x58. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AC2C`: If it doesn't match, branches to `0x0x2ab30`.
+- `0x2AC30`: Loads literal `r5` into `r0`.
+- `0x2AC34`: Loads literal `#1` into `r2`.
+--------------------
+Address: 0x000184A4 (THUMB)
+Raw Assembly:
+0x184A4: 582A      cmp	r2, #0x58
+0x184A6: 00EB0C10  add.w	r0, r0, ip, lsl #4
+0x184AA: 95E5      b	#0x17fd8
+0x184AC: 0420      movs	r0, #4
+0x184AE: A0E1      b	#0x187f2
+
+Logic Translation:
+- `0x184A4`: Compares the loaded ability ID against 0x58. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x184A6`: Adds `r0, r0, ip, lsl #4` to calculate the modifier.
+- `0x184AA`: Executes `b #0x17fd8`.
+- `0x184AC`: Loads literal `#4` into `r0`.
+- `0x184AE`: Executes `b #0x187f2`.
+--------------------
+Address: 0x00030CEC (THUMB)
+Raw Assembly:
+0x30CEC: 582A      cmp	r2, #0x58
+0x30CEE: 01EB0040  add.w	r0, r1, r0, lsl #16
+0x30CF2: A0E1      b	#0x31036
+0x30CF4: 0A00      movs	r2, r1
+0x30CF6: A0E1      b	#0x3103a
+
+Logic Translation:
+- `0x30CEC`: Compares the loaded ability ID against 0x58. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x30CEE`: Adds `r0, r1, r0, lsl #16` to calculate the modifier.
+- `0x30CF2`: Executes `b #0x31036`.
+- `0x30CF4`: Loads literal `r1` into `r2`.
+- `0x30CF6`: Executes `b #0x3103a`.
+--------------------

@@ -183,4 +183,25 @@ public partial class ItemEditor7 : Form
         Clipboard.SetText(TableUtil.GetTable(items, itemlist));
         System.Media.SystemSounds.Asterisk.Play();
     }
+
+    private void B_MakeMega_Click(object sender, EventArgs e)
+    {
+        if (entry < 1) return;
+
+        // Diancite Item ID is 764 in Gen 7 USUM
+        int dianciteID = 764;
+        if (dianciteID >= files.Length || files[dianciteID] == null || files[dianciteID].Length == 0)
+        {
+            int found = Array.IndexOf(itemlist, "Diancite");
+            if (found > 0 && found < files.Length) dianciteID = found;
+            else dianciteID = 659; // Fallback
+        }
+
+        if (dianciteID < files.Length && files[dianciteID] != null && files[dianciteID].Length > 0)
+        {
+            files[entry] = (byte[])files[dianciteID].Clone();
+            Grid.SelectedObject = new Item(files[entry]);
+            WinFormsUtil.Alert("Selected item converted to Mega Stone (matched Diancite data)!");
+        }
+    }
 }

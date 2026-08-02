@@ -1,0 +1,51 @@
+Ability: Drought (ID: 70)
+==================================================
+
+Effect:
+Summons strong sunlight that lasts indefinitely upon entering battle.
+
+Dynamic ARM Mechanic:
+- **Weather Check:** The code reads the global battle state struct and compares the active Weather ID byte (`cmp rX, #WeatherID`). If the weather doesn't match the required state, it uses a `bne` (branch if not equal) to skip the effect.
+- **Weight Calculation:** The code reads the base weight integer from the species struct and uses it dynamically in the damage formula calculations (via division or multiplication).
+
+Execution Hooks:
+--------------------
+Address: 0x0002AC20 (ARM)
+Raw Assembly:
+0x2AC20: 460050E3  cmp	r0, #0x46
+0x2AC24: E800000A  beq	#0x2afcc
+0x2AC28: 580050E3  cmp	r0, #0x58
+0x2AC2C: BFFFFF1A  bne	#0x2ab30
+
+Logic Translation:
+- `0x2AC20`: Compares the loaded ability ID against 0x46. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AC24`: If it matches, branches to `0x0x2afcc` to apply the effect.
+- `0x2AC28`: Compares the loaded ability ID against 0x58. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x2AC2C`: If it doesn't match, branches to `0x0x2ab30`.
+--------------------
+Address: 0x00064FF4 (ARM)
+Raw Assembly:
+0x64FF4: 460057E3  cmp	r7, #0x46
+0x64FF8: F002000A  beq	#0x65bc0
+0x64FFC: 530057E3  cmp	r7, #0x53
+0x65000: CD00000A  beq	#0x6533c
+
+Logic Translation:
+- `0x64FF4`: Compares the loaded ability ID against 0x46. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x64FF8`: If it matches, branches to `0x0x65bc0` to apply the effect.
+- `0x64FFC`: Compares the loaded ability ID against 0x53. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x65000`: If it matches, branches to `0x0x6533c` to apply the effect.
+--------------------
+Address: 0x000B10B4 (ARM)
+Raw Assembly:
+0xB10B4: 460051E3  cmp	r1, #0x46
+0xB10B8: 2D03000A  beq	#0xb1d74
+0xB10BC: 530051E3  cmp	r1, #0x53
+0xB10C0: F900000A  beq	#0xb14ac
+
+Logic Translation:
+- `0xB10B4`: Compares the loaded ability ID against 0x46. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xB10B8`: If it matches, branches to `0x0xb1d74` to apply the effect.
+- `0xB10BC`: Compares the loaded ability ID against 0x53. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0xB10C0`: If it matches, branches to `0x0xb14ac` to apply the effect.
+--------------------

@@ -1,0 +1,52 @@
+Ability: Protean (ID: 168)
+==================================================
+
+Effect:
+Changes the bearer's type to match each move it uses.
+
+Dynamic ARM Mechanic:
+- **Elemental Type Override:** The code loads the hex ID of the specific elemental type (e.g., `0x0` for Normal, `0x2` for Flying) and overwrites the Type 1 / Type 2 bytes in the active Pokémon's battle struct, temporarily changing its typing.
+
+Execution Hooks:
+--------------------
+Address: 0x00077A24 (ARM)
+Raw Assembly:
+0x77A24: A80051E3  cmp	r1, #0xa8
+0x77A28: FC009F05  ldreq	r0, [pc, #0xfc]
+0x77A2C: 1EFF2FE1  bx	lr
+0x77A30: 22010000  andeq	r0, r0, r2, lsr #2
+
+Logic Translation:
+- `0x77A24`: Compares the loaded ability ID against 0xa8. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x77A28`: Loads memory data into `r0`.
+- `0x77A2C`: Executes `bx lr`.
+- `0x77A30`: Executes `andeq r0, r0, r2, lsr #2`.
+--------------------
+Address: 0x000137B4 (THUMB)
+Raw Assembly:
+0x137B4: A82E      cmp	r6, #0xa8
+0x137B6: 9FE5      b	#0x132f8
+0x137B8: F000      lsls	r0, r6, #3
+0x137BA: CDE1      b	#0x13b58
+0x137BC: 0630      adds	r0, #6
+
+Logic Translation:
+- `0x137B4`: Compares the loaded ability ID against 0xa8. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x137B6`: Executes `b #0x132f8`.
+- `0x137B8`: Executes `lsls r0, r6, #3`.
+- `0x137BA`: Executes `b #0x13b58`.
+- `0x137BC`: Adds `r0, #6` to calculate the modifier.
+--------------------
+Address: 0x0003F624 (THUMB)
+Raw Assembly:
+0x3F624: A82A      cmp	r2, #0xa8
+0x3F626: 28EE0F0A  vmul.f32	s0, s16, s30
+0x3F62A: 20EE410A  vnmul.f32	s0, s0, s2
+0x3F62E: 4FEE610A  vmls.f32	s1, s30, s3
+
+Logic Translation:
+- `0x3F624`: Compares the loaded ability ID against 0xa8. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3F626`: Executes `vmul.f32 s0, s16, s30`.
+- `0x3F62A`: Executes `vnmul.f32 s0, s0, s2`.
+- `0x3F62E`: Executes `vmls.f32 s1, s30, s3`.
+--------------------

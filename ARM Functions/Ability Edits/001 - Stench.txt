@@ -1,0 +1,50 @@
+Ability: Stench (ID: 1)
+==================================================
+
+Effect:
+Has a 10% chance of making target Pokémon flinch with each hit.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x00010118 (ARM)
+Raw Assembly:
+0x10118: 010051E3  cmp	r1, #1
+0x1011C: 036B8502  addeq	r6, r5, #0xc00
+0x10120: 0040A003  moveq	r4, #0
+0x10124: 0C608602  addeq	r6, r6, #0xc
+
+Logic Translation:
+- `0x10118`: Compares the loaded ability ID against 1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1011C`: Adds `r6, r5, #0xc00` to calculate the modifier.
+- `0x10120`: Loads literal `#0` into `r4`.
+- `0x10124`: Adds `r6, r6, #0xc` to calculate the modifier.
+--------------------
+Address: 0x00010300 (ARM)
+Raw Assembly:
+0x10300: 010050E3  cmp	r0, #1
+0x10304: 0300009A  bls	#0x10318
+0x10308: 920002E0  mul	r2, r2, r0
+0x1030C: A4009FE5  ldr	r0, [pc, #0xa4]
+
+Logic Translation:
+- `0x10300`: Compares the loaded ability ID against 1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x10304`: Calls the engine subroutine at `#0x10318` to commit the math.
+- `0x10308`: Multiplies `r2, r2, r0` for damage calculation.
+- `0x1030C`: Loads memory data into `r0`.
+--------------------
+Address: 0x00010320 (ARM)
+Raw Assembly:
+0x10320: 010056E3  cmp	r6, #1
+0x10324: 6C0A9505  ldreq	r0, [r5, #0xa6c]
+0x10328: 02008000  addeq	r0, r0, r2
+0x1032C: 0300000A  beq	#0x10340
+
+Logic Translation:
+- `0x10320`: Compares the loaded ability ID against 1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x10324`: Loads memory data into `r0`.
+- `0x10328`: Adds `r0, r0, r2` to calculate the modifier.
+- `0x1032C`: If it matches, branches to `0x0x10340` to apply the effect.
+--------------------

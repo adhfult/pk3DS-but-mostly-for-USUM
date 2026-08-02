@@ -1,0 +1,55 @@
+Ability: Pickpocket (ID: 124)
+==================================================
+
+Effect:
+Steals attacking Pokémon's held items on contact.
+
+Dynamic ARM Mechanic:
+- **Contact Flag Check:** Before applying the effect, the code loads the move data struct of the incoming attack and performs a bitwise check (`tst` or `and`) against the 'Makes Contact' bitflag. If the flag is 0, it skips the effect.
+- **Item Hook:** The logic hooks into the item consumption/removal subroutines. It compares the held item ID against known item index ranges (e.g., the Berry IDs) to determine if the effect should trigger.
+
+Execution Hooks:
+--------------------
+Address: 0x00031AC4 (ARM)
+Raw Assembly:
+0x31AC4: 7C0052E3  cmp	r2, #0x7c
+0x31AC8: 081081E2  add	r1, r1, #8
+0x31ACC: 0500002A  bhs	#0x31ae8
+0x31AD0: 2C309FE5  ldr	r3, [pc, #0x2c]
+
+Logic Translation:
+- `0x31AC4`: Compares the loaded ability ID against 0x7c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x31AC8`: Adds `r1, r1, #8` to calculate the modifier.
+- `0x31ACC`: Executes `bhs #0x31ae8`.
+- `0x31AD0`: Loads memory data into `r3`.
+--------------------
+Address: 0x000175C0 (THUMB)
+Raw Assembly:
+0x175C0: 7C2E      cmp	r6, #0x7c
+0x175C2: 86E5      b	#0x170d2
+0x175C4: 036B      ldr	r3, [r0, #0x30]
+0x175C6: 86E2      b	#0x17ad6
+0x175C8: 9B6F      ldr	r3, [r3, #0x78]
+
+Logic Translation:
+- `0x175C0`: Compares the loaded ability ID against 0x7c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x175C2`: Executes `b #0x170d2`.
+- `0x175C4`: Loads memory data into `r3`.
+- `0x175C6`: Executes `b #0x17ad6`.
+- `0x175C8`: Loads memory data into `r3`.
+--------------------
+Address: 0x000212F4 (THUMB)
+Raw Assembly:
+0x212F4: 7C2E      cmp	r6, #0x7c
+0x212F6: 83E5      b	#0x20e00
+0x212F8: 033B      subs	r3, #3
+0x212FA: 83E2      b	#0x21804
+0x212FC: 9B3F      subs	r7, #0x9b
+
+Logic Translation:
+- `0x212F4`: Compares the loaded ability ID against 0x7c. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x212F6`: Executes `b #0x20e00`.
+- `0x212F8`: Executes `subs r3, #3`.
+- `0x212FA`: Executes `b #0x21804`.
+- `0x212FC`: Executes `subs r7, #0x9b`.
+--------------------

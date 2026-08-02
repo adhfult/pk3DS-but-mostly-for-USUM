@@ -1,0 +1,44 @@
+Ability: Merciless (ID: 196)
+==================================================
+
+Effect:
+This Pokémon's moves critical hit against poisoned targets.
+
+Dynamic ARM Mechanic:
+- **Status Affliction/Check:** The code loads the specific bitflag representing the status condition (e.g., `0x8` for Poison, `0x10` for Burn) into a register. It either bitwise-ANDs (`and`) it to check for the status, or bitwise-ORs (`orr`) it into the target's volatile status memory block to inflict it.
+
+Execution Hooks:
+--------------------
+Address: 0x00036568 (THUMB)
+Raw Assembly:
+0x36568: C428      cmp	r0, #0xc4
+0x3656A: 01EB00F0  add.w	r0, r1, r0, lsl #28
+0x3656E: 20E3      b	#0x36bb2
+0x36570: 00F020E3  blx	#0x436bb4
+0x36574: D928      cmp	r0, #0xd9
+
+Logic Translation:
+- `0x36568`: Compares the loaded ability ID against 0xc4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x3656A`: Adds `r0, r1, r0, lsl #28` to calculate the modifier.
+- `0x3656E`: Executes `b #0x36bb2`.
+- `0x36570`: Calls the engine subroutine at `#0x436bb4` to commit the math.
+- `0x36574`: Compares the loaded ability ID against 0xd9. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00098E68 (THUMB)
+Raw Assembly:
+0x98E68: C42A      cmp	r2, #0xc4
+0x98E6A: 31EE081A  vadd.f32	s2, s2, s16
+0x98E6E: DDEDE11A  vldr	s3, [sp, #0x384]
+
+Logic Translation:
+- `0x98E68`: Compares the loaded ability ID against 0xc4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x98E6A`: Executes `vadd.f32 s2, s2, s16`.
+- `0x98E6E`: Executes `vldr s3, [sp, #0x384]`.
+--------------------
+Address: 0x000BFEB4 (THUMB)
+Raw Assembly:
+0xBFEB4: C42F      cmp	r7, #0xc4
+
+Logic Translation:
+- `0xBFEB4`: Compares the loaded ability ID against 0xc4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

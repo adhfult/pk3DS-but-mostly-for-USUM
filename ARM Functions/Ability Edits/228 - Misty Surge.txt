@@ -1,0 +1,44 @@
+Ability: Misty Surge (ID: 228)
+==================================================
+
+Effect:
+When this Pokémon enters battle, it changes the terrain to Misty Terrain.
+
+Dynamic ARM Mechanic:
+- **Weather Check:** The code reads the global battle state struct and compares the active Weather ID byte (`cmp rX, #WeatherID`). If the weather doesn't match the required state, it uses a `bne` (branch if not equal) to skip the effect.
+
+Execution Hooks:
+--------------------
+Address: 0x0001F83C (ARM)
+Raw Assembly:
+0x1F83C: E40050E3  cmp	r0, #0xe4
+0x1F840: 0090A0E1  mov	sb, r0
+0x1F844: 0900001A  bne	#0x1f870
+0x1F848: 6C0E96E5  ldr	r0, [r6, #0xe6c]
+
+Logic Translation:
+- `0x1F83C`: Compares the loaded ability ID against 0xe4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1F840`: Loads literal `r0` into `sb`.
+- `0x1F844`: If it doesn't match, branches to `0x0x1f870`.
+- `0x1F848`: Loads memory data into `r0`.
+--------------------
+Address: 0x0001F8EC (ARM)
+Raw Assembly:
+0x1F8EC: E40050E3  cmp	r0, #0xe4
+0x1F8F0: 0010A0E1  mov	r1, r0
+0x1F8F4: 6C0E9605  ldreq	r0, [r6, #0xe6c]
+0x1F8F8: 1889010B  bleq	#0x81d60
+
+Logic Translation:
+- `0x1F8EC`: Compares the loaded ability ID against 0xe4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1F8F0`: Loads literal `r0` into `r1`.
+- `0x1F8F4`: Loads memory data into `r0`.
+- `0x1F8F8`: Calls the engine subroutine at `#0x81d60` to commit the math.
+--------------------
+Address: 0x000B5AE8 (THUMB)
+Raw Assembly:
+0xB5AE8: E42A      cmp	r2, #0xe4
+
+Logic Translation:
+- `0xB5AE8`: Compares the loaded ability ID against 0xe4. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

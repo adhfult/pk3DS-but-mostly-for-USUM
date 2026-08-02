@@ -219,7 +219,26 @@ namespace pk3DS.WinForms
             }
             string armPath = FindArmFunctionsPath();
             if (Directory.Exists(armPath)) { var ext = tvExplorer.Nodes.Add("EXTERNAL RESEARCH (Local)"); PopulateDirectory(ext, armPath); }
+
+            // Add Gen 7 Expansion Mod Research section
+            var expNode = tvExplorer.Nodes.Add("GEN 7 EXPANSION MOD RESEARCH");
+            expNode.ForeColor = Color.Cyan;
+            var entries = ResearchEngine.GetExpansionModResearchEntries();
+            var grouped = entries.GroupBy(e => e.TargetFile);
+            foreach (var group in grouped)
+            {
+                var fileNode = expNode.Nodes.Add(group.Key);
+                fileNode.ForeColor = Color.Yellow;
+                foreach (var entry in group)
+                {
+                    var itemNode = fileNode.Nodes.Add($"{entry.OffsetRange}: {entry.Description}");
+                    itemNode.Tag = $"exp:{entry.TargetFile}:{entry.OffsetRange}:{entry.Description}";
+                    itemNode.ForeColor = Color.WhiteSmoke;
+                }
+            }
+
             root.Expand();
+            expNode.Expand();
         }
 
         private string FindArmFunctionsPath()
@@ -819,11 +838,45 @@ namespace pk3DS.WinForms
                         }
                     }
 
-                    foreach (var sheet in filePatches[target])
+                    if (detectedTypeForOverride == "Ability")
                     {
-                        var rows = XlsxResearchParser.ReadSheet(path, sheet);
-                        if (rows.Count == 0) continue;
-                        totalBytes += ApplyPatchRows(bin, rows, target);
+                        var semantic = ConvertXlsxToSemantic(path, filePatches[target], target);
+                        
+                        // Save the auto-converted JSON for future user reference
+                        string jsonPath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileNameWithoutExtension(path) + "_Semantic.json");
+                        File.WriteAllText(jsonPath, System.Text.Json.JsonSerializer.Serialize(semantic, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+                        LogDeployment($"[Migration] Auto-converted Legacy Ability Patch to Semantic: {Path.GetFileName(jsonPath)}");
+                        
+                        // We must first expand Battle.cro if necessary before finding free space
+                        bool isCro = target.EndsWith(".cro", StringComparison.OrdinalIgnoreCase);
+                        if (isCro)
+                        {
+                            bin = pk3DS.Core.CTR.CROUtil.ExpandSegment(bin, 'c', 4000);
+                            expanded = true;
+                        }
+                        
+                        int freeSpaceOffset = ResearchEngine.FindFreeSpace(bin, 100, isCro);
+                        if (freeSpaceOffset > 0)
+                        {
+                            if (AbilityEngine.InjectSemanticAbility(bin, semantic, ref freeSpaceOffset, target))
+                            {
+                                totalBytes += 1; // Mark as changed so file saves
+                                LogDeployment($"[Migration] Successfully injected via Centralized Dispatcher.");
+                            }
+                            else
+                            {
+                                LogDeployment($"[Migration] Engine failed to inject.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var sheet in filePatches[target])
+                        {
+                            var rows = XlsxResearchParser.ReadSheet(path, sheet);
+                            if (rows.Count == 0) continue;
+                            totalBytes += ApplyPatchRows(bin, rows, target);
+                        }
                     }
 
                     if (totalBytes > 0 || expanded)
@@ -1094,6 +1147,106 @@ namespace pk3DS.WinForms
             return count;
         }
 
+        private SemanticAbility ConvertXlsxToSemantic(string path, List<string> sheets, string target)
+        {
+            int originalId = GetOriginalIdFromFilename(path, detectedTypeForOverride);
+            int overrideId = numTargetOverride.Value > 0 ? (int)numTargetOverride.Value : originalId;
+            
+            var semantic = new SemanticAbility
+            {
+                Name = Path.GetFileNameWithoutExtension(path),
+                AbilityID = overrideId > 0 ? overrideId : 233, // Default fallback
+                EventType = "CustomAsm",
+                HookLogic = new Dictionary<uint, string>()
+            };
+
+            foreach (var sheet in sheets)
+            {
+                var rows = XlsxResearchParser.ReadSheet(path, sheet);
+                foreach (var r in rows)
+                {
+                    string offKey = r.Keys.FirstOrDefault(k => k.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) >= 0)
+                                 ?? r.Keys.FirstOrDefault(k => k.IndexOf("Offset",  StringComparison.OrdinalIgnoreCase) >= 0)
+                                 ?? r.Keys.FirstOrDefault(k => k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
+                    string hexKey = r.Keys.FirstOrDefault(k => k.Equals("Hex US", StringComparison.OrdinalIgnoreCase))
+                                 ?? r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                    if (offKey == null || hexKey == null) continue;
+
+                    string offStr = r[offKey].Replace("0x", "").Trim();
+                    if (string.IsNullOrEmpty(offStr) || !uint.TryParse(offStr, System.Globalization.NumberStyles.HexNumber, null, out uint off)) continue;
+
+                    string hexStr = r[hexKey].Trim().Replace("0x", "").Replace("0X", "");
+                    if (string.IsNullOrEmpty(hexStr)) continue;
+
+                    byte[] p = pk3DS.Core.Util.StringToByteArray(hexStr);
+                    if (p == null || p.Length == 0) continue;
+
+                    // Exclude padding
+                    if (p.Length == 4 && p[0] == 0xCC && p[1] == 0xCC && p[2] == 0xCC && p[3] == 0xCC) continue;
+
+                    StringBuilder asmBuilder = new StringBuilder();
+                    using (var disasm = CapstoneDisassembler.CreateArmDisassembler(ArmDisassembleMode.Arm))
+                    {
+                        var insns = disasm.Disassemble(p, (long)off);
+                        foreach (var ins in insns)
+                        {
+                            asmBuilder.AppendLine($"{ins.Mnemonic} {ins.Operand}");
+                        }
+                    }
+                    
+                    if (asmBuilder.Length > 0)
+                    {
+                        string asmString = asmBuilder.ToString();
+                        
+                        // Dynamically adjust Ability ID token inside assembly
+                        if (originalId > 0 && overrideId > 0 && originalId != overrideId)
+                        {
+                            string hexPattern = $"#0x{originalId:x}";
+                            string decPattern = $"#{originalId}";
+                            asmString = asmString.Replace(hexPattern, $"#{overrideId}").Replace(decPattern, $"#{overrideId}");
+                        }
+                        
+                        semantic.HookLogic[off] = asmString;
+                    }
+                }
+            }
+            return semantic;
+        }
+
+        private int GetOriginalIdFromFilename(string path, string detectedType)
+        {
+            string fn = Path.GetFileNameWithoutExtension(path).ToLower();
+            string cleanName = System.Text.RegularExpressions.Regex.Replace(fn, @"^[0-9_\-\s\(\)]+", "").Trim();
+            cleanName = System.Text.RegularExpressions.Regex.Replace(cleanName, @"[0-9_\-\s\(\)]+$", "").Trim();
+            cleanName = cleanName.Replace("'", "").Replace("’", "").Replace(" ", "").ToLower();
+
+            TextName textName = detectedType switch
+            {
+                "Ability" => TextName.AbilityNames,
+                "Item" => TextName.ItemNames,
+                _ => TextName.MoveNames
+            };
+
+            string[] textList = Main.Config.GetText(textName);
+            for (int i = 0; i < textList.Length; i++)
+            {
+                string cleanedListEntry = textList[i].Replace("'", "").Replace("’", "").Replace(" ", "").ToLower();
+                if (!string.IsNullOrEmpty(cleanedListEntry) && cleanedListEntry == cleanName)
+                    return i;
+            }
+
+            var hexMatch = System.Text.RegularExpressions.Regex.Match(fn, @"0x([0-9a-fA-F]+)");
+            if (hexMatch.Success && int.TryParse(hexMatch.Groups[1].Value, System.Globalization.NumberStyles.HexNumber, null, out int hexVal))
+                return hexVal;
+
+            var decMatch = System.Text.RegularExpressions.Regex.Match(fn, @"\b([0-9]+)\b");
+            if (decMatch.Success && int.TryParse(decMatch.Groups[1].Value, out int decVal))
+                return decVal;
+
+            return 0;
+        }
+
         private void ApplyCustomPatches()
         {
             string patchesDir = Path.Combine(Application.StartupPath, "patches");
@@ -1213,6 +1366,40 @@ namespace pk3DS.WinForms
                             var legacy = System.Text.Json.JsonSerializer.Deserialize<CustomPatch>(json, opts);
                             if (legacy?.Payloads != null && legacy.Payloads.Count > 0)
                                 patch = legacy.ToUniversal();
+                        }
+                        catch { }
+                    }
+
+                    // Try SemanticAbility Format
+                    if (patch == null)
+                    {
+                        try
+                        {
+                            var sem = System.Text.Json.JsonSerializer.Deserialize<SemanticAbility>(json, opts);
+                            if (sem != null && !string.IsNullOrEmpty(sem.EventType))
+                            {
+                                patch = new UniversalPatch
+                                {
+                                    PatchName = sem.Name ?? "Semantic Ability",
+                                    Author = "Centralized Engine",
+                                    Description = $"Installs {sem.EventType} ability.",
+                                    TargetVersions = new List<string> { "US", "UM" },
+                                    Patches = new List<PatchEntry>
+                                    {
+                                        new PatchEntry
+                                        {
+                                            TargetFile = "code.bin",
+                                            Mode = "semantic",
+                                            Code = json,
+                                            Offsets = new Dictionary<string, VersionOffsets>
+                                            {
+                                                ["US"] = new VersionOffsets { InjectAt = "auto" },
+                                                ["UM"] = new VersionOffsets { InjectAt = "auto" }
+                                            }
+                                        }
+                                    }
+                                };
+                            }
                         }
                         catch { }
                     }
@@ -1500,7 +1687,7 @@ namespace pk3DS.WinForms
 
                 if (type != "Move") {
                     byte[] cd = File.ReadAllBytes(cp); 
-                    uint old = type switch { "Ability" => 234u, "Item" => 800u, _ => 0 };
+                    uint old = type switch { "Ability" => (uint)currentCount, "Item" => (uint)currentCount, _ => 0 };
                     if (ResearchEngine.PatchLimitCheck(cd, old, (uint)lim) > 0) File.WriteAllBytes(cp, cd);
                     ResearchEngine.ExpandRelocationTable(bp, type, lim);
                 }
@@ -1578,7 +1765,7 @@ namespace pk3DS.WinForms
                                 Array.Copy(pocketFile, newPocketFile, pocketFile.Length);
                                 // Assign 0x22 (pocket 2) for the first 14 bytes (28 TMs)
                                 for (int i = 0; i < addedBytes; i++) {
-                                    newPocketFile[pocketFile.Length + i] = (i < 14) ? (byte)0x22 : (byte)0x00;
+                                    newPocketFile[pocketFile.Length + i] = (i < 14) ? (byte)0x22 : (byte)0x11;
                                 }
                                 pocketGarc.Files[0] = newPocketFile;
                                 File.WriteAllBytes(pocketPath, pocketGarc.Data);
@@ -1606,8 +1793,11 @@ namespace pk3DS.WinForms
                     }
                 }
                 
-                string textARC = Path.Combine(Main.RomFSPath, Main.Config.GetGARCFileName("gametext").Replace('/', Path.DirectorySeparatorChar));
-                if (File.Exists(textARC)) {
+                for (int langIndex = 0; langIndex < 9; langIndex++) {
+                    string langKey = langIndex == 0 ? "gametext" : $"gametext_{langIndex}";
+                    string textARC = Path.Combine(Main.RomFSPath, Main.Config.GetGARCFileName(langKey).Replace('/', Path.DirectorySeparatorChar));
+                    if (!File.Exists(textARC)) continue;
+                    
                     var garc = new pk3DS.Core.CTR.GARC.MemGARC(File.ReadAllBytes(textARC));
                     byte[][] files = garc.Files;
                     
@@ -1627,14 +1817,11 @@ namespace pk3DS.WinForms
                         // Insert new entries
                         for (int i = 0; i < added * numLines; i++) {
                             int itemIdx = i / numLines;
-                            int subIdx = i % numLines;
-                            newLines[insertAt + i] = placeholderFunc(currentCount + itemIdx, subIdx);
+                            newLines[insertAt + i] = placeholderFunc(currentCount + itemIdx, i % numLines);
                         }
-                        // Copy sentinel and anything after it
-                        if (hasSentinel) {
-                            for (int i = insertAt; i < oldLen; i++)
-                                newLines[insertAt + (added * numLines) + (i - insertAt)] = lines[i];
-                        }
+                        // Copy sentinel
+                        if (hasSentinel) newLines[newTotal - 1] = lines[oldLen - 1];
+                        
                         files[fileIndex] = TextFile.GetBytes(Main.Config, newLines);
                     }
 
@@ -1731,6 +1918,8 @@ namespace pk3DS.WinForms
             }
         }
 
+
         private void LogDeployment(string m) { if (rtbAssembly.InvokeRequired) rtbAssembly.Invoke(new Action(() => LogDeployment(m))); else rtbAssembly.AppendText($"[{DateTime.Now:T}] {m}\n"); }
+
     }
 }

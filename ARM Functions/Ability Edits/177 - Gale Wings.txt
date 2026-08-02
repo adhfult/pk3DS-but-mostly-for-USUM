@@ -1,0 +1,49 @@
+Ability: Gale Wings (ID: 177)
+==================================================
+
+Effect:
+Raises Flying moves' priority by one stage.
+
+Dynamic ARM Mechanic:
+- **Positive Stat Modifier:** The code loads a positive integer (e.g., `mov rX, #1` or `#2`) for the stat stage increase and calls the modifier subroutine to boost the target's stat array.
+- **Priority Tier Check/Override:** The code reads the priority integer from the move struct. It may compare it (`cmp rX, #0`) to see if it's a priority move, or use an `add` instruction to artificially increase the priority integer before execution order is sorted.
+
+Execution Hooks:
+--------------------
+Address: 0x000103F0 (THUMB)
+Raw Assembly:
+0x103F0: B12E      cmp	r6, #0xb1
+0x103F2: 80E2      b	#0x108f6
+0x103F4: F813      asrs	r0, r7, #0xf
+0x103F6: 93E8F03A  ldm.w	r3, {r4, r5, r6, r7, sb, fp, ip, sp}
+0x103FA: 80E5      b	#0xfefe
+
+Logic Translation:
+- `0x103F0`: Compares the loaded ability ID against 0xb1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x103F2`: Executes `b #0x108f6`.
+- `0x103F4`: Executes `asrs r0, r7, #0xf`.
+- `0x103F6`: Executes `ldm.w r3, {r4, r5, r6, r7, sb, fp, ip, sp}`.
+- `0x103FA`: Executes `b #0xfefe`.
+--------------------
+Address: 0x0001AFF0 (THUMB)
+Raw Assembly:
+0x1AFF0: B12F      cmp	r7, #0xb1
+0x1AFF2: 03EB0000  add.w	r0, r3, r0
+0x1AFF6: 55E3      b	#0x1b6a4
+0x1AFF8: 0040      ands	r0, r0
+0x1AFFA: A0E3      b	#0x1b73e
+
+Logic Translation:
+- `0x1AFF0`: Compares the loaded ability ID against 0xb1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x1AFF2`: Adds `r0, r3, r0` to calculate the modifier.
+- `0x1AFF6`: Executes `b #0x1b6a4`.
+- `0x1AFF8`: Executes `ands r0, r0`.
+- `0x1AFFA`: Executes `b #0x1b73e`.
+--------------------
+Address: 0x00035E1C (THUMB)
+Raw Assembly:
+0x35E1C: B12A      cmp	r2, #0xb1
+
+Logic Translation:
+- `0x35E1C`: Compares the loaded ability ID against 0xb1. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------

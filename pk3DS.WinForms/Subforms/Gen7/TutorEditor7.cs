@@ -89,7 +89,7 @@ public partial class TutorEditor7 : Form
     }
 
     private readonly string[] movelist = Main.Config.GetText(TextName.MoveNames);
-    private static readonly int[] Tutors_USUM =
+    internal static readonly int[] Tutors_USUM =
     [
         450, 343, 162, 530, 324, 442, 402, 529, 340, 067, 441, 253, 009, 007, 008, // 0-14
         277, 335, 414, 492, 356, 393, 334, 387, 276, 527, 196, 401, 428, 406, 304, 231, // 15-30

@@ -1,0 +1,36 @@
+Ability: Power Of Alchemy (ID: 223)
+==================================================
+
+Effect:
+When an ally faints, this Pokémon gains its Ability.
+
+Dynamic ARM Mechanic:
+- **Unique Logic State:** The code modifies a highly unique variable or bitflag specific to this ability within the master battle state struct, and branches to a specialized sub-routine that commits the change.
+
+Execution Hooks:
+--------------------
+Address: 0x00023074 (THUMB)
+Raw Assembly:
+0x23074: DF2F      cmp	r7, #0xdf
+0x23076: 82E2      b	#0x2357e
+0x23078: 76CA      ldm	r2, {r1, r2, r4, r5, r6}
+
+Logic Translation:
+- `0x23074`: Compares the loaded ability ID against 0xdf. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+- `0x23076`: Executes `b #0x2357e`.
+- `0x23078`: Executes `ldm r2, {r1, r2, r4, r5, r6}`.
+--------------------
+Address: 0x00034E5C (THUMB)
+Raw Assembly:
+0x34E5C: DF2D      cmp	r5, #0xdf
+
+Logic Translation:
+- `0x34E5C`: Compares the loaded ability ID against 0xdf. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
+Address: 0x00076BB4 (THUMB)
+Raw Assembly:
+0x76BB4: DF2A      cmp	r2, #0xdf
+
+Logic Translation:
+- `0x76BB4`: Compares the loaded ability ID against 0xdf. (Multiple cmp instructions in a row mean the engine is checking if the Pokémon has one of several abilities that share the exact same mechanic, like Mold Breaker/Teravolt/Turboblaze).
+--------------------
