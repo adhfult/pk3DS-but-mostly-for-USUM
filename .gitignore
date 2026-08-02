@@ -6,15 +6,17 @@
 *.userosscache
 *.sln.docstates
 
-# Mod Working Directories (keep empty folders in git)
-US/*
-!US/.gitkeep
-UM/*
-!UM/.gitkeep
-CustomSprites/*
-!CustomSprites/.gitkeep
-patches/*
-!patches/.gitkeep
+# Mod Working & Tool Directories
+US/
+UM/
+CustomSprites/
+patches/
+CRO-Expander-4.0/
+CRO-Expander-main/
+Pokemon-Forme-Insertion-main/
+Python source files/
+brain/
+7
 
 # Large Binaries, Local Workspace Dumps & Zip Packages
 *.zip
@@ -38,4 +40,5 @@ Planned Features.txt
 # Python temp files
 __pycache__/
 *.pyc
+
 
