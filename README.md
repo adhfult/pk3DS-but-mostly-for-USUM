@@ -23,7 +23,7 @@ Will be updated in detail later!
 
 Will be updated in detail later!
 
-### 🎲 Enhanced Universal Randomizer
+### Enhanced Universal Randomizer
 
 Will be updated in detail later!
 
@@ -31,7 +31,7 @@ Will be updated in detail later!
 
 Will be updated in detail later!
 
-### 🎨 Visual Themes & Modern UI
+### Visual Themes & Modern UI
 
 - **4 Custom Themes**: Switch effortlessly between Dark Mode, Gray, Classic Light, and Galaxy Purple.
 - **Interactive Mascot Sprites**: Clickable companion sprites featuring various iconic legendaries in the sidebar.
