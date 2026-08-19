@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Text;
@@ -139,7 +139,7 @@ public class SmallIcon // 24x24
     public SmallIcon(BinaryReader br)
     {
             Bytes = br.ReadBytes(0x480);
-            Icon = ImageUtil.GetBitmap(Bytes, 24, 24);
+            Icon = ImageUtil.GetSMDHBitmap(Bytes, 24, 24);
         }
 
     public void Write(BinaryWriter bw)
@@ -164,7 +164,7 @@ public class LargeIcon // 48x48
     public LargeIcon(BinaryReader br)
     {
             Bytes = br.ReadBytes(0x1200);
-            Icon = ImageUtil.GetBitmap(Bytes, 48, 48);
+            Icon = ImageUtil.GetSMDHBitmap(Bytes, 48, 48);
         }
 
     public void Write(BinaryWriter bw)

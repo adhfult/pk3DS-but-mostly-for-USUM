@@ -51,6 +51,60 @@ public partial class ItemEditor7 : Form
         CB_Item.SelectedIndex = 1;
     }
 
+    /// <summary>
+    /// Adds item slots past the end of the table, the way Add New Move Slot adds moves.
+    /// </summary>
+    private void B_AddItem_Click(object sender, EventArgs e)
+    {
+        string input = WinFormsUtil.PromptInput("Add Item Slots",
+            "How many new item slots?", "1");
+        if (string.IsNullOrWhiteSpace(input)) return;
+        if (!int.TryParse(input.Trim(), out int count) || count <= 0)
+        {
+            WinFormsUtil.Alert("Enter a whole number greater than zero.");
+            return;
+        }
+
+        SetEntry();
+
+        int firstNew = files.Length;
+        int template = files.Length > 1 ? 1 : 0;
+
+        Array.Resize(ref files, firstNew + count);
+        for (int i = firstNew; i < files.Length; i++)
+            files[i] = (byte[])files[template].Clone();
+
+        // Names and descriptions have to grow too, or the new ids are invisible to the game.
+        var names = Main.Config.GetText(TextName.ItemNames);
+        var flavour = Main.Config.GetText(TextName.ItemFlavor);
+        int oldNames = names.Length;
+
+        if (names.Length < files.Length)
+        {
+            Array.Resize(ref names, files.Length);
+            for (int i = oldNames; i < names.Length; i++) names[i] = $"New Item {i}";
+            Main.Config.SetText(TextName.ItemNames, names);
+        }
+        if (flavour.Length < files.Length)
+        {
+            int oldFlavour = flavour.Length;
+            Array.Resize(ref flavour, files.Length);
+            for (int i = oldFlavour; i < flavour.Length; i++) flavour[i] = "New item description.";
+            Main.Config.SetText(TextName.ItemFlavor, flavour);
+        }
+
+        Array.Resize(ref itemflavor, files.Length);
+        for (int i = 0; i < itemflavor.Length; i++) itemflavor[i] ??= "";
+
+        CB_Item.Items.Clear();
+        CB_Item.Items.AddRange(names);
+        CB_Item.SelectedIndex = firstNew;
+
+        WinFormsUtil.Alert($"Added {count} item slot(s): ids {firstNew}-{files.Length - 1}.",
+            "Names and descriptions were grown to match, so the new ids are reachable. "
+            + "The game's item ceiling may still need raising - see the TM Editor's expansion patches.");
+    }
+
     private void ChangeEntry(object sender, EventArgs e)
     {
         SetEntry();
@@ -78,7 +132,7 @@ public partial class ItemEditor7 : Form
 
     private void UpdateSprite()
     {
-        PB_ItemSprite.Image = WinFormsUtil.getIcon(entry, 0, Main.Config);
+        WinFormsUtil.SetImage(PB_ItemSprite, WinFormsUtil.getIcon(entry, 0, Main.Config));
     }
 
     private void B_CopyTable_Click(object sender, EventArgs e)

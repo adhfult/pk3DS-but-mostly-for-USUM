@@ -1,0 +1,61 @@
+{
+  "Name": "Mirror Herb",
+  "Description": "Copies an opponent\u0027s stat boosts, then is used up.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Mirror Herb on. Must be a free slot or already named Mirror Herb.",
+      "Type": "item",
+      "Default": "863",
+      "ExpectName": "Mirror Herb",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Mirror Herb",
+      "Slots": [
+        {
+          "Timing": "0xBF",
+          "Reuse": {
+            "Kind": "Move",
+            "Id": 244,
+            "Timing": "0xBF",
+            "Name": "Psych Up"
+          },
+          "TimingByte": 191,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 639,
+            "Timing": "0x8A",
+            "Name": "Weakness Policy"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Mirror Herb"
+  }
+}

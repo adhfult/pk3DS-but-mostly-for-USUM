@@ -27,6 +27,68 @@ public class SpeciesRandomizer
         RandSpec = new GenericRandomizer(list);
     }
 
+    public Dictionary<int, int> GlobalSpeciesMap { get; private set; } = new();
+
+    public void GenerateGlobalMapping(Structures.EvolutionSet[] evos = null)
+    {
+        GlobalSpeciesMap.Clear();
+        for (int i = 1; i <= MaxSpeciesID; i++)
+        {
+            if (!GlobalSpeciesMap.ContainsKey(i))
+            {
+                int mapped = GetRandomSpecies(i);
+                GlobalSpeciesMap[i] = mapped;
+            }
+        }
+
+        if (evos != null)
+        {
+            var handled = new HashSet<int>();
+            for (int i = 1; i <= MaxSpeciesID && i < evos.Length; i++)
+            {
+                PropagateMap(i);
+            }
+
+            void PropagateMap(int parent)
+            {
+                if (handled.Contains(parent)) return;
+                handled.Add(parent);
+
+                var evoList = evos[parent];
+                foreach (var evo in evoList.PossibleEvolutions.Where(e => e.Species != 0))
+                {
+                    int childSpec = evo.Species;
+                    if (childSpec <= MaxSpeciesID && !handled.Contains(childSpec))
+                    {
+                        int parentMapped = GlobalSpeciesMap.GetValueOrDefault(parent, parent);
+                        int childMapped = GetEvolutionSpeciesOrRandom(parentMapped, childSpec, evos);
+                        GlobalSpeciesMap[childSpec] = childMapped;
+                        PropagateMap(childSpec);
+                    }
+                }
+            }
+        }
+    }
+
+    private int GetEvolutionSpeciesOrRandom(int parentMapped, int originalChild, Structures.EvolutionSet[] evos)
+    {
+        if (parentMapped < evos.Length)
+        {
+            var parentEvoList = evos[parentMapped];
+            var evo = parentEvoList.PossibleEvolutions.FirstOrDefault(e => e.Species != 0);
+            if (evo != null)
+                return evo.Species;
+        }
+        return GetRandomSpecies(originalChild);
+    }
+
+    public int GetMappedSpecies(int oldSpecies)
+    {
+        if (GlobalSpeciesMap.TryGetValue(oldSpecies, out int mapped))
+            return mapped;
+        return GetRandomSpecies(oldSpecies);
+    }
+
     #region Randomizer Settings
     public bool G1 = true;
     public bool G2 = true;
@@ -63,6 +125,11 @@ public class SpeciesRandomizer
             loopctr++;
         return newSpecies;
     }
+
+    /// <summary>
+    /// The next species straight off the shuffled cycle, ignoring every similarity filter.
+    /// </summary>
+    public int GetEvenDistributionSpecies() => RandSpec.Next();
 
     public int GetRandomSpeciesType(int oldSpecies, int type)
     {
@@ -126,6 +193,10 @@ public class SpeciesRandomizer
             return false;
         // Base stat total has to be close to original BST
         int expand = loopctr / MaxSpeciesID;
+        if ((L || E) && loopctr > 10)
+        {
+            expand += (loopctr / 5) + 10;
+        }
         int lo = oldpkm.BST * l / (h + expand);
         int hi = oldpkm.BST * (h + expand) / l;
         return lo > pkm.BST || pkm.BST > hi;

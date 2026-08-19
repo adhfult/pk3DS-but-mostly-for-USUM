@@ -36,6 +36,8 @@ public partial class EnhancedRestore : Form
         // load files to UI
         for (int i = 0; i < files.Length; i++)
         {
+            Items.Add([]);
+
             var tab = tabControl1.TabPages[i];
             var clb = new CheckedListBox
             {
@@ -58,8 +60,8 @@ public partial class EnhancedRestore : Form
     {
         string path = config.RomFS;
         string[] files = Directory.GetFiles(path);
-        string[] CROs = files.Where(x => new FileInfo(x).Name.Contains("Dll")).ToArray();
-        string[] CRSs = files.Where(x => new FileInfo(x).Extension.Contains("crs")).ToArray();
+        string[] CROs = files.Where(x => Path.GetExtension(x).Equals(".cro", StringComparison.OrdinalIgnoreCase)).ToArray();
+        string[] CRSs = files.Where(x => Path.GetExtension(x).Equals(".crs", StringComparison.OrdinalIgnoreCase)).ToArray();
         var CRRs = Directory.Exists(Path.Combine(path, ".crr"))
             ? Directory.EnumerateFiles(Path.Combine(path, ".crr"))
             : [];
@@ -87,7 +89,7 @@ public partial class EnhancedRestore : Form
         foreach (var f in files)
         {
             string GARC = config.GetGARCFileName(f);
-            string name = $"{f} ({GARC.Replace(Path.DirectorySeparatorChar.ToString(), "")})";
+            string name = $"{f} ({GameBackup.FlattenGarcName(GARC)})";
 
             string src = Path.Combine(config.RomFS, GARC);
             string dest = Path.Combine(bak_a, name);
@@ -127,6 +129,7 @@ public partial class EnhancedRestore : Form
     {
         // restore files that are selected
         int count = 0;
+        var failed = new List<string>();
         for (int i = 0; i < List.Count; i++)
         {
             for (int j = 0; j < List[i].Items.Count; j++)
@@ -140,14 +143,36 @@ public partial class EnhancedRestore : Form
 
                 try
                 {
-                    if (File.Exists(src)) // only restore files that exist
-                        File.Copy(src, dest, overwrite: true); count++;
+                    if (File.Exists(src))
+                    {
+                        File.Copy(src, dest, overwrite: true);
+                        count++;
+                    }
+                    else
+                    {
+                        failed.Add(item.DisplayName);
+                    }
                 }
-                catch { Debug.WriteLine("Unable to overwrite backup: " + dest); }
+                catch (Exception ex)
+                {
+                    failed.Add($"{item.DisplayName} ({ex.GetType().Name})");
+                    Debug.WriteLine("Unable to overwrite: " + dest);
+                }
             }
         }
 
-        WinFormsUtil.Alert($"Restored {count} file(s).", "The program will now close.");
+        if (count == 0)
+        {
+            WinFormsUtil.Alert("Nothing was restored.",
+                failed.Count > 0
+                    ? $"{failed.Count} selected file(s) had no backup to restore from."
+                    : "No files were selected.");
+            return;
+        }
+
+        WinFormsUtil.Alert($"Restored {count} file(s)." +
+            (failed.Count > 0 ? $"{Environment.NewLine}{failed.Count} had no backup and were left alone." : ""),
+            "The program will now close.");
         Environment.Exit(-1); // do not call closing events that repackage personal/gametext
     }
 

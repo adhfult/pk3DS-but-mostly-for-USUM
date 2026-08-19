@@ -1,0 +1,61 @@
+{
+  "Name": "Utility Umbrella",
+  "Description": "The holder ignores the effects of weather.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Utility Umbrella on. Must be a free slot or already named Utility Umbrella.",
+      "Type": "item",
+      "Default": "859",
+      "ExpectName": "Utility Umbrella",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Utility Umbrella",
+      "Slots": [
+        {
+          "Timing": "0x6D",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 76,
+            "Timing": "0x6D",
+            "Name": "Air Lock"
+          },
+          "TimingByte": 109,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x92",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 76,
+            "Timing": "0x92",
+            "Name": "Air Lock"
+          },
+          "TimingByte": 146,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Utility Umbrella"
+  }
+}

@@ -324,10 +324,10 @@ public class GameConfig
     public bool Y => Version == GameVersion.Y;
     public bool OR => Version == GameVersion.OR;
     public bool AS => Version == GameVersion.AS;
-    public bool Sun => Version == GameVersion.SN;
-    public bool Moon => Version == GameVersion.MN;
-    public bool UltraSun => Version == GameVersion.US;
-    public bool UltraMoon => Version == GameVersion.UM;
+    public bool Sun => Version == GameVersion.SN || Files == GARCReference.GARCReference_SN;
+    public bool Moon => Version == GameVersion.MN || Files == GARCReference.GARCReference_MN;
+    public bool UltraSun => Version == GameVersion.US || Files == GARCReference.GARCReference_US;
+    public bool UltraMoon => Version == GameVersion.UM || Files == GARCReference.GARCReference_UM;
 
     public int VersionID => (int)Version;
 

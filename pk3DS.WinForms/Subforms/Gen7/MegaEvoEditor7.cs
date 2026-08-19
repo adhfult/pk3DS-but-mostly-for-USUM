@@ -180,7 +180,7 @@ public partial class MegaEvoEditor7 : Form
             int formIdx = forme_spec[i].SelectedIndex;
             if (formIdx < 0) formIdx = 0;
             
-            picturebox_spec[i][1].Image = WinFormsUtil.GetSprite(baseSp, formIdx, 0, 0, Main.Config);
+            WinFormsUtil.SetImage(picturebox_spec[i][1], WinFormsUtil.GetSprite(baseSp, formIdx, 0, 0, Main.Config));
         }
     }
 

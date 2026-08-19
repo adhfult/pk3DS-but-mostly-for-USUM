@@ -1,0 +1,225 @@
+{
+  "Name": "Ability Patch and Nature Mints",
+  "Description": "Bag items that change a Pokemon\u0027s ability slot or nature. Ability Patch toggles between the hidden slot and slot 1; each mint sets one nature.",
+  "Category": "Bag item",
+  "Requires": [],
+  "Parameters": {
+    "abilityPatchId": {
+      "Description": "Item id for Ability Patch. The code.bin dispatcher compares against this directly.",
+      "Type": "item",
+      "Default": "867",
+      "ExpectName": "Ability Patch",
+      "AllowUnnamed": true
+    },
+    "mintIds": {
+      "Description": "Item ids for the 21 mints, in nature order: Lonely, Adamant, Naughty, Brave, Bold, Impish, Lax, Relaxed, Modest, Mild, Rash, Quiet, Calm, Gentle, Careful, Sassy, Timid, Hasty, Jolly, Naive, Serious. Order matters; the routine indexes by position.",
+      "Type": "list",
+      "Default": "113,114,115,123,124,125,126,127,128,129,130,131,132,133,426,427,622,837,838,839,840",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {
+    "Bag.cro": {
+      "Blocks": [
+        {
+          "Name": "bag-dispatch-region",
+          "Code": "0000000010C09FE500108CE527D7FF0ADE0050E325D7FF0A33D7FFEA1080010010C09FE500108CE568C6FF0ADE0050E366C6FF0A81C6FFEA1080010004C09FE500209CE5C9A2FFEA10800100000000007100720073007B007C007D007E007F00800081008200830084008500AA01AB016E024503460347034803000008402DE928C09FE5B030DCE1000053E30500000A010053E10100001A0100A0E30880BDE802C08CE2F6FFFFEA0000A0E30880BDE8608001001CC09FE500108CE5FBD6FF0ADE0050E3F9D6FF0AEBFFFFEB000050E3F6D6FF1A04D7FFEA108001001CC09FE500108CE539C6FF0ADE0050E337C6FF0AE1FFFFEB000050E334C6FF1A4FC6FFEA10800100000000000000000000000000",
+          "SourceBase": "0x018010",
+          "CodeBytes": "AAAAABDAn+UAEIzlJ9f/Ct4AUOMl1/8KM9f/6hCAAQAQwJ/lABCM5WjG/wreAFDjZsb/CoHG/+oQgAEABMCf5QAgnOXJov/qEIABAAAAAABxAHIAcwB7AHwAfQB+AH8AgACBAIIAgwCEAIUAqgGrAW4CRQNGA0cDSAMAAAhALekowJ/lsDDc4QAAU+MFAAAKAQBT4QEAABoBAKDjCIC96ALAjOL2///qAACg4wiAvehggAEAHMCf5QAQjOX71v8K3gBQ4/nW/wrr///rAABQ4/bW/xoE1//qEIABABzAn+UAEIzlOcb/Ct4AUOM3xv8K4f//6wAAUOM0xv8aT8b/6hCAAQAAAAAAAAAAAAAAAAA=",
+          "SourceBaseValue": 98320
+        }
+      ],
+      "SitePatches": [
+        {
+          "Offset": "0x0DCBC",
+          "Original": "0E00001A",
+          "Patched": "002900EA",
+          "IsHook": true,
+          "HookTarget": "bag-usable-test",
+          "OffsetValue": 56508,
+          "OriginalBytes": "DgAAGg==",
+          "PatchedBytes": "ACkA6g=="
+        },
+        {
+          "Offset": "0x099DC",
+          "Original": "1B00001A",
+          "Patched": "C23900EA",
+          "IsHook": true,
+          "HookTarget": "bag-text-test",
+          "OffsetValue": 39388,
+          "OriginalBytes": "GwAAGg==",
+          "PatchedBytes": "wjkA6g=="
+        },
+        {
+          "Offset": "0x12464",
+          "Original": "C5B9FFEB",
+          "Patched": "F81600EB",
+          "IsHook": true,
+          "HookTarget": "bag-marker",
+          "OffsetValue": 74852,
+          "OriginalBytes": "xbn/6w==",
+          "PatchedBytes": "+BYA6w=="
+        }
+      ]
+    }
+  },
+  "CodeBin": {
+    "LoadBase": 1048576,
+    "Blocks": [
+      {
+        "Name": "ability-and-mint-routines",
+        "Code": "10402DE90040A0E1AF1FF9EB020050E30400A0E10010A0030210A0131040BDE8C4F7F2EA03CC42E263005CE3F3FFFF0A000052E33500001A70402DE93AEBF2EA000000000000000070402DE90050A0E150408FE21520A0E3B030D4E1010053E10400000A044084E2012052E2F9FFFF1A0000A0E37080BDE80260D4E50C5095E50500A0E1EEEEF2EB0010A0E30500A0E1EC1AF9EB1460C0E50500A0E1CAEEF2EB0100A0E37080BDE87100010072000300730004007B0002007C0005007D0008007E0009007F00070080000F008100100082001300830011008400140085001500AA011700AB0116006E020A0045030B0046030D0047030E0048030C00AB0452E30000000A3F0000EA000000EA0000A0E1F0402DE90070A0E17C408FE21520A0E3B030D4E1010053E10400000A044084E2012052E2F9FFFF1A0000A0E3F080BDE80260D4E50C5097E50500A0E1BCEEF2EB0010A0E30500A0E1BA1AF9EB1460C0E50500A0E198EEF2EB0040A0E30700A0E10410A0E1D01EF9EB0020A0E10700A0E10410A0E14EF8F2EB014084E2060054E3F5FFFF3A160000EAF080BDE87100010072000300730004007B0002007C0005007D0008007E0009007F00070080000F008100100082001300830011008400140085001500AA011700AB0116006E020A0045030B0046030D0047030E0048030C000000000008309FE50100A0E3000083E5F080BDE8A09B5B001CC09FE500309CE5000053E30200000A0030A0E300308CE51EFF2FE170402DE9BFEAF2EAA09B5B0000000000000000000000000000000000",
+        "SourceBase": "0x00666948",
+        "CallsSymbols": [
+          "_ZNK3pml8pokepara9CoreParam15GetTokuseiIndexEv",
+          "_ZN3pml8pokepara9CoreParam15SetTokuseiIndexEh"
+        ],
+        "CodeBytes": "EEAt6QBAoOGvH/nrAgBQ4wQAoOEAEKADAhCgExBAvejE9/LqA8xC4mMAXOPz//8KAABS4zUAABpwQC3pOuvy6gAAAAAAAAAAcEAt6QBQoOFQQI/iFSCg47Aw1OEBAFPhBAAACgRAhOIBIFLi+f//GgAAoONwgL3oAmDU5QxQleUFAKDh7u7y6wAQoOMFAKDh7Br56xRgwOUFAKDhyu7y6wEAoONwgL3ocQABAHIAAwBzAAQAewACAHwABQB9AAgAfgAJAH8ABwCAAA8AgQAQAIIAEwCDABEAhAAUAIUAFQCqARcAqwEWAG4CCgBFAwsARgMNAEcDDgBIAwwAqwRS4wAAAAo/AADqAAAA6gAAoOHwQC3pAHCg4XxAj+IVIKDjsDDU4QEAU+EEAAAKBECE4gEgUuL5//8aAACg4/CAvegCYNTlDFCX5QUAoOG87vLrABCg4wUAoOG6GvnrFGDA5QUAoOGY7vLrAECg4wcAoOEEEKDh0B756wAgoOEHAKDhBBCg4U748usBQITiBgBU4/X//zoWAADq8IC96HEAAQByAAMAcwAEAHsAAgB8AAUAfQAIAH4ACQB/AAcAgAAPAIEAEACCABMAgwARAIQAFACFABUAqgEXAKsBFgBuAgoARQMLAEYDDQBHAw4ASAMMAAAAAAAIMJ/lAQCg4wAAg+XwgL3ooJtbABzAn+UAMJzlAABT4wIAAAoAMKDjADCM5R7/L+FwQC3pv+ry6qCbWwAAAAAAAAAAAAAAAAAAAAAA",
+        "SourceBaseValue": 6711624
+      }
+    ],
+    "Patches": [
+      {
+        "Name": "flip-dispatcher-hook",
+        "Symbol": "_ZN3pml8pokepara9CoreParam16FlipTokuseiIndexEv",
+        "Offset": 0,
+        "Original": "70402DE9",
+        "BranchTo": "ability-and-mint-routines",
+        "BranchOffset": 36,
+        "Link": false,
+        "OriginalBytes": "cEAt6Q=="
+      }
+    ]
+  },
+  "DataTables": [
+    {
+      "Target": "Bag.cro",
+      "Block": "bag-dispatch-region",
+      "Offset": "0x50",
+      "ElementSize": 2,
+      "Values": "${mintIds}",
+      "Terminate": true,
+      "Capacity": 22,
+      "OffsetValue": 80
+    }
+  ],
+  "ItemData": {
+    "${abilityPatchId}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[0]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[1]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[2]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[3]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[4]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[5]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[6]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[7]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[8]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[9]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[10]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[11]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[12]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[13]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[14]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[15]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[16]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[17]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[18]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[19]}": {
+      "CloneFrom": "645"
+    },
+    "${mintIds[20]}": {
+      "CloneFrom": "645"
+    }
+  },
+  "ItemNames": {
+    "${abilityPatchId}": "Ability Patch",
+    "${mintIds[0]}": "Lonely Mint",
+    "${mintIds[1]}": "Adamant Mint",
+    "${mintIds[2]}": "Naughty Mint",
+    "${mintIds[3]}": "Brave Mint",
+    "${mintIds[4]}": "Bold Mint",
+    "${mintIds[5]}": "Impish Mint",
+    "${mintIds[6]}": "Lax Mint",
+    "${mintIds[7]}": "Relaxed Mint",
+    "${mintIds[8]}": "Modest Mint",
+    "${mintIds[9]}": "Mild Mint",
+    "${mintIds[10]}": "Rash Mint",
+    "${mintIds[11]}": "Quiet Mint",
+    "${mintIds[12]}": "Calm Mint",
+    "${mintIds[13]}": "Gentle Mint",
+    "${mintIds[14]}": "Careful Mint",
+    "${mintIds[15]}": "Sassy Mint",
+    "${mintIds[16]}": "Timid Mint",
+    "${mintIds[17]}": "Hasty Mint",
+    "${mintIds[18]}": "Jolly Mint",
+    "${mintIds[19]}": "Naive Mint",
+    "${mintIds[20]}": "Serious Mint"
+  },
+  "ItemDescriptions": {
+    "${abilityPatchId}": "An item that swaps a Pokémon's Ability between its usual first Ability and its rare hidden Ability. Use it again to swap back.",
+    "${mintIds[0]}": "A mint with a sharp aroma. The Pokémon that eats it will grow with a raised Attack stat and a lowered Defense stat.",
+    "${mintIds[1]}": "A mint with a sharp aroma. The Pokémon that eats it will grow with a raised Attack stat and a lowered Sp. Atk stat.",
+    "${mintIds[2]}": "A mint with a sharp aroma. The Pokémon that eats it will grow with a raised Attack stat and a lowered Sp. Def stat.",
+    "${mintIds[3]}": "A mint with a sharp aroma. The Pokémon that eats it will grow with a raised Attack stat and a lowered Speed stat.",
+    "${mintIds[4]}": "A mint with a firm aroma. The Pokémon that eats it will grow with a raised Defense stat and a lowered Attack stat.",
+    "${mintIds[5]}": "A mint with a firm aroma. The Pokémon that eats it will grow with a raised Defense stat and a lowered Sp. Atk stat.",
+    "${mintIds[6]}": "A mint with a firm aroma. The Pokémon that eats it will grow with a raised Defense stat and a lowered Sp. Def stat.",
+    "${mintIds[7]}": "A mint with a firm aroma. The Pokémon that eats it will grow with a raised Defense stat and a lowered Speed stat.",
+    "${mintIds[8]}": "A mint with a rich aroma. The Pokémon that eats it will grow with a raised Sp. Atk stat and a lowered Attack stat.",
+    "${mintIds[9]}": "A mint with a rich aroma. The Pokémon that eats it will grow with a raised Sp. Atk stat and a lowered Defense stat.",
+    "${mintIds[10]}": "A mint with a rich aroma. The Pokémon that eats it will grow with a raised Sp. Atk stat and a lowered Sp. Def stat.",
+    "${mintIds[11]}": "A mint with a rich aroma. The Pokémon that eats it will grow with a raised Sp. Atk stat and a lowered Speed stat.",
+    "${mintIds[12]}": "A mint with a mild aroma. The Pokémon that eats it will grow with a raised Sp. Def stat and a lowered Attack stat.",
+    "${mintIds[13]}": "A mint with a mild aroma. The Pokémon that eats it will grow with a raised Sp. Def stat and a lowered Defense stat.",
+    "${mintIds[14]}": "A mint with a mild aroma. The Pokémon that eats it will grow with a raised Sp. Def stat and a lowered Sp. Atk stat.",
+    "${mintIds[15]}": "A mint with a mild aroma. The Pokémon that eats it will grow with a raised Sp. Def stat and a lowered Speed stat.",
+    "${mintIds[16]}": "A mint with a light aroma. The Pokémon that eats it will grow with a raised Speed stat and a lowered Attack stat.",
+    "${mintIds[17]}": "A mint with a light aroma. The Pokémon that eats it will grow with a raised Speed stat and a lowered Defense stat.",
+    "${mintIds[18]}": "A mint with a light aroma. The Pokémon that eats it will grow with a raised Speed stat and a lowered Sp. Atk stat.",
+    "${mintIds[19]}": "A mint with a light aroma. The Pokémon that eats it will grow with a raised Speed stat and a lowered Sp. Def stat.",
+    "${mintIds[20]}": "A mint with a plain aroma. The Pokémon that eats it will grow evenly, favoring no stat over any other."
+  }
+}

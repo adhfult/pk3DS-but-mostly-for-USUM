@@ -27,7 +27,7 @@ namespace pk3DS.Core.Modding
             {
                 string p1 = Path.Combine(exefs, "code.bin");
                 if (File.Exists(p1)) return p1;
-                string p2 = Path.Combine(exefs, ".code.bin");
+                string p2 = pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefs);
                 if (File.Exists(p2)) return p2;
             }
 

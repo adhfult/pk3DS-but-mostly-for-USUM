@@ -1,4 +1,4 @@
-namespace pk3DS.WinForms;
+﻿namespace pk3DS.WinForms;
 
 partial class TextEditor
 {
@@ -27,6 +27,7 @@ partial class TextEditor
         this.B_Search = new System.Windows.Forms.Button();
         this.B_SearchPrev = new System.Windows.Forms.Button();
         this.B_BatchReplace = new System.Windows.Forms.Button();
+        this.B_Randomize = new System.Windows.Forms.Button();
         this.L_Visualizer = new System.Windows.Forms.Label();
         this.RTB_Visualizer = new System.Windows.Forms.RichTextBox();
         this.CB_Entry = new System.Windows.Forms.ComboBox();
@@ -138,6 +139,13 @@ partial class TextEditor
         // 
         // B_BatchReplace
         // 
+        // B_Randomize_Click was fully implemented but had no control to invoke it.
+        this.B_Randomize.Location = new System.Drawing.Point(485, 405);
+        this.B_Randomize.Name = "B_Randomize";
+        this.B_Randomize.Size = new System.Drawing.Size(95, 23);
+        this.B_Randomize.Text = "Randomize";
+        this.B_Randomize.UseVisualStyleBackColor = true;
+        this.B_Randomize.Click += new System.EventHandler(this.B_Randomize_Click);
         this.B_BatchReplace.Location = new System.Drawing.Point(380, 405);
         this.B_BatchReplace.Name = "B_BatchReplace";
         this.B_BatchReplace.Size = new System.Drawing.Size(95, 23);
@@ -197,6 +205,7 @@ partial class TextEditor
         this.ClientSize = new System.Drawing.Size(1000, 480);
         this.Controls.Add(this.L_Search);
         this.Controls.Add(this.B_BatchReplace);
+        this.Controls.Add(this.B_Randomize);
         this.Controls.Add(this.B_SearchPrev);
         this.Controls.Add(this.B_Search);
         this.Controls.Add(this.TB_Search);
@@ -235,6 +244,7 @@ partial class TextEditor
     private System.Windows.Forms.TextBox TB_Search;
     private System.Windows.Forms.Button B_SearchPrev;
     private System.Windows.Forms.Button B_BatchReplace;
+    private System.Windows.Forms.Button B_Randomize;
     private System.Windows.Forms.Button B_Search;
     private System.Windows.Forms.RichTextBox RTB_Visualizer;
     private System.Windows.Forms.Label L_Visualizer;

@@ -1,0 +1,41 @@
+{
+  "Name": "Hail into Snow",
+  "Description": "Hail deals no chip damage and raises the Defense of Ice types instead.",
+  "Category": "Battle mechanic",
+  "Requires": [],
+  "Parameters": {},
+  "Mechanics": [],
+  "Blocks": [
+    {
+      "Name": "hail-ice-defense",
+      "Code": "040050E3935DFC0A030050E39D5DFC1A0E10A0E30A00A0E11D01FEEB000050E3985DFC1A090054E3965DFC1A915DFCEA",
+      "SourceBase": "0x1083E0",
+      "CodeBytes": "BABQ45Nd/AoDAFDjnV38Gg4QoOMKAKDhHQH+6wAAUOOYXfwaCQBU45Zd/BqRXfzq",
+      "SourceBaseValue": 1082336
+    }
+  ],
+  "SitePatches": [
+    {
+      "Offset": "0x0B050C",
+      "Original": "1000000A",
+      "Patched": "1500000A",
+      "IsHook": false,
+      "OffsetValue": 722188,
+      "OriginalBytes": "EAAACg==",
+      "PatchedBytes": "FQAACg=="
+    },
+    {
+      "Offset": "0x01FA2C",
+      "Original": "040050E3",
+      "Patched": "6BA203EA",
+      "IsHook": true,
+      "HookTarget": "hail-ice-defense",
+      "OffsetValue": 129580,
+      "OriginalBytes": "BABQ4w==",
+      "PatchedBytes": "a6ID6g=="
+    }
+  ],
+  "OtherCros": {},
+  "ItemData": {},
+  "ItemNames": {}
+}

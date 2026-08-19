@@ -1,4 +1,4 @@
-﻿namespace pk3DS.WinForms;
+namespace pk3DS.WinForms;
 
 partial class PersonalEditor6
 {
@@ -194,7 +194,6 @@ partial class PersonalEditor6
                                                                        | System.Windows.Forms.AnchorStyles.Left)));
         this.TC_Pokemon.Controls.Add(this.TP_General);
         this.TC_Pokemon.Controls.Add(this.TP_MoveTutors);
-        this.TC_Pokemon.Controls.Add(this.TP_Randomizer);
         this.TC_Pokemon.Location = new System.Drawing.Point(12, 40);
         this.TC_Pokemon.Name = "TC_Pokemon";
         this.TC_Pokemon.SelectedIndex = 0;

@@ -36,6 +36,19 @@ public partial class FormInsertion : Form
         baseForms = bases;
         formVal = forms;
 
+        if (baseForms == null || baseForms.Length < personalFiles.Length)
+        {
+            int oldLen = baseForms?.Length ?? 0;
+            Array.Resize(ref baseForms, personalFiles.Length);
+            for (int i = oldLen; i < personalFiles.Length; i++) baseForms[i] = i;
+        }
+        if (formVal == null || formVal.Length < personalFiles.Length)
+        {
+            int oldLen = formVal?.Length ?? 0;
+            Array.Resize(ref formVal, personalFiles.Length);
+            for (int i = oldLen; i < personalFiles.Length; i++) formVal[i] = 0;
+        }
+
         InitializeComponent();
 
         CB_TargetSpecies.Items.AddRange(speciesNames.Take(Math.Min(speciesNames.Length, Main.Config.MaxSpeciesID + 1)).ToArray());
@@ -103,6 +116,32 @@ public partial class FormInsertion : Form
 
             foreach (int sID in speciesToInsert)
             {
+                if (sID < personalFiles.Length && personalFiles[sID] != null && personalFiles[sID].Length > 0x20)
+                {
+                    int curForms = personalFiles[sID][0x20];
+                    if (curForms + count > 255)
+                    {
+                        WinFormsUtil.Error($"Form count overflow for species #{sID}. Maximum forms per species is 255 (current: {curForms}, adding: {count}).");
+                        return;
+                    }
+                }
+            }
+
+            int projected = personalFiles.Length + (speciesToInsert.Count * count);
+            int ceiling = GetPersonalEntryCeiling();
+            if (projected > ceiling)
+            {
+                int room = Math.Max(0, ceiling - personalFiles.Length);
+                WinFormsUtil.Error(
+                    $"This would grow the personal table to {projected} entries, past the {ceiling} this ROM supports.",
+                    $"The table currently holds {personalFiles.Length} entries, so there is room for {room} more.\n\n" +
+                    $"You asked for {speciesToInsert.Count} species x {count} forms = {speciesToInsert.Count * count} entries.\n\n" +
+                    "Raising the limit means repointing the icon preload count in code.bin, which this editor does not do.");
+                return;
+            }
+
+            foreach (int sID in speciesToInsert)
+            {
                 int finalTemplate = isBatch ? sID : copyIndex;
                 InsertForms(sID, count, finalTemplate);
                 // Synchronize lists for next iteration
@@ -120,6 +159,41 @@ public partial class FormInsertion : Form
         {
             WinFormsUtil.Error("Insertion failed.", ex.Message + "\n" + ex.StackTrace);
         }
+    }
+
+    /// <summary>Icon-member count a retail USUM build preloads.</summary>
+    private const int RetailPersonalEntryCeiling = 1153;
+
+    /// <summary>Value the Expansion Pack writes in its place.</summary>
+    private const int ExpansionPersonalEntryCeiling = 1507;
+
+    /// <summary>
+    /// How many personal entries this ROM can actually carry, read from the icon preload count in
+    /// code.bin rather than assumed, so a build that raised it further is respected and one that
+    /// never raised it at all is not overrun.
+    /// </summary>
+    private static int GetPersonalEntryCeiling()
+    {
+        // Offsets the code map records for the icon preload word, US and UM. Each is verified to
+        // hold a plausible count before being believed, so a wrong offset falls through.
+        foreach (int ofs in new[] { 0x1D4C2C, 0x1D4C24, 0x1DF164 })
+        {
+            try
+            {
+                if (Main.ExeFSPath == null) break;
+                string[] files = System.IO.Directory.GetFiles(Main.ExeFSPath);
+                string codeFile = files.FirstOrDefault(f => System.IO.Path.GetFileNameWithoutExtension(f)
+                    .Contains("code", StringComparison.OrdinalIgnoreCase));
+                if (codeFile == null) break;
+
+                byte[] code = System.IO.File.ReadAllBytes(codeFile);
+                if (ofs + 4 > code.Length) continue;
+                uint v = BitConverter.ToUInt32(code, ofs);
+                if (v is >= RetailPersonalEntryCeiling and <= 8192) return (int)v;
+            }
+            catch { break; }
+        }
+        return ExpansionPersonalEntryCeiling;
     }
 
     private void InsertFormsBatch(int start, int end, int count, int templateID)
@@ -408,11 +482,20 @@ public partial class FormInsertion : Form
         GARC.LazyGARC garc = new GARC.LazyGARC(path);
         List<byte> headerList = new List<byte>(garc[0]);
 
+        int reqHeaderBytes = (Main.Config.MaxSpeciesID + 1) * 4;
+        if (headerList.Count < reqHeaderBytes)
+        {
+            int diff = reqHeaderBytes - headerList.Count;
+            headerList.AddRange(new byte[diff]);
+        }
+
         int total_forms = 0;
         for (int i = 0; i <= Main.Config.MaxSpeciesID; i++)
             total_forms += headerList[i * 4 + 2];
             
+        if (total_forms <= 0) total_forms = 1;
         int model_file_count = GetModelBinsPerForm(garc, total_forms);
+        if (model_file_count <= 0) return;
         
         // Byte 2 is total forms for species, byte 0-1 is sum of all FORMS prior
         int forms_for_species = headerList[species * 4 + 2];

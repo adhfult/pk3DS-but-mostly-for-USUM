@@ -1,4 +1,4 @@
-namespace pk3DS.WinForms;
+﻿namespace pk3DS.WinForms;
 
 partial class MaisonEditor7
 {
@@ -55,8 +55,6 @@ partial class MaisonEditor7
         this.B_ShowdownBox = new System.Windows.Forms.Button();
         this.B_ExportTeam = new System.Windows.Forms.Button();
         this.PB_Mascot = new System.Windows.Forms.PictureBox();
-        this.B_View = new System.Windows.Forms.Button();
-        this.B_SetPokemonList = new System.Windows.Forms.Button();
 
         this.GB_Trainer.SuspendLayout();
         this.GB_Pokemon.SuspendLayout();
@@ -366,7 +364,5 @@ partial class MaisonEditor7
     private System.Windows.Forms.Button B_ShowdownBox;
     private System.Windows.Forms.Button B_ExportTeam;
     private System.Windows.Forms.PictureBox PB_Mascot;
-    private System.Windows.Forms.Button B_View;
-    private System.Windows.Forms.Button B_SetPokemonList;
     private System.Windows.Forms.Label L_StoredSets;
 }

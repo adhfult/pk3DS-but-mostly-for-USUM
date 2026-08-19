@@ -6,6 +6,12 @@ namespace pk3DS.Core;
 
 public static class GameBackup
 {
+    /// <summary>
+    /// A GARC path flattened into something usable as a file name.
+    /// </summary>
+    public static string FlattenGarcName(string garcPath) =>
+        (garcPath ?? "").Replace("/", "").Replace("\\", "");
+
     public const string bakpath = "backup";
     public const string bakexefs = "exefs";
     public const string baka = "a";
@@ -65,7 +71,7 @@ public static class GameBackup
         foreach (var f in files)
         {
             string GARC = config.GetGARCFileName(f);
-            string name = f + $" ({GARC.Replace(Path.DirectorySeparatorChar.ToString(), "")})";
+            string name = f + $" ({FlattenGarcName(GARC)})";
             string src = Path.Combine(config.RomFS, GARC);
             string dest = Path.Combine(bak_a, name);
             if (overwrite || !File.Exists(dest))
@@ -77,8 +83,8 @@ public static class GameBackup
     {
         string path = config.RomFS;
         string[] files = Directory.GetFiles(path);
-        string[] CROs = files.Where(x => new FileInfo(x).Name.Contains("Dll")).ToArray();
-        string[] CRSs = files.Where(x => new FileInfo(x).Extension.Contains("crs")).ToArray();
+        string[] CROs = files.Where(x => Path.GetExtension(x).Equals(".cro", StringComparison.OrdinalIgnoreCase)).ToArray();
+        string[] CRSs = files.Where(x => Path.GetExtension(x).Equals(".crs", StringComparison.OrdinalIgnoreCase)).ToArray();
         string[] CRRs = Directory.Exists(Path.Combine(path, ".crr"))
             ? Directory.GetFiles(Path.Combine(path, ".crr"))
             : [];
@@ -169,7 +175,7 @@ public static class GameBackup
         foreach (var f in files)
         {
             string GARC = config.GetGARCFileName(f);
-            string name = f + $" ({GARC.Replace(Path.DirectorySeparatorChar.ToString(), "")})";
+            string name = f + $" ({FlattenGarcName(GARC)})";
             string src = Path.Combine(config.RomFS, GARC);
             string dest = Path.Combine(bak_a, name);
             if (File.Exists(dest))
@@ -191,8 +197,8 @@ public static class GameBackup
 
         string path = config.RomFS;
         string[] files = Directory.GetFiles(path);
-        string[] CROs = files.Where(x => new FileInfo(x).Name.Contains("Dll")).ToArray();
-        string[] CRSs = files.Where(x => new FileInfo(x).Extension.Contains("crs")).ToArray();
+        string[] CROs = files.Where(x => Path.GetExtension(x).Equals(".cro", StringComparison.OrdinalIgnoreCase)).ToArray();
+        string[] CRSs = files.Where(x => Path.GetExtension(x).Equals(".crs", StringComparison.OrdinalIgnoreCase)).ToArray();
         string[] CRRs = Directory.Exists(Path.Combine(path, ".crr"))
             ? Directory.GetFiles(Path.Combine(path, ".crr"))
             : [];

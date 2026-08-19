@@ -252,7 +252,6 @@ partial class PersonalEditor7
                                                                        | System.Windows.Forms.AnchorStyles.Left)));
         this.TC_Pokemon.Controls.Add(this.TP_General);
         this.TC_Pokemon.Controls.Add(this.TP_MoveTutors);
-        this.TC_Pokemon.Controls.Add(this.TP_Randomizer);
         this.TC_Pokemon.Controls.Add(this.TP_Changelog);
         this.TP_General.Controls.Add(this.StatBar_HP);
         this.TP_General.Controls.Add(this.StatBar_ATK);
@@ -540,14 +539,14 @@ partial class PersonalEditor7
         this.TB_Stage.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.L_Stage.Location = new System.Drawing.Point(10, 390);
-        this.L_Stage.Text = "Evolution Stage:";
+        this.L_Stage.Text = "Evo Stage:";
 
         this.TB_FormeCount.Location = new System.Drawing.Point(230, 387);
         this.TB_FormeCount.Size = new System.Drawing.Size(32, 20);
         this.TB_FormeCount.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
 
         this.L_FormesCount.Location = new System.Drawing.Point(150, 390);
-        this.L_FormesCount.Text = "Formes Count:";
+        this.L_FormesCount.Text = "Formes:";
 
         this.PB_MonSprite.Location = new System.Drawing.Point(10, 40);
         this.PB_MonSprite.Name = "PB_MonSprite";
@@ -1109,6 +1108,8 @@ partial class PersonalEditor7
         this.B_ModAll.Location = new System.Drawing.Point(580, 20);
         this.B_ModAll.Size = new System.Drawing.Size(145, 30);
         this.B_ModAll.Text = "Modify All";
+        // B_ModifyAll was fully written but never connected, so this button did nothing.
+        this.B_ModAll.Click += new System.EventHandler(this.B_ModifyAll);
 
         // B_SaveCurrent
         this.B_SaveCurrent.Location = new System.Drawing.Point(580, 175);

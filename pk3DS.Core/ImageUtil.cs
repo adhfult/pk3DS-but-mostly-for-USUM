@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -35,6 +35,34 @@ public static class ImageUtil
         Marshal.Copy(data, 0, ptr, data.Length);
         bmp.UnlockBits(bmpData);
         return bmp;
+    }
+
+    public static Bitmap GetSMDHBitmap(byte[] bytes, int width, int height)
+    {
+        if (bytes == null || bytes.Length < width * height * 2)
+            return null;
+        uint[] pixels = System.Linq.Enumerable.ToArray(PixelConverter.GetPixels(bytes, XLIMEncoding.RGB565));
+        byte[] array = new byte[width * height * 4];
+        uint tilesPerRow = (uint)(width / 8);
+        for (uint i = 0; i < pixels.Length && i < (width * height); i++)
+        {
+            XLIMOrienter.DecimalToCartesian(i & 0x3F, out uint localX, out uint localY);
+            uint tileIdx = i >> 6;
+            uint tileX = tileIdx % tilesPerRow;
+            uint tileY = tileIdx / tilesPerRow;
+            uint x = (tileX * 8) + localX;
+            uint y = (tileY * 8) + localY;
+
+            if (x >= width || y >= height)
+                continue;
+            var val = pixels[i];
+            uint o = 4 * (x + (y * (uint)width));
+            array[o + 0] = (byte)(val & 0xFF);
+            array[o + 1] = (byte)(val >> 8 & 0xFF);
+            array[o + 2] = (byte)(val >> 16 & 0xFF);
+            array[o + 3] = (byte)(val >> 24 & 0xFF);
+        }
+        return GetBitmap(array, width, height);
     }
 
     public static byte[] GetPixelData(Bitmap bitmap)

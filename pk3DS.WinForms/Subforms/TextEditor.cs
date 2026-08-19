@@ -1,4 +1,4 @@
-using pk3DS.Core;
+﻿using pk3DS.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -86,43 +86,8 @@ public partial class TextEditor : Form
         files = infiles;
         Mode = mode;
         
-        // Populate the dropdown with friendly names if we know them
         for (int i = 0; i < files.Length; i++)
-        {
-            string displayName = i.ToString();
-            
-            // Example mapping for Gen 6 (ORAS/XY)
-            if (Mode == "gametext")
-            {
-                if (i == 13) displayName += " - Move Actions";
-                else if (i == 14) displayName += " - Z-Move Actions";
-                else if (i == 15) displayName += " - Battle Interactions";
-                else if (i == 16) displayName += " - Battle Effects";
-                else if (i == 19) displayName += " - Z-Move Names";
-                else if (i == 39) displayName += " - Item Descriptions";
-                else if (i == 40) displayName += " - Item Names";
-                else if (i == 41) displayName += " - Plural Item Names";
-                else if (i == 42) displayName += " - Plural Item Names 2";
-                else if (i == 60) displayName += " - Pokemon Names";
-                else if (i == 101) displayName += " - Ability Names";
-                else if (i == 102) displayName += " - Ability Descriptions";
-                else if (i == 117) displayName += " - Move Descriptions";
-                else if (i == 118) displayName += " - Move Names";
-                // Gen 7 (USUM) Mappings
-                else if (i == 40 && Main.Config.Version == GameVersion.USUM) displayName += " - Item Names";
-                else if (i == 39 && Main.Config.Version == GameVersion.USUM) displayName += " - Item Descriptions";
-                else if (i == 60 && Main.Config.Version == GameVersion.USUM) displayName += " - Pokemon Names";
-                else if (i == 118 && Main.Config.Version == GameVersion.USUM) displayName += " - Move Names";
-                else if (i == 117 && Main.Config.Version == GameVersion.USUM) displayName += " - Move Descriptions";
-                else if (i == 101 && Main.Config.Version == GameVersion.USUM) displayName += " - Ability Names";
-                else if (i == 102 && Main.Config.Version == GameVersion.USUM) displayName += " - Ability Descriptions";
-                else if (i == 119 && Main.Config.Version == GameVersion.USUM) displayName += " - Form Names";
-                else if (i == 104 && Main.Config.Version == GameVersion.USUM) displayName += " - Trainer Names";
-                // Add more mappings as you discover them
-            }
-            
-            CB_Entry.Items.Add(displayName);
-        }
+            CB_Entry.Items.Add(DescribeTextFile(i));
         CB_Entry.SelectedIndex = 0;
         dgv.EditMode = DataGridViewEditMode.EditOnEnter;
     }
@@ -130,6 +95,80 @@ public partial class TextEditor : Form
     private readonly string[][] files;
     private readonly string Mode;
     private int entry = -1;
+
+    /// <summary>
+    /// Names that are stable across Gen 7 but are not part of <see cref="TextName"/>, which only
+    /// covers the tables the editors need to look up by name.
+    /// </summary>
+    private static readonly Dictionary<int, string> ExtraGen7TextNames = new()
+    {
+        [013] = "Move Actions",
+        [014] = "Z-Move Actions",
+        [015] = "Battle Interactions",
+        [016] = "Battle Effects",
+        [019] = "Z-Move Names",
+        [041] = "Item Names (Plural)",
+        [042] = "Item Names (Plural, Alt)",
+        [102] = "Ability Descriptions",
+    };
+
+    /// <summary>
+    /// Label for one text file: its real name when known, otherwise a preview of what is inside it.
+    /// <para>
+    /// The names come from <see cref="GameConfig.GameText"/>, which is already selected per game
+    /// version, rather than from indices written out by hand. The previous list hard-coded USUM
+    /// indices under a "Gen 6" comment and then repeated them in version-guarded branches that
+    /// could never run - the unguarded branch above always matched first - so the guards were dead
+    /// and one of them (104) named the Battle Tree table as Trainer Names.
+    /// </para>
+    /// <para>
+    /// Most of the archive has no assigned name at all. Rather than leave those as a bare number,
+    /// the first line of actual text is shown, which is usually enough to recognise the file.
+    /// </para>
+    /// </summary>
+    private string DescribeTextFile(int index)
+    {
+        string label = index.ToString("000");
+        if (Mode != "gametext")
+            return label;
+
+        var reference = Main.Config?.GameText;
+        if (reference != null)
+        {
+            foreach (var r in reference)
+            {
+                if (r.Index == index)
+                    return $"{label} - {Prettify(r.Name.ToString())}";
+            }
+        }
+
+        if (ExtraGen7TextNames.TryGetValue(index, out string known))
+            return $"{label} - {known}";
+
+        string preview = FirstLineOf(index);
+        return preview.Length == 0 ? label : $"{label} - “{preview}”";
+    }
+
+    /// <summary>"SpeciesClassifications" -> "Species Classifications".</summary>
+    private static string Prettify(string name) =>
+        System.Text.RegularExpressions.Regex.Replace(name, "(?<=[a-z0-9])(?=[A-Z])", " ");
+
+    private string FirstLineOf(int index)
+    {
+        if (files == null || index < 0 || index >= files.Length) return "";
+        var lines = files[index];
+        if (lines == null) return "";
+
+        foreach (string line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            // Strip the in-game control codes so the preview is readable.
+            string clean = line.Replace("\\n", " ").Replace("\\r", " ").Replace("\\c", " ").Trim();
+            if (clean.Length == 0) continue;
+            return clean.Length > 40 ? clean[..40].TrimEnd() + "..." : clean;
+        }
+        return "";
+    }
 
     private void B_Export_Click(object sender, EventArgs e)
     {
@@ -420,28 +459,6 @@ public partial class TextEditor : Form
             }
         }
         WinFormsUtil.Alert($"Replaced {count} occurrences.");
-    }
-
-    private void B_FindPrevious_Click(object sender, EventArgs e)
-    {
-        string query = TB_Search.Text;
-        if (string.IsNullOrEmpty(query)) return;
-
-        int startRow = dgv.CurrentCell?.RowIndex ?? 0;
-        int startCol = dgv.CurrentCell?.ColumnIndex ?? 0;
-
-        for (int i = startRow; i >= 0; i--)
-        {
-            for (int j = (i == startRow ? startCol - 1 : dgv.ColumnCount - 1); j >= 0; j--)
-            {
-                if (dgv[j, i].Value?.ToString().Contains(query, StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    dgv.CurrentCell = dgv[j, i];
-                    return;
-                }
-            }
-        }
-        WinFormsUtil.Alert("No more occurrences found.");
     }
 
     private void TextEditor_FormClosing(object sender, FormClosingEventArgs e)

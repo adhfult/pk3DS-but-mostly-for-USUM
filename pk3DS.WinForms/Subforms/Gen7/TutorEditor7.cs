@@ -117,7 +117,7 @@ public partial class TutorEditor7 : Form
 
     private void SyncTutorsToCodeBin()
     {
-        string fullCodePath = Path.Combine(Main.ExeFSPath, ".code.bin");
+        string fullCodePath = pk3DS.Core.CTR.ExeFS.ResolveCodeBin(Main.ExeFSPath);
         if (!File.Exists(fullCodePath)) return;
 
         // Use the IN-MEMORY data instead of reading from disk to avoid race conditions

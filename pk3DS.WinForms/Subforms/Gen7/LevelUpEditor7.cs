@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -81,99 +81,7 @@ public partial class LevelUpEditor7 : Form
         dgv.EditMode = DataGridViewEditMode.EditOnEnter;
     }
    
-private static Dictionary<string, int> formMappingCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-    private readonly string mapFilePath = Path.Combine(Application.StartupPath, "custom_form_mappings.txt");
 
-    private void LoadMappingCache()
-    {
-        if (!File.Exists(mapFilePath)) return;
-        foreach (string line in File.ReadAllLines(mapFilePath))
-        {
-            var parts = line.Split('=');
-            if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-                formMappingCache[parts[0]] = id;
-        }
-    }
-
-    private void SaveMappingCache()
-    {
-        var lines = formMappingCache.Select(kvp => $"{kvp.Key}={kvp.Value}");
-        File.WriteAllLines(mapFilePath, lines);
-    }
-
-private int PromptFormMapping(string formName)
-    {
-        Form prompt = new Form()
-        {
-            Width = 420, Height = 210, FormBorderStyle = FormBorderStyle.FixedDialog,
-            Text = "Map Custom Form", StartPosition = FormStartPosition.CenterParent,
-            MaximizeBox = false, MinimizeBox = false
-        };
-        
-        Label textLabel = new Label() { 
-            Left = 15, Top = 15, Width = 380, Height = 35, 
-            Text = $"Unrecognized form '{formName}'.\nSelect the Pokémon this form corresponds to:" 
-        };
-        
-        ComboBox cb = new ComboBox() { 
-            Left = 15, Top = 55, Width = 230, 
-            DropDownStyle = ComboBoxStyle.DropDown,
-            DisplayMember = "Text", ValueMember = "Value",
-            AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-            AutoCompleteSource = AutoCompleteSource.ListItems
-        };
-        
-        // FIX: Add items directly to bypass deferred DataSource binding crashes
-        foreach (ComboItem ci in CB_Species.Items) cb.Items.Add(ci);
-        
-        PictureBox pb = new PictureBox() { 
-            Left = 260, Top = 55, Width = 120, Height = 100, 
-            SizeMode = PictureBoxSizeMode.CenterImage, BorderStyle = BorderStyle.FixedSingle 
-        };
-        
-        cb.SelectedIndexChanged += (sender, e) => {
-            var ci = cb.SelectedItem as ComboItem;
-            if (ci != null && (int)ci.Value > 0) {
-                int id = (int)ci.Value;
-                int s = id <= Main.Config.MaxSpeciesID ? id : baseForms[id];
-                int f = id <= Main.Config.MaxSpeciesID ? 0 : formVal[id];
-                
-                var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
-                var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
-                for (int x = 0; x < rawImg.Width; x++)
-                for (int y = 0; y < rawImg.Height; y++)
-                {
-                    Color c = rawImg.GetPixel(x, y);
-                    bigImg.SetPixel(2 * x, 2 * y, c);
-                    bigImg.SetPixel((2 * x) + 1, 2 * y, c);
-                    bigImg.SetPixel(2 * x, (2 * y) + 1, c);
-                    bigImg.SetPixel((2 * x) + 1, (2 * y) + 1, c);
-                }
-                pb.Image = bigImg;
-            } else {
-                pb.Image = null;
-            }
-        };
-        
-        Button confirmation = new Button() { Text = "Map Form", Left = 15, Width = 110, Top = 100, DialogResult = DialogResult.OK };
-        Button cancel = new Button() { Text = "Skip", Left = 135, Width = 110, Top = 100, DialogResult = DialogResult.Cancel };
-        
-        prompt.Controls.Add(cb);
-        prompt.Controls.Add(pb);
-        prompt.Controls.Add(confirmation);
-        prompt.Controls.Add(cancel);
-        prompt.Controls.Add(textLabel);
-        prompt.AcceptButton = confirmation;
-        prompt.CancelButton = cancel;
-        
-        // Safety check using the natively populated cb.Items count
-        if (cb.Items.Count > 0)
-        {
-            cb.SelectedIndex = cb.Items.Count > 1 ? 1 : 0; 
-        }
-        
-        return prompt.ShowDialog() == DialogResult.OK && cb.SelectedItem != null ? (int)((ComboItem)cb.SelectedItem).Value : -1;
-    }
     private Learnset6 pkm;
 
     private void GetList()
@@ -186,7 +94,7 @@ private int PromptFormMapping(string formName)
             s = entry;
             f = 0;
         }
-        PB_MonSprite.Image = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
+        WinFormsUtil.SetImage(PB_MonSprite, WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config));
 
         int dataIndex = entry < files.Length ? entry : baseForms[entry];
         dgv.Rows.Clear();
@@ -203,47 +111,6 @@ private int PromptFormMapping(string formName)
         L_TotalMoves.Text = $"Total Moves: {pkm.Moves.Length}";
         UpdateCounters(null, null);
         dgv.CancelEdit();
-    }
-
-    private void PopulateGenColumns()
-    {
-        if (dgv.Columns["Col_Gen8"] == null || dgv.Columns["Col_Gen9"] == null) return;
-        if (pkm == null) return;
-
-        // Build a move-name -> gen8/gen9 level map from the embedded learnsets database
-        var gen8Map = ModernLearnsetImporter.GetMoveLevelMap(entry, specieslist, baseForms, 8);
-        var gen9Map = ModernLearnsetImporter.GetMoveLevelMap(entry, specieslist, baseForms, 9);
-
-        for (int i = 0; i < dgv.Rows.Count; i++)
-        {
-            string moveName = dgv.Rows[i].Cells[1].Value as string ?? "";
-            string normMove = moveName.ToLowerInvariant().Replace(" ", "").Replace("-", "");
-
-            dgv.Rows[i].Cells["Col_Gen8"].Value = gen8Map.TryGetValue(normMove, out int lv8) ? lv8.ToString() : "—";
-            dgv.Rows[i].Cells["Col_Gen9"].Value = gen9Map.TryGetValue(normMove, out int lv9) ? lv9.ToString() : "—";
-        }
-    }
-
-    private void B_PSLearnsets_Click(object sender, EventArgs e)
-    {
-        var result = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Import Modern Learnsets for THIS species?", "Yes = Gen 9\nNo = Gen 8\nCancel = Abort");
-        if (result == DialogResult.Cancel) return;
-        int genId = result == DialogResult.Yes ? 9 : 8;
-
-        var moveMap = ModernLearnsetImporter.GetMoveLevelMap(entry, specieslist, baseForms, genId);
-        if (moveMap.Count == 0) { WinFormsUtil.Alert("No Gen 8/9 Level-Up moves found for this species."); return; }
-
-        dgv.Rows.Clear();
-        var sortedMoves = moveMap.OrderBy(kvp => kvp.Value).ToList();
-        foreach (var kvp in sortedMoves)
-        {
-            // Find global index of move name
-            int moveIdx = Array.IndexOf(movelist, movelist.FirstOrDefault(m => ModernLearnsetImporter.NormalizeName(m) == kvp.Key));
-            if (moveIdx > 0) dgv.Rows.Add(kvp.Value, movelist[moveIdx]);
-        }
-        
-        WinFormsUtil.Alert($"Imported {moveMap.Count} moves from the Gen {genId} database for {specieslist[entry]}!");
-        PopulateGenColumns();
     }
 
     private void SetList()
@@ -578,23 +445,7 @@ private int PromptFormMapping(string formName)
         files[targetId] = mod.Write();
     }
 
-    private void B_ApplyModern_Click(object sender, EventArgs e)
-    {
-        var result = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Update ALL Pokémon to Modern Learnsets from Showdown Database?", 
-            "Yes = Gen 9\nNo = Gen 8\nCancel = Abort");
-            
-        if (result == DialogResult.Cancel) return;
-        int genId = result == DialogResult.Yes ? 9 : 8;
 
-        if (genId == 8) ModernLearnsetImporter.ApplyModernLearnsets(files, movelist, specieslist, 8, baseForms);
-        else if (genId == 9) ModernLearnsetImporter.ApplyModernLearnsets(files, movelist, specieslist, 9, baseForms);
-        
-        // Refresh the single current species
-        GetList();
-    }
-
-    private void B_ModernGen8_Click(object sender, EventArgs e) { }
-    private void B_ModernGen9_Click(object sender, EventArgs e) { }
     private void B_ImportJSON_Click(object sender, EventArgs e) => B_Import_Click(null, null);
     private void B_ImportTS_Click(object sender, EventArgs e) => B_Import_Click(null, null);
 

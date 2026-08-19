@@ -33,6 +33,18 @@ public class GameInfo
         {
             MaxSpeciesID = 1025;
         }
+        else if (config.Version == GameVersion.US || config.Version == GameVersion.UM || config.Version == GameVersion.USUM)
+        {
+            MaxSpeciesID = Legal.MaxSpeciesID_7_USUM; // 807
+        }
+        else if (config.Version == GameVersion.SM || config.Version == GameVersion.SMDEMO)
+        {
+            MaxSpeciesID = Legal.MaxSpeciesID_7_SM; // 802
+        }
+        else if (config.Version == GameVersion.ORAS || config.Version == GameVersion.ORASDEMO || config.Version == GameVersion.XY)
+        {
+            MaxSpeciesID = Legal.MaxSpeciesID_6; // 721
+        }
 
         // Dynamic move count recalculation from moves list
         if (config.Moves != null && config.Moves.Length > MaxMoveID)
@@ -61,9 +73,12 @@ public class GameInfo
             if (cfg != null)
             {
                 if (cfg.MaxAbilities > MaxAbilityID) MaxAbilityID = cfg.MaxAbilities;
-                if (cfg.MaxSpecies > MaxSpeciesID) MaxSpeciesID = cfg.MaxSpecies;
+                // Only override MaxSpecies if the personal table is actually expanded (> 807 species)
+                if (cfg.MaxSpecies > MaxSpeciesID && (config.Personal == null || config.Personal.Table == null || config.Personal.Table.Length >= 1025))
+                    MaxSpeciesID = cfg.MaxSpecies;
                 if (cfg.MaxMoves > MaxMoveID) MaxMoveID = cfg.MaxMoves;
-                if (cfg.MaxItems > MaxItemID) MaxItemID = cfg.MaxItems;
+                if (cfg.MaxItems > MaxItemID && items != null && cfg.MaxItems < items.Length)
+                    MaxItemID = cfg.MaxItems;
             }
         }
         catch { }

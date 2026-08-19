@@ -31,6 +31,9 @@ public static class Randomizer
     /// <returns>Boosted (or reduced) level.</returns>
     internal static int GetModifiedLevel(int level, decimal factor)
     {
+        if (factor > 5m) factor = 1m + (factor / 100m);
+        if (factor < 0m) factor = 0m;
+
         int newlvl = (int)(level * factor);
         if (newlvl < 1)
             return 1;

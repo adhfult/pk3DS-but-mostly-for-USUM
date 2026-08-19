@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <!-- Source paths are compiled into the PDB and surface in every stack trace, which exposes
+         the build machine's directory layout to anyone a crash report is sent to. Mapping the
+         project root to a relative prefix keeps file names and line numbers while dropping the
+         part that identifies the machine. -->
+    <PathMap>$(MSBuildThisFileDirectory)=./</PathMap>
+    <EnableSourceLink>false</EnableSourceLink>
     <UseWindowsForms>true</UseWindowsForms>
     <TargetFrameworks>net8.0-windows</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -20,5 +26,12 @@
   <ItemGroup>
     <PackageReference Include="Gee.External.Capstone" Version="2.3.0" />
     <PackageReference Include="keystoneengine.csharp" Version="0.9.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\code_map.csv" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\research_corpus_*.json.gz" />
   </ItemGroup>
 </Project>

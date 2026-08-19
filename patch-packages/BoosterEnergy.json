@@ -1,0 +1,61 @@
+{
+  "Name": "Booster Energy",
+  "Description": "On entry, raises the holder's highest stat, then is used up.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Booster Energy on. Must be a free slot or already named Booster Energy.",
+      "Type": "item",
+      "Default": "867",
+      "ExpectName": "Booster Energy",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Booster Energy",
+      "Slots": [
+        {
+          "Timing": "0xA7",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 224,
+            "Timing": "0x9E",
+            "Name": "Beast Boost"
+          },
+          "TimingByte": 167,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 639,
+            "Timing": "0x8A",
+            "Name": "Weakness Policy"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Booster Energy"
+  }
+}

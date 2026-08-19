@@ -1,4 +1,4 @@
-namespace pk3DS.WinForms;
+﻿namespace pk3DS.WinForms;
 
 partial class EggMoveEditor7
 {
@@ -43,7 +43,6 @@ partial class EggMoveEditor7
         this.B_AddMove = new System.Windows.Forms.Button();
         this.B_RemoveMove = new System.Windows.Forms.Button();
         this.B_Import = new System.Windows.Forms.Button();
-        this.B_ApplyModern = new System.Windows.Forms.Button();
         this.L_TotalMoves = new System.Windows.Forms.Label();
         this.L_STABCount = new System.Windows.Forms.Label();
         this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -93,7 +92,6 @@ partial class EggMoveEditor7
         this.tp_editor.Controls.Add(this.B_AddMove);
         this.tp_editor.Controls.Add(this.B_RemoveMove);
         this.tp_editor.Controls.Add(this.B_Import);
-        this.tp_editor.Controls.Add(this.B_ApplyModern);
         this.tp_editor.Controls.Add(this.L_TotalMoves);
         this.tp_editor.Controls.Add(this.L_STABCount);
         this.tp_editor.Controls.Add(this.PB_MonSprite);
@@ -327,15 +325,7 @@ partial class EggMoveEditor7
         this.B_Import.Size = new System.Drawing.Size(84, 25);
         this.B_Import.Text = "Import";
         this.B_Import.Click += new System.EventHandler(this.B_Import_Click);
-        // 
-        // B_ApplyModern
-        // 
-        this.B_ApplyModern.Location = new System.Drawing.Point(345, 285);
-        this.B_ApplyModern.Name = "B_ApplyModern";
-        this.B_ApplyModern.Size = new System.Drawing.Size(85, 25);
-        this.B_ApplyModern.Text = "Modern";
-        this.B_ApplyModern.Click += new System.EventHandler(this.B_ApplyModern_Click);
-        // 
+        //
         // B_ImportJSON
         // 
         this.B_ImportJSON.Location = new System.Drawing.Point(255, 315);
@@ -404,7 +394,6 @@ partial class EggMoveEditor7
     private System.Windows.Forms.Button B_AddMove;
     private System.Windows.Forms.Button B_RemoveMove;
     private System.Windows.Forms.Button B_Import;
-    private System.Windows.Forms.Button B_ApplyModern;
     private System.Windows.Forms.Label L_TotalMoves;
     private System.Windows.Forms.Label L_STABCount;
 }

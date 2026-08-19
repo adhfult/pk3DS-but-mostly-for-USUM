@@ -110,13 +110,25 @@ namespace pk3DS.Core.CTR
             else if (section == 'r') { /* rodata size not stored inline; skip */ }
             else if (section == 'd') UpdateOffsetPointer(newData, 0xBC, bytesToAdd + freePaddingBytes); // Data size includes padding
 
-            // Update segment table pointer and other header offsets that shifted
-            uint segmentTableOffset = ReadU32(newData, 0xC8);
-            if (segmentTableOffset >= (uint)skip) { segmentTableOffset += (uint)bytesToAdd; WriteU32(newData, segmentTableOffset, 0xC8); }
+            {
+                uint tableAt = ReadU32(data, 0xC8);
+                if (tableAt >= (uint)skip) tableAt += (uint)bytesToAdd;
 
-            // Update .data size in segment table itself (0x1C after segment table start)
-            if (section == 'd') {
-                UpdateOffsetPointer(newData, (int)(segmentTableOffset + 0x1C), bytesToAdd + freePaddingBytes, 0, false);
+                uint segCount = ReadU32(data, 0xCC);
+                for (uint i = 0; i < segCount && tableAt + (i * 12) + 12 <= newData.Length; i++)
+                {
+                    int entry = (int)(tableAt + (i * 12));
+                    uint segOff = ReadU32(newData, entry);
+                    uint segSize = ReadU32(newData, entry + 4);
+
+                    // BSS has no file position; it is sized but never located, so leave it alone.
+                    if (segOff == 0) continue;
+
+                    if (segOff >= skipCheck)
+                        WriteU32(newData, (uint)(segOff + bytesToAdd), entry);
+                    else if (skipCheck <= segOff + segSize)
+                        WriteU32(newData, (uint)(segSize + bytesToAdd), entry + 4);
+                }
             }
 
 
@@ -139,12 +151,6 @@ namespace pk3DS.Core.CTR
                 int entrySize = table.Last();
                 if (pointerPointer == 0) continue;
 
-                if (pointerPointer >= skipCheck)
-                {
-                    pointerPointer = (uint)(pointerPointer + bytesToAdd);
-                    WriteU32(newData, pointerPointer, table[0]);
-                }
-
                 for (int i = 0; i < entryCount; i++)
                 {
                     for (int s = 1; s < table.Length - 1; s++)
@@ -155,15 +161,13 @@ namespace pk3DS.Core.CTR
             }
 
             // 4. Relocation Patches
+            // 0x128 is 0xC0 + 13*8, so the loop above has already advanced it. Advancing it again
+            // here pointed the relocation table 2 * bytesToAdd past where it actually sits, which
+            // made every shop list in Shop.cro unresolvable the moment anything was expanded.
             uint patchTableOffset = ReadU32(newData, 0x128);
             uint patchTableCount = ReadU32(newData, 0x12C);
             if (patchTableCount > 0)
             {
-                if (patchTableOffset >= skipCheck)
-                {
-                    patchTableOffset += (uint)bytesToAdd;
-                    WriteU32(newData, patchTableOffset, 0x128);
-                }
 
                 uint[] newStarts = GetSegmentStartIndices(newData);
                 for (int i = 0; i < (int)patchTableCount; i++)
@@ -201,6 +205,24 @@ namespace pk3DS.Core.CTR
 
             return newData;
         }
+
+        /// <summary>
+        /// Writes a CRO to disk with its hashes brought up to date first.
+        /// </summary>
+        public static void SaveCro(string path, byte[] data)
+        {
+            if (data == null) throw new ArgumentNullException(nameof(data));
+
+            if (IsCro(data))
+                UpdateHashes(data);
+
+            System.IO.File.WriteAllBytes(path, data);
+        }
+
+        /// <summary>Whether a buffer actually is a CRO, by its magic rather than its file name.</summary>
+        public static bool IsCro(byte[] data) =>
+            data is { Length: >= 0x84 } &&
+            data[0x80] == (byte)'C' && data[0x81] == (byte)'R' && data[0x82] == (byte)'O' && data[0x83] == (byte)'0';
 
         public static void UpdateHashes(byte[] data)
         {

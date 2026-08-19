@@ -2,9 +2,6 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using Gee.External.Capstone;
-using Gee.External.Capstone.Arm;
-using Keystone;
 using pk3DS.Core.CTR;
 
 namespace pk3DS.Core.Modding
@@ -176,10 +173,11 @@ namespace pk3DS.Core.Modding
 
         private static byte[] Compile(string asm, int address)
         {
-            using (Engine keystone = new Engine(Architecture.ARM, Mode.ARM))
+            try
             {
-                return keystone.Assemble(asm, (ulong)address).Buffer;
+                return ARMCodec.Assemble(asm, (uint)address);
             }
+            catch { return null; }
         }
     }
 }

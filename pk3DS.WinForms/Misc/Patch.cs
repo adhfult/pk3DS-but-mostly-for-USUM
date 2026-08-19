@@ -102,7 +102,7 @@ public partial class Patch : Form
             string result = "";
             string ExeFS = Directory.GetFiles(Main.ExeFSPath)[0];
             if (!File.Exists(ExeFS) || !Path.GetFileNameWithoutExtension(ExeFS).Contains("code")) { throw new Exception("No .code.bin detected."); }
-            if (!PatchExeFS(ExeFS, garcPaths, newPaths, oldROM, newROM, ref result, Path.Combine(patchFolder, ".code.bin")))
+            if (!PatchExeFS(ExeFS, garcPaths, newPaths, oldROM, newROM, ref result, pk3DS.Core.CTR.ExeFS.ResolveCodeBin(patchFolder)))
                 throw new Exception(result);
 
             WinFormsUtil.Alert("Patch contents saved to:" + Environment.NewLine + ExportGARCs(garcPaths, newPaths, Main.RomFSPath, patchFolder), result);

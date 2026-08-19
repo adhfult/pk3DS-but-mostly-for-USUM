@@ -1,0 +1,380 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+DotNet3dsToolkit
+</name>
+</assembly>
+<members>
+<member name="T:DotNet3dsToolkit.My.Resources.Language">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorAsyncForInfiniteLoop">
+<summary>
+  Looks up a localized string similar to StepCount cannot be 0..
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorFileDirNotFound">
+<summary>
+  Looks up a localized string similar to Neither file nor directory not found at &quot;{0}&quot;..
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorInvalidFileFormat">
+<summary>
+  Looks up a localized string similar to The file format is invalid or unsupported..
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorNoSaveFilename">
+<summary>
+  Looks up a localized string similar to Using GenericFile.Save() requires GenericFile.OriginalFilename to not be null..
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorSystemNotSupported">
+<summary>
+  Looks up a localized string similar to Unsupported system format {0}.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Language.ErrorWrittenReadonly">
+<summary>
+  Looks up a localized string similar to Attempted to write to a read-only file..
+</summary>
+</member>
+<member name="T:DotNet3dsToolkit.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources._3DS_Builder">
+<summary>
+  Looks up a localized resource of type System.Byte[].
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources._3dstool">
+<summary>
+  Looks up a localized resource of type System.Byte[].
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.ctrtool">
+<summary>
+  Looks up a localized resource of type System.Byte[].
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.ignore_3dstool">
+<summary>
+  Looks up a localized string similar to // regex: ECMAScript grammar and case insensitive
+.
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.makerom">
+<summary>
+  Looks up a localized resource of type System.Byte[].
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.My.Resources.Resources.ndstool">
+<summary>
+  Looks up a localized resource of type System.Byte[].
+</summary>
+</member>
+<member name="P:DotNet3dsToolkit.BuildOptions.CompressCodeBin">
+ <summary>
+ Whether or not to compress the code.bin.  If null, no action will be taken (including not updating the exheader)
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:DotNet3dsToolkit.Converter.OutputConsoleOutput">
+ <summary>
+ Whether or not to forward console output of child processes to the current process.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.Copy3DSTool">
+ <summary>
+ Copies 3dstool.exe to the the tools directory if it's not already there.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCCI(System.String,System.String)">
+ <summary>
+ Extracts a decrypted CCI ROM.
+ </summary>
+ <param name="filename">Full path of the ROM to extract.</param>
+ <param name="outputDirectory">Directory into which to extract the files.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCCI(DotNet3dsToolkit.ExtractionOptions)">
+ <summary>
+ Extracts a CCI ROM.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCXI(System.String,System.String)">
+ <summary>
+ Extracts a decrypted CXI ROM.
+ </summary>
+ <param name="filename">Full path of the ROM to extract.</param>
+ <param name="outputDirectory">Directory into which to extract the files.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCXI(DotNet3dsToolkit.ExtractionOptions)">
+ <summary>
+ Extracts a CXI partition.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCIA(System.String,System.String)">
+ <summary>
+ Extracts a decrypted CIA.
+ </summary>
+ <param name="filename">Full path of the ROM to extract.</param>
+ <param name="outputDirectory">Directory into which to extract the files.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractCIA(DotNet3dsToolkit.ExtractionOptions)">
+ <summary>
+ Extracts a CIA.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractNDS(System.String,System.String)">
+ <summary>
+ Extracts an NDS ROM.
+ </summary>
+ <param name="filename">Full path of the ROM to extract.</param>
+ <param name="outputDirectory">Directory into which to extract the files.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)">
+ <summary>
+ Extracts a decrypted CCI or CXI ROM.
+ </summary>
+ <param name="filename">Full path of the ROM to extract.</param>
+ <param name="outputDirectory">Directory into which to extract the files.</param>
+ <remarks>Extraction type is determined by file extension.  Extensions of ".cxi" are extracted as CXI, all others are extracted as CCI.  To override this behavior, use a more specific extraction function.</remarks>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.Build3DSDecrypted(DotNet3dsToolkit.BuildOptions)">
+ <summary>
+ Builds a decrypted CCI/3DS file, for use with Citra or Decrypt9
+ </summary>
+ <param name="options"></param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.Build3DSDecrypted(System.String,System.String)">
+ <summary>
+ Builds a decrypted CCI from the given files.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="outputROM">Destination of the output ROM.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.Build3DS0Key(DotNet3dsToolkit.BuildOptions)">
+ <summary>
+ Builds a CCI/3DS file encrypted with a 0-key, for use with Gateway.  Excludes update partitions, download play, and manual.
+ </summary>
+ <param name="options"></param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.Build3DS0Key(System.String,System.String)">
+ <summary>
+ Builds a 0-key encrypted CCI from the given files.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="outputROM">Destination of the output ROM.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildCia(DotNet3dsToolkit.BuildOptions)">
+ <summary>
+ Builds a CCI/3DS file encrypted with a 0-key, for use with Gateway.  Excludes update partitions, download play, and manual.
+ </summary>
+ <param name="options"></param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildCia(System.String,System.String)">
+ <summary>
+ Builds a CIA from the given files.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="outputROM">Destination of the output ROM.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildNDS(System.String,System.String)">
+ <summary>
+ Builds an NDS ROM from the given files.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="outputROM">Destination of the output ROM.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildHans(DotNet3dsToolkit.BuildOptions,System.String,System.String)">
+ <summary>
+ Builds files for use with HANS.
+ </summary>
+ <param name="options">Options to use for the build.  <see cref="P:DotNet3dsToolkit.BuildOptions.Destination"/> should be the SD card root.</param>
+ <param name="shortcutName">Name of the shortcut.  Should not contain spaces nor special characters.</param>
+ <param name="rawName">Raw name for the destination RomFS and Code files.  Should be short, but the exact requirements are unknown.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildHans(System.String,System.String,System.String)">
+ <summary>
+ Builds files for use with HANS.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="sdRoot">Root of the SD card</param>
+ <param name="rawName">Raw name for the destination RomFS, Code, and shortcut files.  Should be short, but the exact requirements are unknown.  To use a different name for shortcut files, use <see cref="M:DotNet3dsToolkit.Converter.BuildHans(DotNet3dsToolkit.BuildOptions,System.String,System.String)"/>.</param>
+</member>
+<member name="M:DotNet3dsToolkit.Converter.BuildAuto(System.String,System.String)">
+ <summary>
+ Builds a ROM from the given files.
+ </summary>
+ <param name="sourceDirectory">Path of the files to build.  Must have been created with <see cref="M:DotNet3dsToolkit.Converter.ExtractAuto(System.String,System.String)"/> or equivalent function using default settings.</param>
+ <param name="outputROM">Destination of the output ROM.</param>
+ <remarks>Output format is determined by file extension.  Extensions of ".cia" build a CIA, extensions of ".3dz" build a 0-key encrypted CCI, and all others build a decrypted CCI.  To force a different behavior, use a more specific Build function.</remarks>
+</member>
+<member name="T:DotNet3dsToolkit.MetadataReader">
+ <summary>
+ Reads metadata from packed or unpacked ROMs.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.Align(System.Int32,System.Int32)">
+ <remarks>From CTRTool
+ https://github.com/profi200/Project_CTR/blob/d32f096e3ea8d6cacc2f8e8f43d4eec51394eca2/ctrtool/utils.c </remarks>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetCIAContentOffset(SkyEditor.Core.IO.GenericFile)">
+ <summary>
+ Gets the offset of the content section of the given CIA file.
+ </summary>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetDirectorySystem(System.String)">
+ <summary>
+ Gets the system corresponding to the given directory.
+ </summary>
+ <param name="path">The directory containing the unpacked ROM to check.</param>
+ <returns>A <see cref="T:DotNet3dsToolkit.SystemType"/> corresponding to the extracted files located in the directory <paramref name="path"/>.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetDirectoryGameID(System.String,DotNet3dsToolkit.SystemType)">
+ <summary>
+ Gets the game ID from the unpacked ROM in the given directory.
+ </summary>
+ <param name="path">The directory containing the unpacked ROM to check.</param>
+ <param name="system">The type of system the unpacked ROM is for.</param>
+ <returns>The unpacked ROM's game code.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetDirectoryGameID(System.String)">
+ <summary>
+ Gets the game ID from the unpacked ROM in the given directory.
+ </summary>
+ <param name="path">The directory containing the unpacked ROM to check.</param>
+ <returns>The unpacked ROM's game code.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetROMSystem(System.String)">
+ <summary>
+ Gets the system corresponding to the given ROM.
+ </summary>
+ <param name="path">The filename of the ROM to check.</param>
+ <returns>A <see cref="T:DotNet3dsToolkit.SystemType"/> corresponding to ROM located at <paramref name="path"/>.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetROMGameID(System.String,DotNet3dsToolkit.SystemType)">
+ <summary>
+ Gets the game ID from a ROM.
+ </summary>
+ <param name="path">The filename of the ROM to check.</param>
+ <param name="system">The type of system the unpacked ROM is for.</param>
+ <returns>The ROM's game code.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetROMGameID(System.String)">
+ <summary>
+ Gets the game ID from a ROM.
+ </summary>
+ <param name="path">The filename of the ROM ROM to check.</param>
+ <returns>The ROM's game code.</returns>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetSystem(System.String)">
+ <summary>
+ Gets the system corresponding from a packed or unpacked ROM.
+ </summary>
+ <param name="path">The filename of the ROM to check.</param>
+ <returns>A <see cref="T:DotNet3dsToolkit.SystemType"/> corresponding to ROM located at <paramref name="path"/>.</returns>
+ <exception cref="T:System.IO.IOException">Thrown when <paramref name="path"/> is neither a file nor a directory.</exception>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetGameID(System.String,DotNet3dsToolkit.SystemType)">
+ <summary>
+ Gets the game ID from a packed or unpacked ROM.
+ </summary>
+ <param name="path">The filename of the ROM to check.</param>
+ <param name="system">The type of system the unpacked ROM is for.</param>
+ <returns>The ROM's game code.</returns>
+ <exception cref="T:System.IO.IOException">Thrown when <paramref name="path"/> is neither a file nor a directory.</exception>
+</member>
+<member name="M:DotNet3dsToolkit.MetadataReader.GetGameID(System.String)">
+ <summary>
+ Gets the game ID from from a packed or unpacked ROM.
+ </summary>
+ <param name="path">The filename of the ROM ROM to check.</param>
+ <returns>The ROM's game code.</returns>
+ <exception cref="T:System.IO.IOException">Thrown when <paramref name="path"/> is neither a file nor a directory.</exception>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.DeviceCapacity">
+ <summary>
+ Gets or sets the capacity of the cartridge.  Cartridge size = 128KB * 2 ^ (DeviceCapacity)
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.DirectoryMainTable.ParentDir">
+ <summary>
+ If this is the root directory, will contain the number of child directories.
+ Otherwise, the ID of the parent directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:DotNet3dsToolkit.GenericNDSRom.Unpack(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Extracts the files contained within the ROMs.
+ Extractions either run synchronously or asynchrounously, depending on the value of IsThreadSafe.
+ </summary>
+ <param name="TargetDir">Directory to store the extracted files.</param>
+ <returns></returns>
+</member>
+<member name="M:DotNet3dsToolkit.GenericNDSRom.ExtractFiles(System.Collections.Generic.List{DotNet3dsToolkit.GenericNDSRom.FileAllocationEntry},DotNet3dsToolkit.GenericNDSRom.FilenameTable,System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Extracts contained files if the file is thread safe, otherwise, extracts files one at a time.
+ </summary>
+ <param name="FAT"></param>
+ <param name="Root"></param>
+ <param name="TargetDir"></param>
+ <returns></returns>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.CurrentExtractProgress">
+ <summary>
+ Gets or sets the total number of files extracted in the current unpacking process.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.CurrentExtractMax">
+ <summary>
+ Gets or sets the total number of files in the current unpacking process.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.ExtractionTasks">
+ <summary>
+ Currently running tasks that are part of the unpacking process.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:DotNet3dsToolkit.GenericNDSRom.ExtractionProgress">
+ <summary>
+ The progress of the current unpacking process.
+ </summary>
+ <returns></returns>
+</member>
+</members>
+</doc>

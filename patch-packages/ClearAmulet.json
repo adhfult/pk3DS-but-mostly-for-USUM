@@ -1,0 +1,61 @@
+{
+  "Name": "Clear Amulet",
+  "Description": "Prevents the holder\u0027s stats from being lowered.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Clear Amulet on. Must be a free slot or already named Clear Amulet.",
+      "Type": "item",
+      "Default": "120",
+      "ExpectName": "Clear Amulet",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Clear Amulet",
+      "Slots": [
+        {
+          "Timing": "0x72",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 29,
+            "Timing": "0x72",
+            "Name": "Clear Body"
+          },
+          "TimingByte": 114,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x73",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 29,
+            "Timing": "0x73",
+            "Name": "Clear Body"
+          },
+          "TimingByte": 115,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Clear Amulet"
+  }
+}

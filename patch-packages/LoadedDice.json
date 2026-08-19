@@ -1,0 +1,55 @@
+{
+  "Name": "Loaded Dice",
+  "Description": "Multi-hit moves hit more often.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Loaded Dice on. Must be a free slot or already named Loaded Dice.",
+      "Type": "item",
+      "Default": "121",
+      "ExpectName": "Loaded Dice",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Loaded Dice",
+      "Slots": [
+        {
+          "Timing": "0x41",
+          "Code": "14402DE90240A0E10300A0E3510BFEEB040050E17609001A1200A0E34D0BFEEB7000FFE6AB0700EB010050E30300000A2E00A0E3470BFEEB010050E36C09009A6510A0E32F00A0E31440BDE8BCF7FDEA",
+          "SourceBase": "0x104E00",
+          "TimingByte": 65,
+          "SourceBaseValue": 1068544,
+          "CodeBytes": "FEAt6QJAoOEDAKDjUQv+6wQAUOF2CQAaEgCg400L/utwAP/mqwcA6wEAUOMDAAAKLgCg40cL/usBAFDjbAkAmmUQoOMvAKDjFEC96Lz3/eo="
+        },
+        {
+          "Timing": "0x43",
+          "Code": "1C402DE90240A0E10300A0E33D0BFEEB040050E17F09001A1200A0E3390BFEEB7000FFE6970700EB010050E31C40BD085C47FF0A2E00A0E3320BFEEB020050E3030050137309001A021080E21C40BDE82E00A0E3A6F7FDEA",
+          "SourceBase": "0x104E50",
+          "TimingByte": 67,
+          "SourceBaseValue": 1068624,
+          "CodeBytes": "HEAt6QJAoOEDAKDjPQv+6wQAUOF/CQAaEgCg4zkL/utwAP/mlwcA6wEAUOMcQL0IXEf/Ci4AoOMyC/7rAgBQ4wMAUBNzCQAaAhCA4hxAveguAKDjpvf96g=="
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Loaded Dice"
+  }
+}

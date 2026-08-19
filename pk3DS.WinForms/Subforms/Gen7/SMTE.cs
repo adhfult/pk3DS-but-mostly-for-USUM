@@ -80,11 +80,31 @@ public partial class SMTE : Form
     }
 
     private Label L_MoneyTranslated;
+
+    /// <summary>
+    /// Shows what the trainer's money value works out to as a payout.
+    /// </summary>
     private void UpdateMoneyTranslation()
     {
-        if (index < 0 || loading) return;
-        int lv = Trainers[index].Pokemon.Count > 0 ? Trainers[index].Pokemon.Max(p => p.Level) : 0;
+        // The label is built after the trainer list is wired up, so the first selection change can
+        // reach here before it exists.
+        if (L_MoneyTranslated == null || CB_Money == null) return;
+        if (index < 0 || index >= Trainers.Length) return;
+
+        var team = Trainers[index]?.Pokemon;
+        if (team == null) return;
+
+        int lv = 0;
+        for (int i = 0; i < team.Count; i++)
+        {
+            // The slot being edited has not been committed back to the team yet, so its level is
+            // read from the editor - otherwise the payout only caught up after switching slots.
+            int level = i == currentSlot && NUD_Level != null ? (int)NUD_Level.Value : team[i].Level;
+            if (level > lv) lv = level;
+        }
+
         int money = CB_Money.SelectedIndex;
+        if (money < 0) money = 0;
         L_MoneyTranslated.Text = $"$ {money * lv * 4}";
     }
 
@@ -92,7 +112,7 @@ public partial class SMTE : Form
     {
         this.Width = 1180;
         this.Height = 670;
-        this.Text = "Trainer Editor - Showdown Teambuilder Style";
+        this.Text = "Trainer Editor";
 
         if (TC_trdata != null)
         {
@@ -134,7 +154,7 @@ public partial class SMTE : Form
         B_DoublesAll = new Button { Text = "Doubles All", Size = new Size(155, 25), Location = new Point(10, 60) };
         B_PokeChangeAll = new Button { Text = "PokeChange All", Size = new Size(155, 25), Location = new Point(10, 95) };
         Button B_FlagAll = new Button { Text = "Master AI Flag All", Size = new Size(155, 25), Location = new Point(10, 130) };
-        B_FlagAll.Click += (s, e) => { foreach (var t in Trainers) t.Flag = true; LoadEntry(); };
+        B_FlagAll.Click += (s, e) => { foreach (var t in Trainers) t.Flag = true; SaveAllEntries(); LoadEntry(); };
 
         B_MaxIVsAll.Click += B_MaxIVsAll_Click;
         B_DoublesAll.Click += B_DoublesAll_Click;
@@ -303,6 +323,7 @@ public partial class SMTE : Form
             {
                 pkm.Level = (byte)NUD_Level.Value;
                 UpdateStats(s, e);
+                UpdateMoneyTranslation(); // the payout is derived from the team's highest level
             }
         };
 
@@ -354,6 +375,7 @@ public partial class SMTE : Form
         CB_Ability.Parent = PNL_MainCard;
         CB_Ability.Location = new Point(280, 152);
         CB_Ability.Size = new Size(155, 23);
+        CB_Ability.SelectedIndexChanged += CB_Ability_SelectedIndexChanged;
 
         PNL_MainCard.Controls.Add(L_Itm);
         PNL_MainCard.Controls.Add(L_Abil);
@@ -755,7 +777,9 @@ public partial class SMTE : Form
         if (sp >= Main.SpeciesStat.Length) return;
         int formIdx = Main.Config.Personal.GetFormIndex(sp, fm);
         
-        CB_Ability.Items.Clear(); CB_Ability.Items.Add("Any (1 or 2)");
+        CB_Ability.Items.Clear();
+        CB_Ability.Items.Add("Any (1 or 2)");
+        CB_Ability.Items.Add(AnyIncludingHiddenText);
         CB_Ability.Items.Add(abilitylist[Main.SpeciesStat[formIdx].Abilities[0]] + " (1)");
         CB_Ability.Items.Add(abilitylist[Main.SpeciesStat[formIdx].Abilities[1]] + " (2)");
         CB_Ability.Items.Add(abilitylist[Main.SpeciesStat[formIdx].Abilities[2]] + " (H)");
@@ -764,6 +788,40 @@ public partial class SMTE : Form
         UpdateTypeBadges(formIdx);
         UpdateMoveDropdowns(sp, fm);
         UpdateSlotSprite();
+    }
+
+    private const string AnyIncludingHiddenText = "Any (1, 2, and H)";
+
+    /// <summary>Position of the convenience entry, which is not a value the ROM can store.</summary>
+    private const int AbilityAnyIncludingHiddenIndex = 1;
+
+    /// <summary>First list position that maps to a real ability slot.</summary>
+    private const int AbilityFirstConcreteIndex = 2;
+
+    /// <summary>
+    /// List position to the raw 2-bit trainer field. The list carries one entry the ROM has no
+    /// value for, so past it the two run one apart: 2/3/4 are ability 1, 2 and Hidden.
+    /// </summary>
+    private static int AbilityIndexToSlot(int index) =>
+        index < AbilityFirstConcreteIndex ? 0 : index - 1;
+
+    /// <summary>The inverse, used when loading a Pokémon back into the editor.</summary>
+    private static int AbilitySlotToIndex(int slot) =>
+        slot <= 0 ? 0 : slot + 1;
+
+    private void CB_Ability_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (loading || index < 0) return;
+        if (CB_Ability.SelectedIndex != AbilityAnyIncludingHiddenIndex) return;
+
+        var candidates = new List<int>();
+        for (int i = AbilityFirstConcreteIndex; i < CB_Ability.Items.Count; i++)
+        {
+            if (!string.IsNullOrWhiteSpace(CB_Ability.Items[i]?.ToString()))
+                candidates.Add(i);
+        }
+        int rolled = candidates.Count > 0 ? candidates[Util.Rand.Next(candidates.Count)] : AbilityFirstConcreteIndex;
+        CB_Ability.SelectedIndex = rolled;
     }
 
     private void UpdateTypeBadges(int formIdx)
@@ -853,7 +911,29 @@ public partial class SMTE : Form
     private void SaveEntry() { if (index < 0) return; var tr = Trainers[index]; PrepareTR7(tr); SaveData(tr, index); TrainerNames[index] = TB_TrainerName.Text; }
     private void SaveData(TrainerData7 tr, int i) { tr.Write(out byte[] trd, out byte[] trp); trdata[i] = trd; trpoke[i] = trp; }
 
-    private void LoadEntry() { index = CB_TrainerID.SelectedIndex; var tr = Trainers[index]; loading = true; TB_TrainerName.Text = TrainerNames[index]; PopulateFieldsTD7(tr); loading = false; }
+    /// <summary>
+    /// Serialises every trainer back into the arrays that get written to the ROM.
+    /// </summary>
+    private void SaveAllEntries()
+    {
+        for (int i = 0; i < Trainers.Length; i++)
+        {
+            if (Trainers[i] != null)
+                SaveData(Trainers[i], i);
+        }
+    }
+
+    private void LoadEntry()
+    {
+        index = CB_TrainerID.SelectedIndex;
+        var tr = Trainers[index];
+        loading = true;
+        TB_TrainerName.Text = TrainerNames[index];
+        PopulateFieldsTD7(tr);
+        loading = false;
+
+        UpdateMoneyTranslation();
+    }
 
     private bool loading;
     private TrainerPoke7 pkm;
@@ -870,7 +950,7 @@ public partial class SMTE : Form
             CB_Forme.SelectedIndex = 0;
         pkm.Form = CB_Forme.SelectedIndex >= 0 ? CB_Forme.SelectedIndex : 0;
 
-        CB_Ability.SelectedIndex = Math.Min(pkm.Ability, CB_Ability.Items.Count - 1);
+        CB_Ability.SelectedIndex = Math.Min(AbilitySlotToIndex(pkm.Ability), CB_Ability.Items.Count - 1);
         CB_Item.SelectedIndex = Math.Min(pkm.Item, CB_Item.Items.Count - 1);
         CHK_Shiny.Checked = pkm.Shiny;
         CB_Gender.SelectedIndex = Math.Min(pkm.Gender, CB_Gender.Items.Count - 1);
@@ -900,7 +980,7 @@ public partial class SMTE : Form
     private TrainerPoke7 PrepareTP7()
     {
         var pk = pkm.Clone(); pk.Species = CB_Species.SelectedIndex; pk.Form = CB_Forme.SelectedIndex >= 0 ? CB_Forme.SelectedIndex : 0; pk.Level = (byte)NUD_Level.Value;
-        pk.Ability = CB_Ability.SelectedIndex; pk.Item = CB_Item.SelectedIndex; pk.Shiny = CHK_Shiny.Checked; pk.Nature = CB_Nature.SelectedIndex; pk.Gender = CB_Gender.SelectedIndex;
+        pk.Ability = AbilityIndexToSlot(CB_Ability.SelectedIndex); pk.Item = CB_Item.SelectedIndex; pk.Shiny = CHK_Shiny.Checked; pk.Nature = CB_Nature.SelectedIndex; pk.Gender = CB_Gender.SelectedIndex;
         pk.Move1 = GetComboMoveValue(CB_Move1);
         pk.Move2 = GetComboMoveValue(CB_Move2);
         pk.Move3 = GetComboMoveValue(CB_Move3);
@@ -933,7 +1013,10 @@ public partial class SMTE : Form
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
         if (currentSlot != -1 && index >= 0 && currentSlot < Trainers[index].NumPokemon) Trainers[index].Pokemon[currentSlot] = PrepareTP7();
-        SaveEntry(); if (TrainerNames.Modified) Main.Config.SetText(TextName.TrainerNames, TrainerNames.Lines);
+        // SaveEntry covers the visible trainer; SaveAllEntries catches anything edited in memory by
+        // a bulk action, so nothing depends on which trainer happened to be selected at close.
+        SaveEntry(); SaveAllEntries();
+        if (TrainerNames.Modified) Main.Config.SetText(TextName.TrainerNames, TrainerNames.Lines);
         base.OnFormClosing(e); RandSettings.SetFormSettings(this, Tab_Rand.Controls);
     }
 
@@ -1039,9 +1122,13 @@ public partial class SMTE : Form
             for (int i = 0; i < 6; i++)
             {
                 ushort val = displayStats[i];
-                L_StatBars[i].Text = val.ToString();
-                L_StatBars[i].Width = Math.Min(80, Math.Max(16, val / 4));
+                string text = val.ToString();
+                L_StatBars[i].Text = text;
+
+                int needed = TextRenderer.MeasureText(text, L_StatBars[i].Font).Width + 6;
+                L_StatBars[i].Width = Math.Min(80, Math.Max(needed, val / 4));
                 L_StatBars[i].BackColor = val >= 300 ? Color.FromArgb(70, 200, 250) : val >= 200 ? Color.FromArgb(120, 220, 100) : val >= 100 ? Color.FromArgb(240, 220, 80) : Color.FromArgb(250, 150, 80);
+                L_StatBars[i].ForeColor = Color.Black;
             }
         }
     }
@@ -1515,11 +1602,11 @@ public partial class SMTE : Form
         WinFormsUtil.Alert($"Exported Showdown set for {specieslist[Trainers[index].Pokemon[currentSlot].Species]} to clipboard!");
     }
 
-    private void B_MaxIVsAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) foreach (var p in t.Pokemon) p.IV_HP = p.IV_ATK = p.IV_DEF = p.IV_SPA = p.IV_SPD = p.IV_SPE = 31; LoadEntry(); }
-    private void B_DoublesAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.Mode = BattleMode.Doubles; LoadEntry(); }
-    private void B_PokeChangeAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.AI |= (1 << 6); LoadEntry(); }
+    private void B_MaxIVsAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) foreach (var p in t.Pokemon) p.IV_HP = p.IV_ATK = p.IV_DEF = p.IV_SPA = p.IV_SPD = p.IV_SPE = 31; SaveAllEntries(); LoadEntry(); }
+    private void B_DoublesAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.Mode = BattleMode.Doubles; SaveAllEntries(); LoadEntry(); }
+    private void B_PokeChangeAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.AI |= (1 << 6); SaveAllEntries(); LoadEntry(); }
     private void B_Master_Click(object sender, EventArgs e) { CHK_AI0.Checked = CHK_AI1.Checked = CHK_AI2.Checked = true; }
-    private void B_MasterAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.AI |= 0x7; LoadEntry(); }
+    private void B_MasterAll_Click(object sender, EventArgs e) { foreach (var t in Trainers) t.AI |= 0x7; SaveAllEntries(); LoadEntry(); }
 
     private void B_Clear_Click(object sender, EventArgs e) => SetMoves(new int[4]);
     private void B_CurrentAttack_Click(object sender, EventArgs e) { var m = learn.GetCurrentMoves(CB_Species.SelectedIndex, CB_Forme.SelectedIndex, (int)NUD_Level.Value, 4); SetMoves(m); }

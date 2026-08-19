@@ -8,6 +8,7 @@ namespace pk3DS.WinForms
 {
     public static class ShowdownSetManager
     {
+        public const int MaxCapacity = 1500;
         private static readonly string FilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "showdown_sets.json");
         public static List<ShowdownSet> Sets = new List<ShowdownSet>();
 
@@ -30,11 +31,12 @@ namespace pk3DS.WinForms
             File.WriteAllText(FilePath, json);
         }
 
-        public static void AddSet(string content, string nickname = "")
+        public static bool AddSet(string content, string nickname = "")
         {
-            if (Sets.Count >= 1200) return;
+            if (Sets.Count >= MaxCapacity) return false;
             Sets.Add(new ShowdownSet { Content = content, Nickname = nickname, Timestamp = DateTime.Now });
             Save();
+            return true;
         }
 
         public static void RemoveSet(int index)

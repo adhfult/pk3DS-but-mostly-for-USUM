@@ -583,20 +583,24 @@ public class RomFS
         return count;
     }
 
+    /// <summary>
+    /// Editor and tooling leftovers that must never be packed into a RomFS.
+    /// </summary>
+    private static readonly string[] ExcludedNames =
+        [".git", ".vs", ".svn", ".hg", ".idea", ".ds_store", "__macosx", "scratch"];
+
+    private static bool IsExcludedName(string name) =>
+        Array.Exists(ExcludedNames, x => x.Equals(name, StringComparison.OrdinalIgnoreCase));
+
     internal static bool ShouldIncludeFile(FileInfo file)
     {
-        if (file.Name.StartsWith(".")) return false;
+        if (IsExcludedName(file.Name)) return false;
         if (file.Name.EndsWith(".bak", StringComparison.OrdinalIgnoreCase)) return false;
         if (file.Name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)) return false;
         return true;
     }
 
-    internal static bool ShouldIncludeDir(DirectoryInfo dir)
-    {
-        if (dir.Name.StartsWith(".")) return false;
-        if (dir.Name.Equals("scratch", StringComparison.OrdinalIgnoreCase)) return false;
-        return true;
-    }
+    internal static bool ShouldIncludeDir(DirectoryInfo dir) => !IsExcludedName(dir.Name);
 
     internal static void CalcDirSize(Romfs_MetaData MetaData, DirectoryInfo dir)
     {

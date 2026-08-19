@@ -1,0 +1,61 @@
+{
+  "Name": "Punching Glove",
+  "Description": "Boosts punching moves and removes their contact.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Punching Glove on. Must be a free slot or already named Punching Glove.",
+      "Type": "item",
+      "Default": "861",
+      "ExpectName": "Punching Glove",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Punching Glove",
+      "Slots": [
+        {
+          "Timing": "0x47",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 89,
+            "Timing": "0x47",
+            "Name": "Iron Fist"
+          },
+          "TimingByte": 71,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x2D",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 203,
+            "Timing": "0x2D",
+            "Name": "Long Reach"
+          },
+          "TimingByte": 45,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Punching Glove"
+  }
+}

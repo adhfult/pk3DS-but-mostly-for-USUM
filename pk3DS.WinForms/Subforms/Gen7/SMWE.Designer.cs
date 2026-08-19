@@ -1,4 +1,4 @@
-namespace pk3DS.WinForms;
+﻿namespace pk3DS.WinForms;
 
 partial class SMWE
 {
@@ -487,9 +487,9 @@ partial class SMWE
         // 
         // B_Exclusives
         // 
-        this.B_Exclusives.Location = new System.Drawing.Point(700, 11);
+        this.B_Exclusives.Location = new System.Drawing.Point(724, 11);
         this.B_Exclusives.Name = "B_Exclusives";
-        this.B_Exclusives.Size = new System.Drawing.Size(110, 23);
+        this.B_Exclusives.Size = new System.Drawing.Size(102, 23);
         this.B_Exclusives.TabIndex = 600;
         this.B_Exclusives.Text = "Version Exclusives";
         this.B_Exclusives.UseVisualStyleBackColor = true;
@@ -503,9 +503,9 @@ partial class SMWE
         // 
         // B_Randomize
         // 
-        this.B_Randomize.Location = new System.Drawing.Point(900, 11);
+        this.B_Randomize.Location = new System.Drawing.Point(914, 11);
         this.B_Randomize.Name = "B_Randomize";
-        this.B_Randomize.Size = new System.Drawing.Size(85, 23);
+        this.B_Randomize.Size = new System.Drawing.Size(86, 23);
         this.B_Randomize.TabIndex = 421;
         this.B_Randomize.Text = "Randomize All";
         this.B_Randomize.UseVisualStyleBackColor = true;
@@ -513,9 +513,9 @@ partial class SMWE
         // 
         // B_Dump
         // 
-        this.B_Dump.Location = new System.Drawing.Point(990, 11);
+        this.B_Dump.Location = new System.Drawing.Point(1004, 11);
         this.B_Dump.Name = "B_Dump";
-        this.B_Dump.Size = new System.Drawing.Size(80, 23);
+        this.B_Dump.Size = new System.Drawing.Size(82, 23);
         this.B_Dump.TabIndex = 420;
         this.B_Dump.Text = "Dump Tables";
         this.B_Dump.UseVisualStyleBackColor = true;
@@ -523,17 +523,17 @@ partial class SMWE
         // 
         // L_Location
         // 
-        this.L_Location.AutoSize = true;
+        this.L_Location.AutoSize = false;
         this.L_Location.Location = new System.Drawing.Point(10, 16);
         this.L_Location.Name = "L_Location";
-        this.L_Location.Size = new System.Drawing.Size(28, 13);
+        this.L_Location.Size = new System.Drawing.Size(30, 13);
         this.L_Location.TabIndex = 419;
         this.L_Location.Text = "Loc:";
-        this.B_Save.Location = new System.Drawing.Point(1150, 580);
+        this.B_Save.Location = new System.Drawing.Point(1176, 634);
         this.B_Save.Name = "B_Save";
-        this.B_Save.Size = new System.Drawing.Size(95, 23);
+        this.B_Save.Size = new System.Drawing.Size(86, 34);
         this.B_Save.TabIndex = 418;
-        this.B_Save.Text = "Save Table";
+        this.B_Save.Text = "Randomize";
         this.B_Save.UseVisualStyleBackColor = true;
         this.B_Save.Click += new System.EventHandler(this.B_Save_Click);
         // 
@@ -543,22 +543,22 @@ partial class SMWE
         this.CB_LocationID.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
         this.CB_LocationID.DropDownWidth = 350;
         this.CB_LocationID.FormattingEnabled = true;
-        this.CB_LocationID.Location = new System.Drawing.Point(65, 12);
+        this.CB_LocationID.Location = new System.Drawing.Point(46, 12);
         this.CB_LocationID.Name = "CB_LocationID";
-        this.CB_LocationID.Size = new System.Drawing.Size(164, 21);
+        this.CB_LocationID.Size = new System.Drawing.Size(168, 21);
         this.CB_LocationID.TabIndex = 417;
         this.CB_LocationID.SelectedIndexChanged += new System.EventHandler(this.ChangeMap);
         // 
         // NUP_Min
         // 
-        this.NUP_Min.Location = new System.Drawing.Point(375, 14);
+        this.NUP_Min.Location = new System.Drawing.Point(406, 14);
         this.NUP_Min.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
         this.NUP_Min.Name = "NUP_Min";
-        this.NUP_Min.Size = new System.Drawing.Size(41, 20);
+        this.NUP_Min.Size = new System.Drawing.Size(42, 20);
         this.NUP_Min.TabIndex = 423;
         this.NUP_Min.Value = new decimal(new int[] {
             1,
@@ -569,14 +569,14 @@ partial class SMWE
         // 
         // NUP_Max
         // 
-        this.NUP_Max.Location = new System.Drawing.Point(500, 14);
+        this.NUP_Max.Location = new System.Drawing.Point(520, 14);
         this.NUP_Max.Minimum = new decimal(new int[] {
             1,
             0,
             0,
             0});
         this.NUP_Max.Name = "NUP_Max";
-        this.NUP_Max.Size = new System.Drawing.Size(41, 20);
+        this.NUP_Max.Size = new System.Drawing.Size(42, 20);
         this.NUP_Max.TabIndex = 424;
         this.NUP_Max.Value = new decimal(new int[] {
             100,
@@ -587,28 +587,28 @@ partial class SMWE
         // 
         // L_Min
         // 
-        this.L_Min.AutoSize = true;
-        this.L_Min.Location = new System.Drawing.Point(310, 16);
+        this.L_Min.AutoSize = false;
+        this.L_Min.Location = new System.Drawing.Point(346, 16);
         this.L_Min.Name = "L_Min";
-        this.L_Min.Size = new System.Drawing.Size(54, 13);
+        this.L_Min.Size = new System.Drawing.Size(56, 13);
         this.L_Min.TabIndex = 425;
         this.L_Min.Text = "Min Level";
         // 
         // L_Max
         // 
-        this.L_Max.AutoSize = true;
-        this.L_Max.Location = new System.Drawing.Point(435, 16);
+        this.L_Max.AutoSize = false;
+        this.L_Max.Location = new System.Drawing.Point(456, 16);
         this.L_Max.Name = "L_Max";
-        this.L_Max.Size = new System.Drawing.Size(57, 13);
+        this.L_Max.Size = new System.Drawing.Size(60, 13);
         this.L_Max.TabIndex = 426;
         this.L_Max.Text = "Max Level";
         // 
         // L_Table
         // 
-        this.L_Table.AutoSize = true;
-        this.L_Table.Location = new System.Drawing.Point(230, 16);
+        this.L_Table.AutoSize = false;
+        this.L_Table.Location = new System.Drawing.Point(222, 16);
         this.L_Table.Name = "L_Table";
-        this.L_Table.Size = new System.Drawing.Size(34, 13);
+        this.L_Table.Size = new System.Drawing.Size(36, 13);
         this.L_Table.TabIndex = 428;
         this.L_Table.Text = "Table";
         // 
@@ -622,8 +622,7 @@ partial class SMWE
         this.GB_Encounters.Controls.Add(this.B_PasteAll);
         this.GB_Encounters.Controls.Add(this.B_Paste);
         this.GB_Encounters.Controls.Add(this.B_Copy);
-        this.GB_Encounters.Controls.Add(this.GB_Tweak);
-        this.GB_Encounters.Controls.Add(this.PB_NightIcon);
+                this.GB_Encounters.Controls.Add(this.PB_NightIcon);
         this.GB_Encounters.Controls.Add(this.PB_DayIcon);
         this.GB_Encounters.Controls.Add(this.NUP_WeatherForme6);
         this.GB_Encounters.Controls.Add(this.NUP_WeatherForme3);
@@ -821,7 +820,7 @@ partial class SMWE
         this.GB_Encounters.Controls.Add(this.NUP_Rate1);
         this.GB_Encounters.Location = new System.Drawing.Point(14, 39);
         this.GB_Encounters.Name = "GB_Encounters";
-        this.GB_Encounters.Size = new System.Drawing.Size(1205, 561);
+        this.GB_Encounters.Size = new System.Drawing.Size(1248, 561);
         this.GB_Encounters.TabIndex = 430;
         this.GB_Encounters.TabStop = false;
         this.GB_Encounters.Text = "Encounters (100%)";
@@ -924,9 +923,9 @@ partial class SMWE
         this.GB_Tweak.Controls.Add(this.B_LevelPlus);
         this.GB_Tweak.Controls.Add(this.NUD_LevelAmp);
         this.GB_Tweak.Controls.Add(this.CHK_Level);
-        this.GB_Tweak.Location = new System.Drawing.Point(14, 400);
+        this.GB_Tweak.Location = new System.Drawing.Point(14, 606);
         this.GB_Tweak.Name = "GB_Tweak";
-        this.GB_Tweak.Size = new System.Drawing.Size(365, 165);
+        this.GB_Tweak.Size = new System.Drawing.Size(1150, 90);
         this.GB_Tweak.TabIndex = 507;
         this.GB_Tweak.TabStop = false;
         this.GB_Tweak.Text = "Extra Randomization Tweaks";
@@ -934,9 +933,9 @@ partial class SMWE
         // CHK_Level
         // 
         this.CHK_Level.AutoSize = true;
-        this.CHK_Level.Location = new System.Drawing.Point(12, 20);
+        this.CHK_Level.Location = new System.Drawing.Point(14, 23);
         this.CHK_Level.Name = "CHK_Level";
-        this.CHK_Level.Size = new System.Drawing.Size(132, 17);
+        this.CHK_Level.Size = new System.Drawing.Size(130, 17);
         this.CHK_Level.TabIndex = 279;
         this.CHK_Level.Text = "Multiply PKM Level by";
         this.CHK_Level.UseVisualStyleBackColor = true;
@@ -949,7 +948,7 @@ partial class SMWE
             0,
             0,
             131072});
-        this.NUD_LevelAmp.Location = new System.Drawing.Point(146, 18);
+        this.NUD_LevelAmp.Location = new System.Drawing.Point(150, 22);
         this.NUD_LevelAmp.Maximum = new decimal(new int[] {
             2000,
             0,
@@ -971,9 +970,9 @@ partial class SMWE
         // 
         // B_LevelPlus
         // 
-        this.B_LevelPlus.Location = new System.Drawing.Point(198, 16);
+        this.B_LevelPlus.Location = new System.Drawing.Point(204, 20);
         this.B_LevelPlus.Name = "B_LevelPlus";
-        this.B_LevelPlus.Size = new System.Drawing.Size(72, 23);
+        this.B_LevelPlus.Size = new System.Drawing.Size(70, 23);
         this.B_LevelPlus.TabIndex = 277;
         this.B_LevelPlus.Text = "x Current";
         this.B_LevelPlus.UseVisualStyleBackColor = true;
@@ -981,10 +980,10 @@ partial class SMWE
         // 
         // L_RandOpt
         // 
-        this.L_RandOpt.AutoSize = true;
-        this.L_RandOpt.Location = new System.Drawing.Point(12, 45);
+        this.L_RandOpt.AutoSize = false;
+        this.L_RandOpt.Location = new System.Drawing.Point(14, 56);
         this.L_RandOpt.Name = "L_RandOpt";
-        this.L_RandOpt.Size = new System.Drawing.Size(105, 13);
+        this.L_RandOpt.Size = new System.Drawing.Size(110, 13);
         this.L_RandOpt.TabIndex = 294;
         this.L_RandOpt.Text = "Randomizer Options:";
         // 
@@ -993,7 +992,7 @@ partial class SMWE
         this.CHK_G1.AutoSize = true;
         this.CHK_G1.Checked = true;
         this.CHK_G1.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G1.Location = new System.Drawing.Point(12, 63);
+        this.CHK_G1.Location = new System.Drawing.Point(132, 54);
         this.CHK_G1.Name = "CHK_G1";
         this.CHK_G1.Size = new System.Drawing.Size(55, 17);
         this.CHK_G1.TabIndex = 280;
@@ -1005,7 +1004,7 @@ partial class SMWE
         this.CHK_G2.AutoSize = true;
         this.CHK_G2.Checked = true;
         this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G2.Location = new System.Drawing.Point(12, 81);
+        this.CHK_G2.Location = new System.Drawing.Point(191, 54);
         this.CHK_G2.Name = "CHK_G2";
         this.CHK_G2.Size = new System.Drawing.Size(55, 17);
         this.CHK_G2.TabIndex = 281;
@@ -1017,7 +1016,7 @@ partial class SMWE
         this.CHK_G3.AutoSize = true;
         this.CHK_G3.Checked = true;
         this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G3.Location = new System.Drawing.Point(12, 99);
+        this.CHK_G3.Location = new System.Drawing.Point(250, 54);
         this.CHK_G3.Name = "CHK_G3";
         this.CHK_G3.Size = new System.Drawing.Size(55, 17);
         this.CHK_G3.TabIndex = 282;
@@ -1029,7 +1028,7 @@ partial class SMWE
         this.CHK_G4.AutoSize = true;
         this.CHK_G4.Checked = true;
         this.CHK_G4.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G4.Location = new System.Drawing.Point(68, 63);
+        this.CHK_G4.Location = new System.Drawing.Point(309, 54);
         this.CHK_G4.Name = "CHK_G4";
         this.CHK_G4.Size = new System.Drawing.Size(55, 17);
         this.CHK_G4.TabIndex = 283;
@@ -1041,7 +1040,7 @@ partial class SMWE
         this.CHK_G5.AutoSize = true;
         this.CHK_G5.Checked = true;
         this.CHK_G5.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G5.Location = new System.Drawing.Point(68, 81);
+        this.CHK_G5.Location = new System.Drawing.Point(368, 54);
         this.CHK_G5.Name = "CHK_G5";
         this.CHK_G5.Size = new System.Drawing.Size(55, 17);
         this.CHK_G5.TabIndex = 284;
@@ -1053,7 +1052,7 @@ partial class SMWE
         this.CHK_G6.AutoSize = true;
         this.CHK_G6.Checked = true;
         this.CHK_G6.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G6.Location = new System.Drawing.Point(68, 99);
+        this.CHK_G6.Location = new System.Drawing.Point(427, 54);
         this.CHK_G6.Name = "CHK_G6";
         this.CHK_G6.Size = new System.Drawing.Size(55, 17);
         this.CHK_G6.TabIndex = 285;
@@ -1065,7 +1064,7 @@ partial class SMWE
         this.CHK_G7.AutoSize = true;
         this.CHK_G7.Checked = true;
         this.CHK_G7.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G7.Location = new System.Drawing.Point(124, 63);
+        this.CHK_G7.Location = new System.Drawing.Point(486, 54);
         this.CHK_G7.Name = "CHK_G7";
         this.CHK_G7.Size = new System.Drawing.Size(55, 17);
         this.CHK_G7.TabIndex = 296;
@@ -1077,7 +1076,7 @@ partial class SMWE
         this.CHK_G8.AutoSize = true;
         this.CHK_G8.Checked = true;
         this.CHK_G8.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G8.Location = new System.Drawing.Point(124, 81);
+        this.CHK_G8.Location = new System.Drawing.Point(545, 54);
         this.CHK_G8.Name = "CHK_G8";
         this.CHK_G8.Size = new System.Drawing.Size(55, 17);
         this.CHK_G8.TabIndex = 297;
@@ -1089,7 +1088,7 @@ partial class SMWE
         this.CHK_G9.AutoSize = true;
         this.CHK_G9.Checked = true;
         this.CHK_G9.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G9.Location = new System.Drawing.Point(124, 99);
+        this.CHK_G9.Location = new System.Drawing.Point(604, 54);
         this.CHK_G9.Name = "CHK_G9";
         this.CHK_G9.Size = new System.Drawing.Size(55, 17);
         this.CHK_G9.TabIndex = 298;
@@ -1101,7 +1100,7 @@ partial class SMWE
         this.CHK_L.AutoSize = true;
         this.CHK_L.Checked = true;
         this.CHK_L.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_L.Location = new System.Drawing.Point(184, 63);
+        this.CHK_L.Location = new System.Drawing.Point(673, 54);
         this.CHK_L.Name = "CHK_L";
         this.CHK_L.Size = new System.Drawing.Size(98, 17);
         this.CHK_L.TabIndex = 286;
@@ -1113,7 +1112,7 @@ partial class SMWE
         this.CHK_E.AutoSize = true;
         this.CHK_E.Checked = true;
         this.CHK_E.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_E.Location = new System.Drawing.Point(184, 81);
+        this.CHK_E.Location = new System.Drawing.Point(777, 54);
         this.CHK_E.Name = "CHK_E";
         this.CHK_E.Size = new System.Drawing.Size(98, 17);
         this.CHK_E.TabIndex = 287;
@@ -1123,7 +1122,7 @@ partial class SMWE
         // CHK_BST
         // 
         this.CHK_BST.AutoSize = true;
-        this.CHK_BST.Location = new System.Drawing.Point(184, 99);
+        this.CHK_BST.Location = new System.Drawing.Point(881, 54);
         this.CHK_BST.Name = "CHK_BST";
         this.CHK_BST.Size = new System.Drawing.Size(117, 17);
         this.CHK_BST.TabIndex = 288;
@@ -1133,7 +1132,7 @@ partial class SMWE
         // CHK_MegaForm
         // 
         this.CHK_MegaForm.AutoSize = true;
-        this.CHK_MegaForm.Location = new System.Drawing.Point(184, 117);
+        this.CHK_MegaForm.Location = new System.Drawing.Point(1006, 54);
         this.CHK_MegaForm.Name = "CHK_MegaForm";
         this.CHK_MegaForm.Size = new System.Drawing.Size(127, 17);
         this.CHK_MegaForm.TabIndex = 295;
@@ -1150,16 +1149,16 @@ partial class SMWE
             "Randomize Regular Only",
             "Randomize SOS Only",
             "Randomize Regular, Copy to SOS"});
-        this.CB_SlotRand.Location = new System.Drawing.Point(124, 137);
+        this.CB_SlotRand.Location = new System.Drawing.Point(422, 21);
         this.CB_SlotRand.Name = "CB_SlotRand";
         this.CB_SlotRand.Size = new System.Drawing.Size(225, 21);
         this.CB_SlotRand.TabIndex = 299;
         // 
         // L_SOS
         // 
-        this.L_SOS.Location = new System.Drawing.Point(5, 139);
+        this.L_SOS.Location = new System.Drawing.Point(300, 24);
         this.L_SOS.Name = "L_SOS";
-        this.L_SOS.Size = new System.Drawing.Size(118, 23);
+        this.L_SOS.Size = new System.Drawing.Size(118, 17);
         this.L_SOS.TabIndex = 298;
         this.L_SOS.Text = "Slot Randomization:";
         this.L_SOS.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1172,7 +1171,7 @@ partial class SMWE
         this.CHK_G3.AutoSize = true;
         this.CHK_G3.Checked = true;
         this.CHK_G3.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G3.Location = new System.Drawing.Point(19, 82);
+        this.CHK_G3.Location = new System.Drawing.Point(250, 54);
         this.CHK_G3.Name = "CHK_G3";
         this.CHK_G3.Size = new System.Drawing.Size(55, 17);
         this.CHK_G3.TabIndex = 282;
@@ -1184,7 +1183,7 @@ partial class SMWE
         this.CHK_G2.AutoSize = true;
         this.CHK_G2.Checked = true;
         this.CHK_G2.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G2.Location = new System.Drawing.Point(19, 67);
+        this.CHK_G2.Location = new System.Drawing.Point(191, 54);
         this.CHK_G2.Name = "CHK_G2";
         this.CHK_G2.Size = new System.Drawing.Size(55, 17);
         this.CHK_G2.TabIndex = 281;
@@ -1196,7 +1195,7 @@ partial class SMWE
         this.CHK_G1.AutoSize = true;
         this.CHK_G1.Checked = true;
         this.CHK_G1.CheckState = System.Windows.Forms.CheckState.Checked;
-        this.CHK_G1.Location = new System.Drawing.Point(19, 52);
+        this.CHK_G1.Location = new System.Drawing.Point(132, 54);
         this.CHK_G1.Name = "CHK_G1";
         this.CHK_G1.Size = new System.Drawing.Size(55, 17);
         this.CHK_G1.TabIndex = 280;
@@ -1205,9 +1204,9 @@ partial class SMWE
         // 
         // B_LevelPlus
         // 
-        this.B_LevelPlus.Location = new System.Drawing.Point(203, 14);
+        this.B_LevelPlus.Location = new System.Drawing.Point(204, 20);
         this.B_LevelPlus.Name = "B_LevelPlus";
-        this.B_LevelPlus.Size = new System.Drawing.Size(66, 23);
+        this.B_LevelPlus.Size = new System.Drawing.Size(70, 23);
         this.B_LevelPlus.TabIndex = 277;
         this.B_LevelPlus.Text = "× Current";
         this.B_LevelPlus.UseVisualStyleBackColor = true;
@@ -1221,7 +1220,7 @@ partial class SMWE
             0,
             0,
             131072});
-        this.NUD_LevelAmp.Location = new System.Drawing.Point(152, 16);
+        this.NUD_LevelAmp.Location = new System.Drawing.Point(150, 22);
         this.NUD_LevelAmp.Maximum = new decimal(new int[] {
             2000,
             0,
@@ -1244,7 +1243,7 @@ partial class SMWE
         // CHK_Level
         // 
         this.CHK_Level.AutoSize = true;
-        this.CHK_Level.Location = new System.Drawing.Point(19, 17);
+        this.CHK_Level.Location = new System.Drawing.Point(14, 23);
         this.CHK_Level.Name = "CHK_Level";
         this.CHK_Level.Size = new System.Drawing.Size(130, 17);
         this.CHK_Level.TabIndex = 279;
@@ -3355,17 +3354,17 @@ partial class SMWE
         this.CB_TableID.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
         this.CB_TableID.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
         this.CB_TableID.FormattingEnabled = true;
-        this.CB_TableID.Location = new System.Drawing.Point(235, 12);
+        this.CB_TableID.Location = new System.Drawing.Point(262, 12);
         this.CB_TableID.Name = "CB_TableID";
-        this.CB_TableID.Size = new System.Drawing.Size(85, 21);
+        this.CB_TableID.Size = new System.Drawing.Size(76, 21);
         this.CB_TableID.TabIndex = 431;
         this.CB_TableID.SelectedIndexChanged += new System.EventHandler(this.UpdatePanel);
         // 
         // B_Import
         // 
-        this.B_Import.Location = new System.Drawing.Point(1075, 11);
+        this.B_Import.Location = new System.Drawing.Point(1090, 11);
         this.B_Import.Name = "B_Import";
-        this.B_Import.Size = new System.Drawing.Size(90, 23);
+        this.B_Import.Size = new System.Drawing.Size(84, 23);
         this.B_Import.TabIndex = 433;
         this.B_Import.Text = "Import Tables";
         this.B_Import.UseVisualStyleBackColor = true;
@@ -3373,9 +3372,9 @@ partial class SMWE
         // 
         // B_Export
         // 
-        this.B_Export.Location = new System.Drawing.Point(1170, 11);
+        this.B_Export.Location = new System.Drawing.Point(1178, 11);
         this.B_Export.Name = "B_Export";
-        this.B_Export.Size = new System.Drawing.Size(85, 23);
+        this.B_Export.Size = new System.Drawing.Size(84, 23);
         this.B_Export.TabIndex = 432;
         this.B_Export.Text = "Export Tables";
         this.B_Export.UseVisualStyleBackColor = true;
@@ -3383,25 +3382,25 @@ partial class SMWE
         // 
         // B_ImportTSV
         // 
-        this.B_ImportTSV.Location = new System.Drawing.Point(540, 11);
+        this.B_ImportTSV.Location = new System.Drawing.Point(572, 11);
         this.B_ImportTSV.Name = "B_ImportTSV";
-        this.B_ImportTSV.Size = new System.Drawing.Size(75, 23);
+        this.B_ImportTSV.Size = new System.Drawing.Size(72, 23);
         this.B_ImportTSV.Text = "Import TSV";
         this.B_ImportTSV.UseVisualStyleBackColor = true;
         this.B_ImportTSV.Click += new System.EventHandler(this.B_ImportTSV_Click);
         // 
         // B_ExportTSV
         // 
-        this.B_ExportTSV.Location = new System.Drawing.Point(620, 11);
+        this.B_ExportTSV.Location = new System.Drawing.Point(648, 11);
         this.B_ExportTSV.Name = "B_ExportTSV";
-        this.B_ExportTSV.Size = new System.Drawing.Size(75, 23);
+        this.B_ExportTSV.Size = new System.Drawing.Size(72, 23);
         this.B_ExportTSV.Text = "Export TSV";
         this.B_ExportTSV.UseVisualStyleBackColor = true;
         this.B_ExportTSV.Click += new System.EventHandler(this.B_ExportTSV_Click);
         // 
         // CopySOS
         // 
-        this.CopySOS.Location = new System.Drawing.Point(815, 11);
+        this.CopySOS.Location = new System.Drawing.Point(830, 11);
         this.CopySOS.Name = "CopySOS";
         this.CopySOS.Size = new System.Drawing.Size(80, 23);
         this.CopySOS.TabIndex = 277;
@@ -3413,7 +3412,7 @@ partial class SMWE
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(1250, 620);
+        this.ClientSize = new System.Drawing.Size(1276, 710);
         
         
         this.Controls.Add(this.B_Exclusives);
@@ -3423,6 +3422,7 @@ partial class SMWE
         this.Controls.Add(this.B_ExportTSV);
         this.Controls.Add(this.B_ImportTSV);
         this.Controls.Add(this.CB_TableID);
+        this.Controls.Add(this.GB_Tweak);
         this.Controls.Add(this.GB_Encounters);
         this.Controls.Add(this.L_Table);
         this.Controls.Add(this.NUP_Min);

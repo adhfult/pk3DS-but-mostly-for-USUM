@@ -181,7 +181,7 @@ public partial class MegaEvoEditor6 : Form
             pb.Image = null;
             return;
         }
-        pb.Image = WinFormsUtil.GetSprite(species, form, gender, item, Main.Config);
+        WinFormsUtil.SetImage(pb, WinFormsUtil.GetSprite(species, form, gender, item, Main.Config));
     }
 
     private void Form_Closing(object sender, FormClosingEventArgs e)

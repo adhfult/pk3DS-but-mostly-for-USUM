@@ -150,25 +150,23 @@ public static class Util
     }
 
     // Find Code off of Reference
+    /// <summary>First index at or after <paramref name="startIndex"/> where the pattern occurs, or -1.</summary>
     public static int IndexOfBytes(byte[] array, byte[] pattern, int startIndex, int count)
     {
+        if (array == null || pattern == null || pattern.Length == 0) return -1;
+
         int len = pattern.Length;
-        int endIndex = count > 0 ? startIndex + count : array.Length - pattern.Length;
-        int i = startIndex;
-        int j = 0;
-        while (true)
+        int last = array.Length - len;                     // last index a full match could start at
+        if (last < 0) return -1;
+
+        int endIndex = count > 0 ? Math.Min(startIndex + count - 1, last) : last;
+        for (int i = Math.Max(0, startIndex); i <= endIndex; i++)
         {
-            if (pattern[j] != array[i + j])
-            {
-                if (++i == endIndex)
-                    return -1;
-                j = 0;
-            }
-            else if (++j == len)
-            {
-                return i;
-            }
+            int j = 0;
+            while (j < len && array[i + j] == pattern[j]) j++;
+            if (j == len) return i;
         }
+        return -1;
     }
 
     // Misc

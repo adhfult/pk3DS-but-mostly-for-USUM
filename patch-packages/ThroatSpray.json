@@ -1,0 +1,66 @@
+{
+  "Name": "Throat Spray",
+  "Description": "Raises Sp. Atk when the holder uses a sound move.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Throat Spray on. Must be a free slot or already named Throat Spray.",
+      "Type": "item",
+      "Default": "122",
+      "ExpectName": "Throat Spray",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Throat Spray",
+      "Slots": [
+        {
+          "Timing": "0x47",
+          "Code": "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000070402DE90060A0E10150A0E10240A0E10300A0E37409FEEB040050E11400001A1200A0E37009FEEB7000FFE60810A0E311EBFBEB000050E30D00000A0410A0E10500A0E13833FEEB0120A0E30310A0E33131FEEB000050E30500000A0600A0E1C36EFDEB0420A0E10500A0E10010A0E31112FEEB7080BDE8",
+          "SourceBase": "0x1054DC",
+          "TimingByte": 71,
+          "SourceBaseValue": 1070300,
+          "CodeBytes": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcEAt6QBgoOEBUKDhAkCg4QMAoON0Cf7rBABQ4RQAABoSAKDjcAn+63AA/+YIEKDjEev76wAAUOMNAAAKBBCg4QUAoOE4M/7rASCg4wMQoOMxMf7rAABQ4wUAAAoGAKDhw2796wQgoOEFAKDhABCg4xES/utwgL3o"
+        },
+        {
+          "Timing": "0x60",
+          "Code": "70402DE90060A0E10150A0E10240A0E10300A0E37409FEEB040050E11400001A1200A0E37009FEEB7000FFE60810A0E311EBFBEB000050E30D00000A0410A0E10500A0E13833FEEB0120A0E30310A0E33131FEEB000050E30500000A0600A0E1C36EFDEB0420A0E10500A0E10010A0E31112FEEB7080BDE8",
+          "SourceBase": "0x10556C",
+          "TimingByte": 96,
+          "SourceBaseValue": 1070444,
+          "CodeBytes": "cEAt6QBgoOEBUKDhAkCg4QMAoON0Cf7rBABQ4RQAABoSAKDjcAn+63AA/+YIEKDjEev76wAAUOMNAAAKBBCg4QUAoOE4M/7rASCg4wMQoOMxMf7rAABQ4wUAAAoGAKDhw2796wQgoOEFAKDhABCg4xES/utwgL3o"
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 639,
+            "Timing": "0x8A",
+            "Name": "Weakness Policy"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Throat Spray"
+  }
+}

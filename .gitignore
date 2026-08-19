@@ -6,33 +6,51 @@
 *.userosscache
 *.sln.docstates
 
-# Mod Working & Tool Directories
+# IDE & Environment
+.venv/
+.claude/
+brain/
+
+# Research, Reference & Extraction Dumps (Embedded into pk3DS.Core Resources)
+ARM Functions/
+Observation Files/
+scratch_xlsx/
+scratch/
+tools/
+docs/
+
+# External Tools & Mod Workspaces
 US/
 UM/
-CustomSprites/
 patches/
 CRO-Expander-4.0/
 CRO-Expander-main/
 Pokemon-Forme-Insertion-main/
 Python source files/
-brain/
-7
+PokeRandoZX_USUM_Expansion_rev1/
+upr-zx/
+upr-zx-sora/
+ItemSprites/
 
 # Large Binaries, Local Workspace Dumps & Zip Packages
 *.zip
 4.xdelta
+7
 Pokemon+/
 encdata/
 ultramoon/
+tempRomFS.bin
 
-# User Settings
+# User Settings, Manifests & Temp Scripts
 randsettings.txt
 showdown_sets.json
 showdown_sets_storage.json
 showdown_sets.txt
 showdown_set_storage.txt
-
-# Personal Notes & Temp
+scratch_bag_use.txt
+test_api.py
+competitive_manifesto.md
+code_map.csv
 Planned Features.txt
 *.bak
 *.tmp
@@ -40,5 +58,3 @@ Planned Features.txt
 # Python temp files
 __pycache__/
 *.pyc
-
-

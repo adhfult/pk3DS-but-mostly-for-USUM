@@ -1,0 +1,58 @@
+{
+  "Name": "Room Service",
+  "Description": "Lowers Speed while a room is in effect.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Room Service on. Must be a free slot or already named Room Service.",
+      "Type": "item",
+      "Default": "865",
+      "ExpectName": "Room Service",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Room Service",
+      "Slots": [
+        {
+          "Timing": "0xCB",
+          "Code": "F0402DE90070A0E10150A0E10240A0E10200A0E306FCFDEB040050E11C00001A1F10A0E30500A0E1E9FAFDEB0400D0E5000050E31600000A0D10A0E30500A0E1E3FAFDEB0010A0E11200D1E50560A0E30020E0E30460C1E51120C1E50160A0E31060C1E5060080E31200C1E50C40C1E50500A0E155D0FDEB0700A0E14E61FDEB0420A0E10500A0E1F040BDE80010A0E39B04FEEA",
+          "SourceBase": "0x108B24",
+          "TimingByte": 203,
+          "SourceBaseValue": 1084196,
+          "CodeBytes": "8EAt6QBwoOEBUKDhAkCg4QIAoOMG/P3rBABQ4RwAABofEKDjBQCg4en6/esEANDlAABQ4xYAAAoNEKDjBQCg4eP6/esAEKDhEgDR5QVgoOMAIODjBGDB5REgweUBYKDjEGDB5QYAgOMSAMHlDEDB5QUAoOFV0P3rBwCg4U5h/esEIKDhBQCg4fBAvegAEKDjmwT+6g=="
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 846,
+            "Timing": "0x8A",
+            "Name": "Adrenaline Orb"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Room Service"
+  }
+}

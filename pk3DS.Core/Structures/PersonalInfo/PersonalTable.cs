@@ -77,7 +77,7 @@ public class PersonalTable
         }
         set
         {
-            if (index < Table.Length)
+            if (index >= Table.Length)
                 return;
             Table[index] = value;
         }

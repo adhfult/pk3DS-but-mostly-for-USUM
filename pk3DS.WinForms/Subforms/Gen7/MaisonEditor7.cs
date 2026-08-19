@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -24,8 +25,21 @@ public partial class MaisonEditor7 : Form
 
         InitializeComponent();
         Setup();
+        SetupChoiceList();
         RefreshSetList();
+        Text = royal ? "Battle Royal Editor" : "Battle Tree Editor";
         WinFormsUtil.ApplyCyberSlateTheme(this, WinFormsUtil.VisualTheme.Grey);
+    }
+
+    /// <summary>
+    /// Releases the sprites drawn in the set list; a ListBox does not own what an owner-draw
+    /// handler paints, so nothing else would free them.
+    /// </summary>
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        foreach (var img in choiceSprites.Values) img?.Dispose();
+        choiceSprites.Clear();
+        base.OnFormClosed(e);
     }
 
     private readonly byte[][] trFiles;
@@ -66,7 +80,7 @@ public partial class MaisonEditor7 : Form
     private void UpdateMascot()
     {
         int species = Main.Config.USUM ? 791 : 722; // Solgaleo or Rowlet
-        PB_Mascot.Image = WinFormsUtil.GetSprite(species, 0, 0, 0, Main.Config);
+        WinFormsUtil.SetImage(PB_Mascot, WinFormsUtil.GetSprite(species, 0, 0, 0, Main.Config));
     }
 
     private void ChangeTrainer(object sender, EventArgs e)
@@ -97,6 +111,67 @@ public partial class MaisonEditor7 : Form
 
         foreach (ushort Entry in tr.Choices)
             LB_Choices.Items.Add(Entry.ToString());
+    }
+
+    /// <summary>Sprites drawn in the set list, cached per set and released when the form closes.</summary>
+    private readonly Dictionary<int, Image> choiceSprites = [];
+
+    /// <summary>
+    /// Draws each set in the trainer's list as its sprite and species name.
+    /// <para>
+    /// The list holds set indices, and it used to show them as the bare numbers they are - a column
+    /// reading "1, 2, 19, 20, 21" with nothing to say which Pokémon those are. The underlying items
+    /// are still the indices, so saving is unchanged; only what is on screen differs.
+    /// </para>
+    /// </summary>
+    private void SetupChoiceList()
+    {
+        LB_Choices.DrawMode = DrawMode.OwnerDrawFixed;
+        LB_Choices.ItemHeight = 34;
+        LB_Choices.DrawItem += DrawChoiceItem;
+    }
+
+    private void DrawChoiceItem(object sender, DrawItemEventArgs e)
+    {
+        e.DrawBackground();
+        if (e.Index < 0 || e.Index >= LB_Choices.Items.Count) return;
+
+        if (!int.TryParse(LB_Choices.Items[e.Index]?.ToString(), out int setIndex))
+            return;
+
+        var bounds = e.Bounds;
+        var sprite = GetChoiceSprite(setIndex);
+        if (sprite != null)
+            e.Graphics.DrawImage(sprite, bounds.X + 2, bounds.Y + 2, 32, 30);
+
+        // The set's own label, which already reads "Species - 000".
+        string label = setIndex >= 0 && setIndex < CB_Pokemon.Items.Count
+            ? CB_Pokemon.Items[setIndex]?.ToString() ?? $"Set {setIndex}"
+            : $"Set {setIndex} (out of range)";
+
+        using var brush = new SolidBrush(e.ForeColor);
+        var textRect = new Rectangle(bounds.X + 38, bounds.Y + 2, bounds.Width - 40, bounds.Height - 4);
+        using var fmt = new StringFormat { LineAlignment = StringAlignment.Center, Trimming = StringTrimming.EllipsisCharacter, FormatFlags = StringFormatFlags.NoWrap };
+        e.Graphics.DrawString(label, e.Font, brush, textRect, fmt);
+
+        e.DrawFocusRectangle();
+    }
+
+    private Image GetChoiceSprite(int setIndex)
+    {
+        if (choiceSprites.TryGetValue(setIndex, out var cached)) return cached;
+        if (setIndex < 0 || setIndex >= pkFiles.Length) return choiceSprites[setIndex] = null;
+
+        try
+        {
+            var pk = new Maison7.Pokemon(pkFiles[setIndex]);
+            var sprite = WinFormsUtil.GetSprite(pk.Species, pk.Form, 0, pk.Item, Main.Config);
+            return choiceSprites[setIndex] = sprite;
+        }
+        catch
+        {
+            return choiceSprites[setIndex] = null;
+        }
     }
 
     private void SetTrainer()
@@ -168,7 +243,7 @@ public partial class MaisonEditor7 : Form
 
     private void ChangeSpecies(object sender, EventArgs e)
     {
-        PB_PKM.Image = WinFormsUtil.GetSprite(CB_Species.SelectedIndex, (int)NUD_Form.Value, 0, CB_Item.SelectedIndex, Main.Config);
+        WinFormsUtil.SetImage(PB_PKM, WinFormsUtil.GetSprite(CB_Species.SelectedIndex, (int)NUD_Form.Value, 0, CB_Item.SelectedIndex, Main.Config));
     }
 
     private void B_Remove_Click(object sender, EventArgs e)

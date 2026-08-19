@@ -1,0 +1,58 @@
+{
+  "Name": "Blunder Policy",
+  "Description": "Sharply raises Speed after a move misses.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Blunder Policy on. Must be a free slot or already named Blunder Policy.",
+      "Type": "item",
+      "Default": "866",
+      "ExpectName": "Blunder Policy",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Blunder Policy",
+      "Slots": [
+        {
+          "Timing": "0x9E",
+          "Code": "F0402DE90070A0E10150A0E10240A0E10200A0E345FAFDEB040050E11D00001A0030A0E30120A0E30410A0E10500A0E10667FFEB000050E31600000A0D10A0E30500A0E121F9FDEB0010A0E11200D1E50560A0E30220A0E30460C1E51120C1E50160A0E31060C1E5060080E31200C1E50C40C1E50500A0E193CEFDEB0700A0E18C5FFDEB0420A0E10500A0E1F040BDE80010A0E3D902FEEA",
+          "SourceBase": "0x109228",
+          "TimingByte": 158,
+          "SourceBaseValue": 1085992,
+          "CodeBytes": "8EAt6QBwoOEBUKDhAkCg4QIAoONF+v3rBABQ4R0AABoAMKDjASCg4wQQoOEFAKDhBmf/6wAAUOMWAAAKDRCg4wUAoOEh+f3rABCg4RIA0eUFYKDjAiCg4wRgweURIMHlAWCg4xBgweUGAIDjEgDB5QxAweUFAKDhk8796wcAoOGMX/3rBCCg4QUAoOHwQL3oABCg49kC/uo="
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 846,
+            "Timing": "0x8A",
+            "Name": "Adrenaline Orb"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Blunder Policy"
+  }
+}

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using pk3DS.Core;
@@ -9,64 +10,116 @@ namespace pk3DS.WinForms
 {
     public partial class ShowdownSetStorage : Form
     {
-        private readonly List<string> _sets;
-        private Button B_ClearAll;
+        private List<int> _filteredIndices = new List<int>();
+        public string SelectedSet { get; private set; }
+
         public ShowdownSetStorage()
         {
             InitializeComponent();
-            _sets = ShowdownSetManager.GetSetListStrings().ToList();
-            LB_Sets.Items.AddRange(_sets.ToArray());
-            L_Count.Text = $"Total Sets: {_sets.Count}";
             WinFormsUtil.ApplyCyberSlateTheme(this, WinFormsUtil.VisualTheme.Grey);
-            ApplyLayoutFixes();
+            RefreshList();
         }
 
-        private void ApplyLayoutFixes()
+        private void RefreshList(string filter = "")
         {
-            L_Count.Top = 42;
-            LB_Sets.Top = 65;
-            RTB_Preview.Top = 65;
-            LB_Sets.Height = this.ClientSize.Height - 120;
-            RTB_Preview.Height = LB_Sets.Height - 40;
-            B_Copy.Top = RTB_Preview.Bottom + 5;
-            B_Copy.Left = RTB_Preview.Left + (RTB_Preview.Width - B_Copy.Width) / 2;
+            LB_Sets.BeginUpdate();
+            LB_Sets.Items.Clear();
+            _filteredIndices.Clear();
 
-            int btnY = this.ClientSize.Height - 45;
-            Size bSize = new Size(115, 32);
-            B_Add.Size = B_Delete.Size = B_Use.Size = B_Close.Size = bSize;
+            string[] allDisplay = ShowdownSetManager.GetSetListStrings();
+            string query = filter.Trim();
 
-            B_Add.Location = new Point(12, btnY);
-            B_Delete.Location = new Point(135, btnY);
-            B_Use.Location = new Point(258, btnY);
-            B_Close.Location = new Point(381, btnY);
+            for (int i = 0; i < ShowdownSetManager.Sets.Count; i++)
+            {
+                var s = ShowdownSetManager.Sets[i];
+                if (string.IsNullOrEmpty(query) ||
+                    (allDisplay.Length > i && allDisplay[i].Contains(query, StringComparison.OrdinalIgnoreCase)) ||
+                    s.Content.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                    s.Nickname.Contains(query, StringComparison.OrdinalIgnoreCase))
+                {
+                    _filteredIndices.Add(i);
+                    LB_Sets.Items.Add(allDisplay.Length > i ? allDisplay[i] : $"Set [{i + 1}]");
+                }
+            }
 
-            B_ClearAll = new Button { Text = "Clear All", Size = bSize, Location = new Point(504, btnY) };
-            B_ClearAll.Click += B_ClearAll_Click;
-            this.Controls.Add(B_ClearAll);
+            LB_Sets.EndUpdate();
+
+            UpdateCapacityLabel();
+
+            if (LB_Sets.Items.Count > 0)
+            {
+                LB_Sets.SelectedIndex = 0;
+            }
+            else
+            {
+                RTB_Preview.Clear();
+            }
+        }
+
+        private void UpdateCapacityLabel()
+        {
+            int total = ShowdownSetManager.Sets.Count;
+            int max = ShowdownSetManager.MaxCapacity;
+            if (string.IsNullOrEmpty(TB_Search.Text.Trim()))
+            {
+                L_Count.Text = $"Capacity: {total} / {max} Sets";
+            }
+            else
+            {
+                L_Count.Text = $"Showing: {LB_Sets.Items.Count} (Total: {total} / {max})";
+            }
+            L_Count.ForeColor = total >= max ? Color.IndianRed : Color.Gainsboro;
+        }
+
+        private int GetCurrentRealIndex()
+        {
+            int sel = LB_Sets.SelectedIndex;
+            if (sel >= 0 && sel < _filteredIndices.Count)
+                return _filteredIndices[sel];
+            return -1;
         }
 
         private void LB_Sets_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (LB_Sets.SelectedIndex < 0)
+            int realIdx = GetCurrentRealIndex();
+            if (realIdx < 0 || realIdx >= ShowdownSetManager.Sets.Count)
             {
                 RTB_Preview.Clear();
-                L_Count.Text = $"Total Sets: {LB_Sets.Items.Count}";
+                L_PreviewHeader.Text = "Set Preview:";
                 return;
             }
-            L_Count.Text = $"Selected Set: {LB_Sets.SelectedIndex + 1} / {LB_Sets.Items.Count}";
-            RTB_Preview.Text = ShowdownSetManager.GetSetText(LB_Sets.SelectedIndex);
+
+            L_PreviewHeader.Text = $"Set Preview [{realIdx + 1} / {ShowdownSetManager.Sets.Count}]:";
+            RTB_Preview.Text = ShowdownSetManager.GetSetText(realIdx);
         }
 
+        private void TB_Search_TextChanged(object sender, EventArgs e)
+        {
+            RefreshList(TB_Search.Text);
+        }
 
         private void B_Add_Click(object sender, EventArgs e)
         {
             string text = Clipboard.GetText().Trim();
-            if (string.IsNullOrWhiteSpace(text)) { WinFormsUtil.Alert("Clipboard is empty!"); return; }
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                WinFormsUtil.Alert("Clipboard is empty! Copy Pokémon Showdown sets to clipboard first.");
+                return;
+            }
+
+            if (ShowdownSetManager.Sets.Count >= ShowdownSetManager.MaxCapacity)
+            {
+                WinFormsUtil.Alert($"Storage capacity limit ({ShowdownSetManager.MaxCapacity} sets) has been reached.");
+                return;
+            }
 
             var parts = text.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
             int added = 0;
             foreach (var part in parts)
             {
+                if (ShowdownSetManager.Sets.Count >= ShowdownSetManager.MaxCapacity)
+                    break;
+
                 string p = part.Trim();
                 if (string.IsNullOrWhiteSpace(p)) continue;
                 string name = ShowdownSetManager.GetNickname(p);
@@ -75,50 +128,113 @@ namespace pk3DS.WinForms
                     name = WinFormsUtil.PromptInput($"Enter a nickname for this Pokémon:\n{p.Split('\n')[0]}", "Add Showdown Set");
                     if (name == null) break;
                 }
-                ShowdownSetManager.AddSet(p, name);
-                added++;
+
+                if (ShowdownSetManager.AddSet(p, name))
+                    added++;
             }
-            if (added > 0) { RefreshList(); WinFormsUtil.Alert($"Added {added} set(s)!"); }
+
+            if (added > 0)
+            {
+                RefreshList(TB_Search.Text);
+                WinFormsUtil.Alert($"Successfully added {added} Showdown set(s) to storage!");
+            }
+            else if (ShowdownSetManager.Sets.Count >= ShowdownSetManager.MaxCapacity)
+            {
+                WinFormsUtil.Alert($"Storage capacity limit ({ShowdownSetManager.MaxCapacity} sets) reached.");
+            }
         }
 
-        private void B_ClearAll_Click(object sender, EventArgs e)
+        private void B_ImportFile_Click(object sender, EventArgs e)
         {
-            if (LB_Sets.Items.Count == 0) return;
-            if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Are you sure you want to delete ALL sets?") != DialogResult.Yes) return;
-            ShowdownSetManager.ClearAll();
-            RefreshList();
+            if (ShowdownSetManager.Sets.Count >= ShowdownSetManager.MaxCapacity)
+            {
+                WinFormsUtil.Alert($"Storage is full ({ShowdownSetManager.MaxCapacity} sets max).");
+                return;
+            }
+
+            using var ofd = new OpenFileDialog
+            {
+                Title = "Import Showdown Sets File",
+                Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+            };
+
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            string text = File.ReadAllText(ofd.FileName).Trim();
+            if (string.IsNullOrWhiteSpace(text)) return;
+
+            var parts = text.Split(new[] { "\r\n\r\n", "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int added = 0;
+            foreach (var part in parts)
+            {
+                if (ShowdownSetManager.Sets.Count >= ShowdownSetManager.MaxCapacity) break;
+                string p = part.Trim();
+                if (string.IsNullOrWhiteSpace(p)) continue;
+                string name = ShowdownSetManager.GetNickname(p);
+                if (ShowdownSetManager.AddSet(p, name))
+                    added++;
+            }
+
+            if (added > 0)
+            {
+                RefreshList(TB_Search.Text);
+                WinFormsUtil.Alert($"Imported {added} set(s) from {Path.GetFileName(ofd.FileName)}!");
+            }
+        }
+
+        private void B_ExportFile_Click(object sender, EventArgs e)
+        {
+            if (ShowdownSetManager.Sets.Count == 0)
+            {
+                WinFormsUtil.Alert("No sets stored to export.");
+                return;
+            }
+
+            using var sfd = new SaveFileDialog
+            {
+                Title = "Export All Showdown Sets",
+                Filter = "Text Files (*.txt)|*.txt",
+                FileName = "Stored_Showdown_Sets.txt"
+            };
+
+            if (sfd.ShowDialog() != DialogResult.OK) return;
+
+            var allContent = string.Join("\r\n\r\n", ShowdownSetManager.Sets.Select(s => s.Content.Trim()));
+            File.WriteAllText(sfd.FileName, allContent);
+            WinFormsUtil.Alert($"Exported {ShowdownSetManager.Sets.Count} sets to {Path.GetFileName(sfd.FileName)}!");
         }
 
         private void B_Delete_Click(object sender, EventArgs e)
         {
-            if (LB_Sets.SelectedIndex < 0) return;
-            if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Delete this set?") != DialogResult.Yes) return;
+            int realIdx = GetCurrentRealIndex();
+            if (realIdx < 0) return;
+            if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Delete this set from storage?") != DialogResult.Yes) return;
 
-            ShowdownSetManager.RemoveSet(LB_Sets.SelectedIndex);
-            RefreshList();
+            ShowdownSetManager.RemoveSet(realIdx);
+            RefreshList(TB_Search.Text);
         }
 
-        private void RefreshList()
+        private void B_ClearAll_Click(object sender, EventArgs e)
         {
-            LB_Sets.Items.Clear();
-            var sets = ShowdownSetManager.GetSetListStrings();
-            LB_Sets.Items.AddRange(sets.ToArray());
-            L_Count.Text = $"Total Sets: {sets.Length}";
-            RTB_Preview.Clear();
+            if (ShowdownSetManager.Sets.Count == 0) return;
+            if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, $"Are you sure you want to delete all {ShowdownSetManager.Sets.Count} stored sets?") != DialogResult.Yes) return;
+            ShowdownSetManager.ClearAll();
+            RefreshList();
         }
 
         private void B_Copy_Click(object sender, EventArgs e)
         {
-            if (LB_Sets.SelectedIndex < 0) return;
-            Clipboard.SetText(ShowdownSetManager.GetSetText(LB_Sets.SelectedIndex));
-            WinFormsUtil.Alert("Set copied to clipboard!");
+            int realIdx = GetCurrentRealIndex();
+            if (realIdx < 0) return;
+            Clipboard.SetText(ShowdownSetManager.GetSetText(realIdx));
+            WinFormsUtil.Alert("Showdown set copied to clipboard!");
         }
 
-        public string SelectedSet { get; private set; }
         private void B_Use_Click(object sender, EventArgs e)
         {
-            if (LB_Sets.SelectedIndex < 0) return;
-            SelectedSet = ShowdownSetManager.GetSetText(LB_Sets.SelectedIndex);
+            int realIdx = GetCurrentRealIndex();
+            if (realIdx < 0) return;
+            SelectedSet = ShowdownSetManager.GetSetText(realIdx);
             DialogResult = DialogResult.OK;
             Close();
         }

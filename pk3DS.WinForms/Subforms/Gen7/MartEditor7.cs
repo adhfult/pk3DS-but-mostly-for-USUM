@@ -77,10 +77,53 @@ public partial class MartEditor7 : Form
         data = File.ReadAllBytes(CROPath);
         itemlist[0] = "";
         SetupDGV();
+        ReadEntriesFromCodeBin();
         CB_Location.Items.AddRange(locations);
         CB_LocationBP.Items.AddRange(locationsBP);
         CB_Location.SelectedIndex = 0;
         CB_LocationBP.SelectedIndex = 0;
+    }
+
+    private void ReadEntriesFromCodeBin()
+    {
+        int listStart = offset;
+        if (listStart > Signature.Length)
+        {
+            var derived = pk3DS.Core.Randomizers.MartRandomizer.ResolveEntryCounts(
+                data, listStart, Math.Min(listStart + (entries.Sum() * 2) + 8, data.Length), CROPath);
+            for (int i = 0; i < entries.Length && i < derived.Length; i++)
+                entries[i] = derived[i];
+        }
+
+        var savedBP = pk3DS.Core.Randomizers.MartRandomizer.LoadCounts(CROPath);
+        if (savedBP is { } sc)
+            for (int i = 0; i < entriesBP.Length && i < sc.BP.Length; i++)
+                entriesBP[i] = sc.BP[i];
+
+        // The code.bin table below does not exist in any USUM build tested, so this normally does
+        // nothing; it is kept for ROMs that do carry one.
+        if (string.IsNullOrWhiteSpace(Main.ExeFSPath)) return;
+        string binName = File.Exists(Path.Combine(Main.ExeFSPath, ".code.bin")) ? ".code.bin" : "code.bin";
+        string fullCodePath = Path.Combine(Main.ExeFSPath, binName);
+        if (!File.Exists(fullCodePath)) return;
+
+        byte[] codeBin = File.ReadAllBytes(fullCodePath);
+
+        byte[] pat = { 9, 0, 11, 0, 13, 0, 15, 0, 17, 0, 19, 0, 20, 0, 21, 0, 9, 0, 4, 0, 8, 0 };
+        int martOfs = Util.IndexOfBytes(codeBin, pat, 0x100000, 0);
+        if (martOfs > 0)
+        {
+            for (int i = 0; i < entries.Length; i++)
+                entries[i] = codeBin[martOfs + i * 2];
+        }
+
+        byte[] patBP = { 8, 0, 7, 0, 18, 0, 12, 0, 21, 0, 16, 0 };
+        int bpOfs = Util.IndexOfBytes(codeBin, patBP, 0x100000, 0);
+        if (bpOfs > 0)
+        {
+            for (int i = 0; i < entriesBP.Length; i++)
+                entriesBP[i] = codeBin[bpOfs + i * 2];
+        }
     }
 
     private int GetRodataOffset()
@@ -316,18 +359,113 @@ public partial class MartEditor7 : Form
         WinFormsUtil.Alert("Mart data exported!");
         }
 
-        private void B_Randomize_Click(object sender, EventArgs e)
+        private void B_Randomize_Click(object sender, EventArgs e) => RunCategoryRandomize();
+
+        private void B_RandomizeBP_Click(object sender, EventArgs e) => RunCategoryRandomize();
+
+        private void RunCategoryRandomize()
         {
-            MessageBox.Show("Randomize functionality not ported in the recent refactor.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Persist any pending manual edits first — ExecuteCompetitive re-reads Shop.cro fresh
+            // from disk, so in-memory-only changes here would otherwise be silently discarded.
+            if (entry > -1) SetList();
+            if (entryBP > -1) SetListBP();
+            CROUtil.UpdateHashes(data);
+            File.WriteAllBytes(CROPath, data);
+
+            var martRand = new pk3DS.Core.Randomizers.MartRandomizer(Main.RomFSPath, 2, banBadItems: true, randomizeAllShops: true);
+            var (newRegular, newBP) = martRand.ExecuteCompetitive(Main.Config.Info.MaxItemID, Main.Config);
+
+            if (newRegular != null) entries = newRegular;
+            if (newBP != null) entriesBP = newBP;
+
+            data = File.ReadAllBytes(CROPath);
+            entry = -1;
+            entryBP = -1;
+            if (CB_Location.SelectedIndex >= 0) ChangeIndex(this, EventArgs.Empty);
+            if (CB_LocationBP.SelectedIndex >= 0) ChangeIndexBP(this, EventArgs.Empty);
+
+            WinFormsUtil.Alert("Marts randomized — locations were also expanded to fit their full category lists.");
         }
 
-        private void B_RandomizeBP_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show("Randomize BP not ported.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
+        /// <summary>
+        /// Reads back the format <see cref="B_ExportTxt_Click"/> writes.
+        /// <para>
+        /// Sections are "=== Location ===" for a normal mart and "=== BP: Location ===" for a BP
+        /// shop; each following line is "index: Item Name", with " | price" on the BP side. Slots
+        /// are matched by their index within the section, so a file may fill in only some of them.
+        /// </para>
+        /// </summary>
         private void B_ImportTxt_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Import Text not ported.", "Not Implemented", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using var ofd = new OpenFileDialog { FileName = "Marts.txt", Filter = "Text File|*.txt" };
+            if (ofd.ShowDialog() != DialogResult.OK) return;
+
+            int applied = 0;
+            var problems = new List<string>();
+            int loc = -1;
+            bool isBP = false;
+
+            foreach (string raw in File.ReadAllLines(ofd.FileName))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0) continue;
+
+                if (line.StartsWith("===") && line.EndsWith("==="))
+                {
+                    string title = line.Trim('=', ' ');
+                    isBP = title.StartsWith("BP:", StringComparison.OrdinalIgnoreCase);
+                    if (isBP) title = title[3..].Trim();
+
+                    var table = isBP ? locationsBP : locations;
+                    loc = Array.FindIndex(table, s => string.Equals(s, title, StringComparison.OrdinalIgnoreCase));
+                    if (loc < 0) problems.Add($"unknown shop \"{title}\"");
+                    continue;
+                }
+
+                if (loc < 0) continue;
+
+                int colon = line.IndexOf(':');
+                if (colon <= 0 || !int.TryParse(line[..colon].Trim(), out int slot)) continue;
+
+                string body = line[(colon + 1)..].Trim();
+                int price = -1;
+                int bar = body.LastIndexOf('|');
+                if (bar >= 0)
+                {
+                    int.TryParse(body[(bar + 1)..].Trim(), out price);
+                    body = body[..bar].Trim();
+                }
+
+                int itemId = Array.FindIndex(itemlist, s => string.Equals(s, body, StringComparison.OrdinalIgnoreCase));
+                if (itemId < 0) { problems.Add($"unknown item \"{body}\""); continue; }
+
+                if (isBP)
+                {
+                    if (slot < 0 || slot >= entriesBP[loc]) { problems.Add($"BP slot {slot} out of range"); continue; }
+                    int ofs = offsetBP;
+                    for (int j = 0; j < loc; j++) ofs += 4 * entriesBP[j];
+                    BitConverter.GetBytes((ushort)itemId).CopyTo(data, ofs + (4 * slot));
+                    if (price >= 0)
+                        BitConverter.GetBytes((ushort)price).CopyTo(data, ofs + (4 * slot) + 2);
+                }
+                else
+                {
+                    if (slot < 0 || slot >= entries[loc]) { problems.Add($"slot {slot} out of range"); continue; }
+                    int ofs = offset;
+                    for (int j = 0; j < loc; j++) ofs += 2 * entries[j];
+                    BitConverter.GetBytes((ushort)itemId).CopyTo(data, ofs + (2 * slot));
+                }
+                applied++;
+            }
+
+            // Re-read whichever list is on screen so the change is visible immediately.
+            if (entry > -1) GetList();
+            if (entryBP > -1) GetListBP();
+
+            string detail = problems.Count == 0
+                ? "Every line was matched."
+                : $"Skipped {problems.Count}: " + string.Join("; ", problems.Take(10))
+                  + (problems.Count > 10 ? "; ..." : "");
+            WinFormsUtil.Alert($"Imported {applied} mart slot(s).", detail);
         }
     }

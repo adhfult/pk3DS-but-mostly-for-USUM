@@ -1,0 +1,94 @@
+{
+  "Name": "Covert Cloak",
+  "Description": "Protects from the additional effects of moves.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Covert Cloak on. Must be a free slot or already named Covert Cloak.",
+      "Type": "item",
+      "Default": "848",
+      "ExpectName": "Covert Cloak",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Covert Cloak",
+      "Slots": [
+        {
+          "Timing": "0x7B",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 19,
+            "Timing": "0x7B",
+            "Name": "Shield Dust"
+          },
+          "TimingByte": 123,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x67",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 19,
+            "Timing": "0x67",
+            "Name": "Shield Dust"
+          },
+          "TimingByte": 103,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x84",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 19,
+            "Timing": "0x84",
+            "Name": "Shield Dust"
+          },
+          "TimingByte": 132,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x5F",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 19,
+            "Timing": "0x5F",
+            "Name": "Shield Dust"
+          },
+          "TimingByte": 95,
+          "SourceBaseValue": 0
+        },
+        {
+          "Timing": "0x9D",
+          "Reuse": {
+            "Kind": "Ability",
+            "Id": 19,
+            "Timing": "0x9D",
+            "Name": "Shield Dust"
+          },
+          "TimingByte": 157,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Covert Cloak"
+  }
+}

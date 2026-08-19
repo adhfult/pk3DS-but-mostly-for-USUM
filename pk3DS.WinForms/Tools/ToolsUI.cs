@@ -87,12 +87,8 @@ public sealed partial class ToolsUI : Form
         }
         catch
         {
-            try
-            {
-                if (threads < 1)
-                    new Thread(() => { Interlocked.Increment(ref threads); new BLZCoder(["-d", path], pBar1); Interlocked.Decrement(ref threads); WinFormsUtil.Alert("Decompressed!"); }).Start();
-            }
-            catch { WinFormsUtil.Error("Unable to process file."); threads = 0; }
+            if (threads < 1)
+                RunTool("Decompression", () => { new BLZCoder(["-d", path], pBar1); WinFormsUtil.Alert("Decompressed!"); });
         }
     }
 
@@ -138,6 +134,28 @@ public sealed partial class ToolsUI : Form
 
     internal static volatile int threads;
 
+    /// <summary>
+    /// Runs a tool operation on a worker thread, releasing the busy count and reporting failures.
+    /// <para>
+    /// Every site here previously bracketed its own work with <c>Interlocked.Increment</c> and
+    /// <c>Decrement</c> and then returned early between the two - the ALYT branch bailed out on an
+    /// invalid SARC, the GARC branch on a failed unpack. Each of those left <see cref="threads"/>
+    /// permanently above zero, at which point every later operation in the window refuses to start
+    /// with "Please wait for all operations to finish first" and never recovers. A throw did the
+    /// same and additionally killed the process, since a worker thread has no handler above it.
+    /// </para>
+    /// </summary>
+    private static void RunTool(string what, Action work)
+    {
+        Interlocked.Increment(ref threads);
+        new Thread(() =>
+        {
+            try { work(); }
+            catch (Exception ex) { WinFormsUtil.Error($"{what} could not be completed.", ex.Message); }
+            finally { Interlocked.Decrement(ref threads); }
+        }).Start();
+    }
+
     internal static void OpenARC(string path, ProgressBar pBar1, bool recursing = false)
     {
         string newFolder = "";
@@ -180,9 +198,8 @@ public sealed partial class ToolsUI : Form
             else if (first4.SequenceEqual(BitConverter.GetBytes(0x54594C41))) // ALYT
             {
                 if (threads > 0) { WinFormsUtil.Alert("Please wait for all operations to finish first."); return; }
-                new Thread(() =>
+                RunTool("Unpacking the ALYT", () =>
                 {
-                    Interlocked.Increment(ref threads);
                     var alyt = new ALYT(File.ReadAllBytes(path));
                     var sarc = new SARC(alyt.Data) // rip out sarc
                     {
@@ -196,26 +213,21 @@ public sealed partial class ToolsUI : Form
                     {
                         // openARC(file, pBar1, true);
                     }
-                    Interlocked.Decrement(ref threads);
-                }).Start();
+                });
             }
             else if (first4.SequenceEqual(BitConverter.GetBytes(0x47415243))) // GARC
             {
                 if (threads > 0) { WinFormsUtil.Alert("Please wait for all operations to finish first."); return; }
                 bool SkipDecompression = ModifierKeys == Keys.Control;
-                new Thread(() =>
+                RunTool("Unpacking the GARC", () =>
                 {
-                    Interlocked.Increment(ref threads);
                     bool r = GarcUtil.UnpackGARC(path, folderPath + "_g", SkipDecompression, pBar1);
-                    Interlocked.Decrement(ref threads);
-                    if (r)
-                    {
-                        BatchRenameExtension(newFolder);
-                    }
-                    else
+                    if (!r)
                     { WinFormsUtil.Alert("Unpacking failed."); return; }
+
+                    BatchRenameExtension(newFolder);
                     System.Media.SystemSounds.Asterisk.Play();
-                }).Start();
+                });
             }
             else if (ARC.Analyze(path).valid) // DARC
             {
@@ -246,8 +258,7 @@ public sealed partial class ToolsUI : Form
         catch (Exception e)
         {
             if (!recursing)
-                WinFormsUtil.Error("File error:" + Environment.NewLine + path, e.ToString());
-            threads = 0;
+                WinFormsUtil.Error("File error:" + Environment.NewLine + path, e.Message);
         }
     }
 
@@ -285,16 +296,19 @@ public sealed partial class ToolsUI : Form
                     padding = 4;
 
                 string outfolder = Directory.GetParent(path).FullName;
-                new Thread(() =>
+                // This one never took the busy count at all, so the guard above it ("threads > 0")
+                // could not see it and a second pack could be launched over the same folder.
+                bool deleteAfter = CHK_Delete.Checked;
+                RunTool("Packing the GARC", () =>
                 {
                     bool r = GarcUtil.PackGARC(path, Path.Combine(outfolder, folderName + ".garc"), version, padding, pBar1);
                     if (!r) { WinFormsUtil.Alert("Packing failed."); return; }
                     // Delete path after repacking
-                    if (CHK_Delete.Checked && Directory.Exists(path))
+                    if (deleteAfter && Directory.Exists(path))
                         Directory.Delete(path, true);
 
                     System.Media.SystemSounds.Asterisk.Play();
-                }).Start();
+                });
                 return;
             }
             case 2: // DARC Pack (from existing if exists)

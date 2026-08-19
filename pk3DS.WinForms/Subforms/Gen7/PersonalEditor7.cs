@@ -41,7 +41,7 @@ public partial class PersonalEditor7 : Form
         byte_boxes = [TB_BaseHP, TB_BaseATK, TB_BaseDEF, TB_BaseSPA, TB_BaseSPD, TB_BaseSPE, TB_Gender, TB_HatchCycles, TB_Friendship, TB_CatchRate, TB_CallRate,
         ];
         ev_boxes = [TB_HPEVs, TB_ATKEVs, TB_DEFEVs, TB_SPEEVs, TB_SPAEVs, TB_SPDEVs];
-        rstat_boxes = [CHK_rHP, CHK_rATK, CHK_rDEF, CHK_rSPA, CHK_rSPD, CHK_rSPE];
+        rstat_boxes = [CHK_rHP, CHK_rATK, CHK_rDEF, CHK_rSPE, CHK_rSPA, CHK_rSPD];
         files = (byte[][])infiles.Clone();
         originalFiles = files.Select(a => (byte[])a.Clone()).ToArray(); // Snapshots YOUR custom ROM data
         
@@ -371,14 +371,16 @@ public partial class PersonalEditor7 : Form
         CLB_MoveTutors.Items.Clear();
         CLB_BeachTutors.Items.Clear();
 
-        if (TMs.Length == 0) // No ExeFS to grab TMs from.
+        int tmCount = TMs.Length > 0 ? Math.Min(TMs.Length, 128) : 100;
+
+        if (TMs.Length == 0) // No ExeFS to grab TMs from - names unavailable, so number them.
         {
-            for (int i = 1; i <= 128; i++)
-                CLB_TM.Items.Add($"TM{i:00}{(i > 100 ? " (Extra Toggle)" : "")}");
+            for (int i = 1; i <= tmCount; i++)
+                CLB_TM.Items.Add($"TM{i:00}");
         }
         else // Use TM moves.
         {
-            for (int i = 1; i <= 128; i++)
+            for (int i = 1; i <= tmCount; i++)
             {
                 string name = (i - 1 < TMs.Length && TMs[i - 1] < moves.Length) ? moves[TMs[i - 1]] : "---";
                 CLB_TM.Items.Add($"TM{i:00} {name}");
@@ -471,8 +473,11 @@ public partial class PersonalEditor7 : Form
 
     private void CB_Species_SelectedIndexChanged(object sender, EventArgs e)
     {
-        if (entry > -1 && !dumping) SaveEntry();
+        if (reading || dumping) return;
+        if (entry > -1 && entry < files.Length) SaveEntry();
         entry = CB_Species.SelectedIndex;
+        if (entry < 0 || entry >= files.Length)
+            return;
         ReadEntry();
     }
 
@@ -682,15 +687,19 @@ public partial class PersonalEditor7 : Form
 
     private PersonalInfo pkm;
 
+    private static void SetCBIndex(ComboBox cb, int index)
+    {
+        if (cb == null) return;
+        if (index >= 0 && index < cb.Items.Count)
+            cb.SelectedIndex = index;
+        else
+            cb.SelectedIndex = 0;
+    }
+
     private void ReadInfo()
     {
-        reading = true;
-        pkm = Main.SpeciesStat[entry];
-        if (pkm == null) 
-        {
-            reading = false;
-            return;
-        }
+        pkm = PersonalTable.GetInfo(files[entry], Main.Config.Version);
+        if (pkm == null) return;
 
         TB_BaseHP.Text = pkm.HP.ToString("000");
         TB_BaseATK.Text = pkm.ATK.ToString("000");
@@ -699,12 +708,12 @@ public partial class PersonalEditor7 : Form
         TB_BaseSPA.Text = pkm.SPA.ToString("000");
         TB_BaseSPD.Text = pkm.SPD.ToString("000");
 
-        StatBar_HP.Value = pkm.HP;
-        StatBar_ATK.Value = pkm.ATK;
-        StatBar_DEF.Value = pkm.DEF;
-        StatBar_SPE.Value = pkm.SPE;
-        StatBar_SPA.Value = pkm.SPA;
-        StatBar_SPD.Value = pkm.SPD;
+        StatBar_HP.Value = Math.Clamp(pkm.HP, 0, 255);
+        StatBar_ATK.Value = Math.Clamp(pkm.ATK, 0, 255);
+        StatBar_DEF.Value = Math.Clamp(pkm.DEF, 0, 255);
+        StatBar_SPE.Value = Math.Clamp(pkm.SPE, 0, 255);
+        StatBar_SPA.Value = Math.Clamp(pkm.SPA, 0, 255);
+        StatBar_SPD.Value = Math.Clamp(pkm.SPD, 0, 255);
         TB_HPEVs.Text = pkm.EV_HP.ToString("0");
         TB_ATKEVs.Text = pkm.EV_ATK.ToString("0");
         TB_DEFEVs.Text = pkm.EV_DEF.ToString("0");
@@ -712,34 +721,34 @@ public partial class PersonalEditor7 : Form
         TB_SPAEVs.Text = pkm.EV_SPA.ToString("0");
         TB_SPDEVs.Text = pkm.EV_SPD.ToString("0");
 
-        CB_Type1.SelectedIndex = pkm.Types[0];
-        CB_Type2.SelectedIndex = pkm.Types[1];
+        SetCBIndex(CB_Type1, pkm.Types[0]);
+        SetCBIndex(CB_Type2, pkm.Types[1]);
 
         TB_CatchRate.Text = pkm.CatchRate.ToString("000");
         TB_Stage.Text = pkm.EvoStage.ToString("0");
 
-        CB_HeldItem1.SelectedIndex = pkm.Items[0];
-        CB_HeldItem2.SelectedIndex = pkm.Items[1];
-        CB_HeldItem3.SelectedIndex = pkm.Items[2];
+        SetCBIndex(CB_HeldItem1, pkm.Items[0]);
+        SetCBIndex(CB_HeldItem2, pkm.Items[1]);
+        SetCBIndex(CB_HeldItem3, pkm.Items[2]);
 
         TB_Gender.Text = pkm.Gender.ToString("000");
         TB_HatchCycles.Text = pkm.HatchCycles.ToString("000");
         TB_Friendship.Text = pkm.BaseFriendship.ToString("000");
 
-        CB_EXPGroup.SelectedIndex = pkm.EXPGrowth;
+        SetCBIndex(CB_EXPGroup, pkm.EXPGrowth);
 
-        CB_EggGroup1.SelectedIndex = pkm.EggGroups[0];
-        CB_EggGroup2.SelectedIndex = pkm.EggGroups[1];
+        SetCBIndex(CB_EggGroup1, pkm.EggGroups[0]);
+        SetCBIndex(CB_EggGroup2, pkm.EggGroups[1]);
 
-        CB_Ability1.SelectedIndex = pkm.Abilities[0];
-        CB_Ability2.SelectedIndex = pkm.Abilities[1];
-        CB_Ability3.SelectedIndex = pkm.Abilities[2];
+        SetCBIndex(CB_Ability1, pkm.Abilities[0]);
+        SetCBIndex(CB_Ability2, pkm.Abilities[1]);
+        SetCBIndex(CB_Ability3, pkm.Abilities[2]);
 
         TB_FormeCount.Text = pkm.FormeCount.ToString("000");
         TB_FormeSprite.Text = pkm.FormeSprite.ToString("000");
 
         TB_RawColor.Text = pkm.Color.ToString("000");
-        CB_Color.SelectedIndex = pkm.Color & 0xF;
+        SetCBIndex(CB_Color, pkm.Color & 0xF);
 
         TB_BaseExp.Text = pkm.BaseEXP.ToString("000");
         TB_BST.Text = pkm.BST.ToString("000");
@@ -753,9 +762,9 @@ public partial class PersonalEditor7 : Form
         PersonalInfoSM sm = (PersonalInfoSM)pkm;
         TB_CallRate.Text = sm.EscapeRate.ToString("000");
         TB_CallRate.TextAlign = HorizontalAlignment.Center;
-        CB_ZItem.SelectedIndex = sm.SpecialZ_Item == 65535 || sm.SpecialZ_Item >= CB_ZItem.Items.Count ? 0 : sm.SpecialZ_Item;
-        CB_ZBaseMove.SelectedIndex = sm.SpecialZ_BaseMove == 65535 || sm.SpecialZ_BaseMove >= CB_ZBaseMove.Items.Count ? 0 : sm.SpecialZ_BaseMove;
-        CB_ZMove.SelectedIndex = sm.SpecialZ_ZMove == 65535 || sm.SpecialZ_ZMove >= CB_ZMove.Items.Count ? 0 : sm.SpecialZ_ZMove;
+        SetCBIndex(CB_ZItem, sm.SpecialZ_Item == 65535 ? 0 : sm.SpecialZ_Item);
+        SetCBIndex(CB_ZBaseMove, sm.SpecialZ_BaseMove == 65535 ? 0 : sm.SpecialZ_BaseMove);
+        SetCBIndex(CB_ZMove, sm.SpecialZ_ZMove == 65535 ? 0 : sm.SpecialZ_ZMove);
         CHK_Variant.Checked = sm.LocalVariant;
 
         CLB_MoveTutors.Visible = L_Special.Visible = true;
@@ -770,8 +779,6 @@ public partial class PersonalEditor7 : Form
         }
         ReadDexEntry();
         UpdateDebugLabel(sm);
-        reading = false;
-        UpdateTypeIcons(null, null);
     }
 
     private void UpdateDebugLabel(PersonalInfoSM sm)
@@ -803,7 +810,7 @@ public partial class PersonalEditor7 : Form
                 var dex1 = Main.Config.GetText(TextName.PokedexEntry1);
                 var dex2 = Main.Config.GetText(TextName.PokedexEntry2);
                 int dexIdx = entry;
-                if (entry > Main.Config.MaxSpeciesID) dexIdx = baseForms[entry];
+                if (entry > Main.Config.MaxSpeciesID && baseForms != null && entry < baseForms.Length) dexIdx = baseForms[entry];
 
                 if (dexIdx < dex1.Length)
                 {
@@ -813,87 +820,107 @@ public partial class PersonalEditor7 : Form
                 }
             }
         }
-        reading = false;
-        UpdateTypeIcons(null, null);
     }
 
     private void ReadEntry()
     {
-        ReadInfo();
-
-        if (dumping) return;
-        int s = baseForms[entry];
-        int f = formVal[entry];
-        if (entry <= Main.Config.MaxSpeciesID)
-            s = entry;
-            
-        // Use custom name for the header if one has been set
-        var _customNames = CustomNameEditor.LoadCustomNames();
-        string currentName = (entry >= 0 && entry < entryNames.Length && !string.IsNullOrWhiteSpace(entryNames[entry])) 
-            ? entryNames[entry] 
-            : (s >= 0 && s < species.Length && !string.IsNullOrWhiteSpace(species[s]) && species[s] != "---") 
-                ? species[s] 
-                : $"Species {entry}";
-
-        // Strip trailing form number for neat header display (e.g. "Tatsugiri 5" -> "Tatsugiri")
-        string cleanHeaderName = currentName;
-        int lastSpace = currentName.LastIndexOf(' ');
-        if (lastSpace > 0 && int.TryParse(currentName.Substring(lastSpace + 1), out _))
+        reading = true;
+        try
         {
-            cleanHeaderName = currentName.Substring(0, lastSpace);
-        }
+            ReadInfo();
 
-        L_SpeciesName.Text = _customNames.TryGetValue(entry, out string cn) ? cn : cleanHeaderName;
-            
-        var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
-        var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
-        for (int x = 0; x < rawImg.Width; x++)
-        {
-            for (int y = 0; y < rawImg.Height; y++)
+            if (dumping) return;
+            int s = (baseForms != null && entry < baseForms.Length) ? baseForms[entry] : entry;
+            int f = (formVal != null && entry < formVal.Length) ? formVal[entry] : 0;
+            if (entry <= Main.Config.MaxSpeciesID)
+                s = entry;
+                
+            // Use custom name for the header if one has been set
+            var _customNames = CustomNameEditor.LoadCustomNames();
+            string currentName = (entry >= 0 && entry < entryNames.Length && !string.IsNullOrWhiteSpace(entryNames[entry])) 
+                ? entryNames[entry] 
+                : (s >= 0 && s < species.Length && !string.IsNullOrWhiteSpace(species[s]) && species[s] != "---") 
+                    ? species[s] 
+                    : $"Species {entry}";
+
+            // Strip trailing form number for neat header display (e.g. "Tatsugiri 5" -> "Tatsugiri")
+            string cleanHeaderName = currentName;
+            int lastSpace = currentName.LastIndexOf(' ');
+            if (lastSpace > 0 && int.TryParse(currentName.Substring(lastSpace + 1), out _))
             {
-                Color c = rawImg.GetPixel(x, y);
-                bigImg.SetPixel(2 * x, 2 * y, c);
-                bigImg.SetPixel((2 * x) + 1, 2 * y, c);
-                bigImg.SetPixel(2 * x, (2 * y) + 1, c);
-                bigImg.SetPixel((2 * x) + 1, (2 * y) + 1, c);
+                cleanHeaderName = currentName.Substring(0, lastSpace);
+            }
+
+            L_SpeciesName.Text = _customNames.TryGetValue(entry, out string cn) ? cn : cleanHeaderName;
+                
+            var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
+            if (rawImg != null)
+            {
+                var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
+                for (int x = 0; x < rawImg.Width; x++)
+                {
+                    for (int y = 0; y < rawImg.Height; y++)
+                    {
+                        Color c = rawImg.GetPixel(x, y);
+                        bigImg.SetPixel(2 * x, 2 * y, c);
+                        bigImg.SetPixel((2 * x) + 1, 2 * y, c);
+                        bigImg.SetPixel(2 * x, (2 * y) + 1, c);
+                        bigImg.SetPixel((2 * x) + 1, (2 * y) + 1, c);
+                    }
+                }
+                var oldImg = PB_MonSprite.Image;
+                PB_MonSprite.Image = bigImg;
+                oldImg?.Dispose();
+                rawImg.Dispose();
             }
         }
-        PB_MonSprite.Image = bigImg;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error reading entry {entry}: {ex.Message}");
+        }
+        finally
+        {
+            reading = false;
+            UpdateTypeIcons(null, null);
+        }
     }
+
+    private byte ParseByte(string text) => byte.TryParse(text.Trim(), out byte val) ? val : (byte)0;
+    private ushort ParseUInt16(string text) => ushort.TryParse(text.Trim(), out ushort val) ? val : (ushort)0;
 
     private void SavePersonal()
     {
-        pkm.HP = Convert.ToByte(TB_BaseHP.Text);
-        pkm.ATK = Convert.ToByte(TB_BaseATK.Text);
-        pkm.DEF = Convert.ToByte(TB_BaseDEF.Text);
-        pkm.SPE = Convert.ToByte(TB_BaseSPE.Text);
-        pkm.SPA = Convert.ToByte(TB_BaseSPA.Text);
-        pkm.SPD = Convert.ToByte(TB_BaseSPD.Text);
+        pkm.HP = ParseByte(TB_BaseHP.Text);
+        pkm.ATK = ParseByte(TB_BaseATK.Text);
+        pkm.DEF = ParseByte(TB_BaseDEF.Text);
+        pkm.SPE = ParseByte(TB_BaseSPE.Text);
+        pkm.SPA = ParseByte(TB_BaseSPA.Text);
+        pkm.SPD = ParseByte(TB_BaseSPD.Text);
 
-        pkm.EV_HP = Convert.ToByte(TB_HPEVs.Text);
-        pkm.EV_ATK = Convert.ToByte(TB_ATKEVs.Text);
-        pkm.EV_DEF = Convert.ToByte(TB_DEFEVs.Text);
-        pkm.EV_SPE = Convert.ToByte(TB_SPEEVs.Text);
-        pkm.EV_SPA = Convert.ToByte(TB_SPAEVs.Text);
-        pkm.EV_SPD = Convert.ToByte(TB_SPDEVs.Text);
+        pkm.EV_HP = ParseByte(TB_HPEVs.Text);
+        pkm.EV_ATK = ParseByte(TB_ATKEVs.Text);
+        pkm.EV_DEF = ParseByte(TB_DEFEVs.Text);
+        pkm.EV_SPE = ParseByte(TB_SPEEVs.Text);
+        pkm.EV_SPA = ParseByte(TB_SPAEVs.Text);
+        pkm.EV_SPD = ParseByte(TB_SPDEVs.Text);
 
-        pkm.CatchRate = Convert.ToByte(TB_CatchRate.Text);
-        pkm.EvoStage = Convert.ToByte(TB_Stage.Text);
+        pkm.CatchRate = ParseByte(TB_CatchRate.Text);
+        pkm.EvoStage = ParseByte(TB_Stage.Text);
 
         pkm.Types = [CB_Type1.SelectedIndex, CB_Type2.SelectedIndex];
         pkm.Items = [CB_HeldItem1.SelectedIndex, CB_HeldItem2.SelectedIndex, CB_HeldItem3.SelectedIndex];
 
-        pkm.Gender = Convert.ToByte(TB_Gender.Text);
-        pkm.HatchCycles = Convert.ToByte(TB_HatchCycles.Text);
-        pkm.BaseFriendship = Convert.ToByte(TB_Friendship.Text);
+        pkm.Gender = ParseByte(TB_Gender.Text);
+        pkm.HatchCycles = ParseByte(TB_HatchCycles.Text);
+        pkm.BaseFriendship = ParseByte(TB_Friendship.Text);
         pkm.EXPGrowth = (byte)CB_EXPGroup.SelectedIndex;
         pkm.EggGroups = [CB_EggGroup1.SelectedIndex, CB_EggGroup2.SelectedIndex];
         pkm.Abilities = [CB_Ability1.SelectedIndex, CB_Ability2.SelectedIndex, CB_Ability3.SelectedIndex];
 
-        pkm.FormeSprite = Convert.ToUInt16(TB_FormeSprite.Text);
-        pkm.FormeCount = Convert.ToByte(TB_FormeCount.Text);
-        pkm.Color = (byte)(Convert.ToByte(CB_Color.SelectedIndex) | (Convert.ToByte(TB_RawColor.Text) & 0xF0));
-        pkm.BaseEXP = Convert.ToUInt16(TB_BaseExp.Text);
+        pkm.FormeSprite = ParseUInt16(TB_FormeSprite.Text);
+        pkm.FormeCount = ParseByte(TB_FormeCount.Text);
+        pkm.Color = (byte)(ParseByte(CB_Color.SelectedIndex.ToString()) | (ParseByte(TB_RawColor.Text) & 0xF0));
+        pkm.BaseEXP = ParseUInt16(TB_BaseExp.Text);
 
         _ = decimal.TryParse(TB_Height.Text, out var h);
         _ = decimal.TryParse(TB_Weight.Text, out var w);
@@ -974,6 +1001,8 @@ public partial class PersonalEditor7 : Form
         SavePersonal();
         byte[] edits = pkm.Write();
         files[entry] = edits;
+        if (entry < Main.SpeciesStat.Length)
+            Main.SpeciesStat[entry] = pkm;
         // Changelog generation removed to prevent UI locking on autosave
 
     }
@@ -1002,8 +1031,10 @@ public partial class PersonalEditor7 : Form
             AllowWonderGuard = CHK_WGuard.Checked,
         };
 
-        rnd.Randomize(Main.SpeciesStat[entry], entry);
-        files[entry] = Main.SpeciesStat[entry].Write();
+        rnd.Randomize(pkm, entry);
+        files[entry] = pkm.Write();
+        if (entry < Main.SpeciesStat.Length)
+            Main.SpeciesStat[entry] = pkm;
         ReadEntry();
     }
 
@@ -1013,7 +1044,8 @@ public partial class PersonalEditor7 : Form
             return;
         if (entry > -1) SaveEntry();
         // input settings
-        var rnd = new PersonalRandomizer(Main.SpeciesStat, Main.Config)
+        var table = files.Select(f => PersonalTable.GetInfo(f, Main.Config.Version)).ToArray();
+        var rnd = new PersonalRandomizer(table, Main.Config)
         {
             TypeCount = CB_Type1.Items.Count,
             ModifyCatchRate = CHK_CatchRate.Checked,
@@ -1035,7 +1067,12 @@ public partial class PersonalEditor7 : Form
         };
 
         rnd.Execute();
-        Main.SpeciesStat.Select(z => z.Write()).ToArray().CopyTo(files, 0);
+        for (int i = 0; i < files.Length && i < table.Length; i++)
+        {
+            files[i] = table[i].Write();
+            if (i < Main.SpeciesStat.Length)
+                Main.SpeciesStat[i] = table[i];
+        }
 
         ReadEntry();
         WinFormsUtil.Alert("Randomized all Pokémon Personal data entries according to specification!", "Press the Export All button to view the new Personal data!");
@@ -1251,16 +1288,19 @@ public partial class PersonalEditor7 : Form
         int[] origValues = new int[6];
         string prefix = isAlt ? "Base Form" : "Vanilla";
 
-        if (isAlt)
+        if (isAlt && baseForms != null && entry < baseForms.Length)
         {
             int baseID = baseForms[entry];
-            var bPkm = Main.SpeciesStat[baseID];
-            origValues[0] = bPkm.HP;
-            origValues[1] = bPkm.ATK;
-            origValues[2] = bPkm.DEF;
-            origValues[3] = bPkm.SPA;
-            origValues[4] = bPkm.SPD;
-            origValues[5] = bPkm.SPE;
+            var bPkm = (baseID >= 0 && baseID < files.Length) ? PersonalTable.GetInfo(files[baseID], Main.Config.Version) : null;
+            if (bPkm != null)
+            {
+                origValues[0] = bPkm.HP;
+                origValues[1] = bPkm.ATK;
+                origValues[2] = bPkm.DEF;
+                origValues[3] = bPkm.SPA;
+                origValues[4] = bPkm.SPD;
+                origValues[5] = bPkm.SPE;
+            }
         }
         else if (isNewSpecies || vanillaStats == null || entry >= vanillaStats.Length || vanillaStats[entry] == null)
         {
@@ -1531,14 +1571,6 @@ public partial class PersonalEditor7 : Form
         WinFormsUtil.Alert("All Pokémon Hatch Cycles set to 0.");
     }
 
-    private void B_JumpLevelUp_Click(object sender, EventArgs e)
-    {
-        if (learnsets == null) return;
-        SaveEntry();
-        var editor = new LevelUpEditor7(learnsets) { StartSpecies = entry };
-        editor.ShowDialog();
-        ReadEntry(); // Refresh in case anything changed (though unlikely for stats)
-    }
     private void B_JumpEggMoves_Click(object sender, EventArgs e)
     {
         if (eggmoves == null) return;

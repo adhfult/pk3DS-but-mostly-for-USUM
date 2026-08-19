@@ -1,4 +1,4 @@
-using pk3DS.Core;
+﻿using pk3DS.Core;
 using pk3DS.Core.CTR;
 using System;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Windows.Forms;
 using pk3DS.Core.Structures;
 using pk3DS.Core.Randomizers;
+using pk3DS.Core.Modding;
 using System.Text;
 using System.Collections.Generic;
 using System.Drawing;
@@ -124,6 +125,10 @@ public partial class MoveEditor7 : Form
             Array.Resize(ref moveflavor, movelist.Length);
             for (int i = moveflavor.Length - 1; i >= 0 && moveflavor[i] == null; i--) moveflavor[i] = "";
         }
+        // Bindings live beside the ROM, so two projects do not share one set of categories.
+        AbilityMoveFlags.SetStorePath(
+            Path.Combine(Path.GetDirectoryName(Main.RomFSPath) ?? "", "move_flag_abilities.json"));
+
         LoadFlagNames();
         RefreshFlagNames();
         LoadLogs();
@@ -190,84 +195,6 @@ public partial class MoveEditor7 : Form
             File.WriteAllText(path, json);
         }
         catch { }
-    }
-
-    private void B_VanillaLog_Click(object sender, EventArgs e)
-    {
-        using (OpenFileDialog ofd = new OpenFileDialog())
-        {
-            ofd.Title = "Select Vanilla Move GARC (a/0/1/1)";
-            ofd.Filter = "All Files|*.*";
-            if (ofd.ShowDialog() != DialogResult.OK) return;
-
-            try
-            {
-                byte[] vanillaData = System.IO.File.ReadAllBytes(ofd.FileName);
-                byte[][] vanillaMoves = null;
-
-                bool isGarc = vanillaData.Length > 4 && 
-                             ((vanillaData[0] == 'G' && vanillaData[1] == 'A' && vanillaData[2] == 'R' && vanillaData[3] == 'C') ||
-                              (vanillaData[0] == 'C' && vanillaData[1] == 'R' && vanillaData[2] == 'A' && vanillaData[3] == 'G'));
-
-                if (isGarc)
-                {
-                    var garc = new GARCFile(new GARC.MemGARC(vanillaData), null, ofd.FileName);
-                    if (garc.Files.Length > 0)
-                    {
-                        vanillaMoves = Mini.UnpackMini(garc.Files[0], "WD");
-                    }
-                }
-                else
-                {
-                    vanillaMoves = Mini.UnpackMini(vanillaData, "WD");
-                }
-
-                if (vanillaMoves == null || vanillaMoves.Length == 0)
-                {
-                    WinFormsUtil.Error("Could not unpack vanilla move data. Ensure you selected a valid move GARC.");
-                    return;
-                }
-
-                _originalInfiles = vanillaMoves;
-                _changeLogs.Clear();
-                
-                for (int i = 1; i < Math.Min(files.Length, vanillaMoves.Length); i++)
-                {
-                    var oldMove = new Move7(vanillaMoves[i]);
-                    var newMove = new Move7(files[i]);
-
-                    if (oldMove.Power != newMove.Power) AddBatchLog(i, "Power", oldMove.Power, newMove.Power);
-                    if (oldMove.Type != newMove.Type) AddBatchLog(i, "Type", types[oldMove.Type], types[newMove.Type]);
-                    if (oldMove.Accuracy != newMove.Accuracy) AddBatchLog(i, "Accuracy", oldMove.Accuracy, newMove.Accuracy);
-                    if (oldMove.PP != newMove.PP) AddBatchLog(i, "PP", oldMove.PP, newMove.PP);
-                    
-                    string[] cats = { "Status", "Physical", "Special" };
-                    if (oldMove.Category != newMove.Category) AddBatchLog(i, "Category", cats[oldMove.Category], cats[newMove.Category]);
-                    if (oldMove.Priority != newMove.Priority) AddBatchLog(i, "Priority", oldMove.Priority, newMove.Priority);
-                    if (oldMove.CritStage != newMove.CritStage) AddBatchLog(i, "Crit Stage", oldMove.CritStage, newMove.CritStage);
-                    if (oldMove.Flinch != newMove.Flinch) AddBatchLog(i, "Flinch %", oldMove.Flinch, newMove.Flinch);
-                    if (oldMove.Flags != newMove.Flags) AddBatchLog(i, "Flags", oldMove.Flags, newMove.Flags);
-                    if (oldMove.ZPower != newMove.ZPower) AddBatchLog(i, "Z-Power", oldMove.ZPower, newMove.ZPower);
-                }
-
-                SaveLogs();
-                _manualLogNotes = "";
-                UpdateLogView();
-                
-                tcMain.SelectedTab = tpLog;
-                WinFormsUtil.Alert("Vanilla baseline loaded!", "All existing changes between your ROM and the Vanilla baseline have been generated in the log.");
-            }
-            catch (Exception ex)
-            {
-                WinFormsUtil.Error("Failed to process vanilla file: " + ex.Message);
-            }
-        }
-    }
-
-    private void AddBatchLog(int index, string property, object oldVal, object newVal)
-    {
-        if (!_changeLogs.ContainsKey(index)) _changeLogs[index] = new List<string>();
-        _changeLogs[index].Add($"[Vanilla Compare] {property}: {oldVal} -> {newVal}");
     }
 
     private byte[][] _originalMoves;
@@ -356,7 +283,7 @@ public partial class MoveEditor7 : Form
         animFiles = garc.Files;
         if (animFiles == null) return;
 
-        for (int i = 1; i < Math.Min(animFiles.Length, 600); i++) 
+        for (int i = 1; i < animFiles.Length; i++)
         {
             if (animFiles[i] == null || animFiles[i].Length == 0) continue;
             string hash = GetHash(animFiles[i]);
@@ -586,8 +513,10 @@ public partial class MoveEditor7 : Form
             }
             else
             {
-                NUD_AnimID.Value = entry; 
+                NUD_AnimID.Value = entry;
             }
+
+            ShowAnimationName();
 
             if (moveflavor != null && entry < moveflavor.Length)
                 RTB_MoveDesc.Text = moveflavor[entry].Replace("\\n", Environment.NewLine);
@@ -727,41 +656,76 @@ public partial class MoveEditor7 : Form
         System.Media.SystemSounds.Asterisk.Play();
     }
 
+    /// <summary>Move slots are allocated in blocks of this many.</summary>
+    private const int MoveSlotBlock = 4;
+
+    /// <summary>
+    /// Adds move slots, keeping the total a multiple of four.
+    /// <para>
+    /// The table this writes into is read by the engine in groups of four, so a count that is not a
+    /// multiple of four leaves a partial trailing group. Rather than let the caller land on one, the
+    /// requested number is rounded up to the next whole block and the padding slots are created as
+    /// ordinary blank moves.
+    /// </para>
+    /// </summary>
     private void B_AddMove_Click(object sender, EventArgs e)
     {
         SetEntry();
-        
+
+        string input = WinFormsUtil.PromptInput("Add Move Slots",
+            $"How many new move slots? The total is rounded up to a multiple of {MoveSlotBlock}.",
+            MoveSlotBlock.ToString());
+        if (string.IsNullOrWhiteSpace(input)) return;
+        if (!int.TryParse(input.Trim(), out int requested) || requested <= 0)
+        {
+            WinFormsUtil.Alert("Enter a whole number greater than zero.");
+            return;
+        }
+
+        int current = files.Length;
+        int target = current + requested;
+        if (target % MoveSlotBlock != 0)
+            target += MoveSlotBlock - (target % MoveSlotBlock);
+        int toAdd = target - current;
+
+        for (int i = 0; i < toAdd; i++)
+            AppendMoveSlot();
+
+        CB_Move.SelectedIndex = CB_Move.Items.Count - 1;
+
+        EnginePatcher7.SyncEngineLimits(files.Length - 1);
+        _sessionMoveData = files;
+
+        WinFormsUtil.Alert($"Added {toAdd} move slot(s) and patched the engine.",
+            $"Total moves is now {files.Length}, a multiple of {MoveSlotBlock}.");
+    }
+
+    /// <summary>Creates one blank move slot at the end of every table that tracks moves.</summary>
+    private void AppendMoveSlot()
+    {
+        const int moveSize = 0x28;
         int newId = files.Length;
-        int moveSize = 0x28; 
-        
+
         Array.Resize(ref files, newId + 1);
-        files[newId] = (byte[])(files.Length > 1 ? files[1].Clone() : new byte[moveSize]);
-        
-        var move = new Move7(files[newId]);
-        move.Flags = MoveFlag7.None;
+        files[newId] = (byte[])(newId > 1 ? files[1].Clone() : new byte[moveSize]);
+
+        var move = new Move7(files[newId]) { Flags = MoveFlag7.None };
         files[newId] = move.Write();
 
         Array.Resize(ref movelist, newId + 1);
         movelist[newId] = $"New Move {newId}";
-        
+
         if (moveflavor != null)
         {
             Array.Resize(ref moveflavor, newId + 1);
             moveflavor[newId] = "New Move Description.";
         }
-        
+
         Array.Resize(ref _originalMoves, newId + 1);
         _originalMoves[newId] = (byte[])files[newId].Clone();
 
         AnimationMap[newId] = 1;
-
         CB_Move.Items.Add(movelist[newId]);
-        CB_Move.SelectedIndex = CB_Move.Items.Count - 1;
-
-        EnginePatcher7.SyncEngineLimits(files.Length - 1);
-        _sessionMoveData = files; 
-
-        WinFormsUtil.Alert("Move slot added and engine patched!");
     }
 
     private void B_ChampionsPP_Click(object sender, EventArgs e)
@@ -863,27 +827,76 @@ public partial class MoveEditor7 : Form
         EnginePatcher7.SyncEngineLimits(files.Length - 1);
         PerformAnimationSync();
 
-        WinFormsUtil.Alert("Move GARC (a/0/1/1) repacked and saved!");
+        string bindingNote = WriteFlagBindings();
+
+        WinFormsUtil.Alert("Move GARC (a/0/1/1) repacked and saved!", bindingNote);
+    }
+
+    /// <summary>
+    /// Writes the ability/item flag bindings into Battle.cro as part of a normal save.
+    /// Returns a line describing what happened, for the save confirmation.
+    /// </summary>
+    private string WriteFlagBindings()
+    {
+        int bound = AbilityMoveFlags.All.Count(b => b.IsBound);
+        if (bound == 0) return "No move-flag categories are bound, so none were written.";
+
+        string battleCro = Path.Combine(Main.RomFSPath ?? "", "Battle.cro");
+        if (!File.Exists(battleCro))
+            return $"{bound} flag binding(s) could not be written: Battle.cro was not found.";
+
+        int needed = AbilityFlagPatcher.RequiredBytes();
+        var regions = AbilityFlagPatcher.FindFreeRegions(battleCro, Math.Max(needed, 0x40));
+        if (regions.Count == 0)
+            return $"{bound} flag binding(s) not written: no free region of {needed} bytes in Battle.cro.";
+
+        // Reuse this tool's own table when one exists, so repeated saves stay in one place instead
+        // of scattering a new copy each time. Otherwise take the best-ranked candidate.
+        var target = regions.FirstOrDefault(r => r.IsExistingTable) ?? regions[0];
+
+        var result = AbilityFlagPatcher.ApplyTable(battleCro, target.Offset, Math.Min(target.Length, 0x400));
+        return result.Applied
+            ? $"{bound} flag binding(s) written to Battle.cro at 0x{target.Offset:X}."
+            : $"{bound} flag binding(s) not written: {result.Message}";
+    }
+
+    /// <summary>
+    /// Says what the chosen animation index actually plays, next to the number.
+    /// </summary>
+    private void NUD_AnimID_ValueChanged(object sender, EventArgs e) => ShowAnimationName();
+
+    private void ShowAnimationName()
+    {
+        int idx = (int)NUD_AnimID.Value;
+
+        if (idx > MoveAnimationNames.MaxIndex)
+        {
+            L_AnimName.ForeColor = Color.Firebrick;
+            L_AnimName.Text = $"{idx} - past the end of this ROM's animation list";
+            return;
+        }
+
+        string label = MoveAnimationNames.Describe(idx, movelist);
+
+        // Say when the move being edited cannot own an animation, rather than letting the save
+        // refuse it later with no warning here.
+        if (MoveAnimationNames.IsEngineReserved(entry))
+        {
+            L_AnimName.ForeColor = Color.DarkOrange;
+            L_AnimName.Text = label + Environment.NewLine + "(this move can point here, but cannot own an animation)";
+            return;
+        }
+
+        L_AnimName.ForeColor = MoveAnimationNames.IsEngineReserved(idx) ? Color.SteelBlue : Color.DimGray;
+        L_AnimName.Text = label;
     }
 
     private void PerformAnimationSync()
     {
-        var animPropGARC = Main.Config.GetGARCData("move_anim_prop"); 
-        var animVisGARC = Main.Config.GetGARCData("move_anim");      
-        
-        if (animPropGARC == null || animVisGARC == null) return;
+        var animVisGARC = Main.Config.GetGARCData("move_anim");
+        if (animVisGARC == null) return;
 
-        bool propModified = false;
         bool visModified = false;
-
-        if (animPropGARC.Files.Length < files.Length)
-        {
-            var pFiles = animPropGARC.Files.ToList();
-            byte[] pTemplate = pFiles.Count > 1 ? pFiles[1] : new byte[0];
-            while (pFiles.Count < files.Length) pFiles.Add((byte[])pTemplate.Clone());
-            animPropGARC.Files = pFiles.ToArray();
-            propModified = true;
-        }
 
         if (animVisGARC.Files.Length < files.Length)
         {
@@ -894,22 +907,17 @@ public partial class MoveEditor7 : Form
             visModified = true;
         }
 
-        int maxProp = animPropGARC.Files.Length;
         int maxVis = animVisGARC.Files.Length;
+        var refused = new List<int>();
 
         for (int i = 1; i < files.Length; i++)
         {
             int animID = AnimationMap.ContainsKey(i) ? AnimationMap[i] : i;
-            
-            if (animID < maxProp && i < maxProp)
+
+            if (MoveAnimationNames.IsEngineReserved(i))
             {
-                var fileI = animPropGARC.Files[i] ?? new byte[0];
-                var fileAnimID = animPropGARC.Files[animID] ?? new byte[0];
-                if (!fileI.SequenceEqual(fileAnimID))
-                {
-                    animPropGARC.Files[i] = (byte[])fileAnimID.Clone();
-                    propModified = true;
-                }
+                if (AnimationMap.ContainsKey(i)) refused.Add(i);
+                continue;
             }
 
             if (animID < maxVis && i < maxVis)
@@ -924,9 +932,20 @@ public partial class MoveEditor7 : Form
             }
         }
 
-        if (propModified) animPropGARC.Save();
+        if (refused.Count > 0)
+        {
+            WinFormsUtil.Alert(
+                $"{refused.Count} move(s) could not be given their own animation.",
+                $"Move ids {MoveAnimationNames.FirstReservedIndex}-{MoveAnimationNames.MaxIndex} share their slot with "
+                + "the battle engine's own animations (Poke Ball, weather, Z-Move dances, Mega Evolution), so writing "
+                + "there would replace those everywhere.\n\n"
+                + "Ids affected: " + string.Join(", ", refused.Take(12))
+                + (refused.Count > 12 ? $", … (+{refused.Count - 12})" : "")
+                + "\n\nThose moves can still POINT AT an existing animation; they just cannot own a new one.");
+        }
+
         if (visModified) animVisGARC.Save();
-        if (propModified || visModified) SaveAnimationMap();
+        if (visModified) SaveAnimationMap();
     }
 
     private void B_SyncAnim_Click(object sender, EventArgs e)
@@ -1034,26 +1053,89 @@ public partial class MoveEditor7 : Form
         var flagnames = Enum.GetNames(typeof(MoveFlag7)).Skip(1).ToArray();
         for (int i = 0; i < flagnames.Length; i++)
         {
-            if (customFlagNames.TryGetValue(i, out string custom))
+            // A bound flag shows the ability driving it, so the list says what the bit means
+            // rather than just what someone called it.
+            if (AbilityMoveFlags.IsFreeBit(i) && AbilityMoveFlags.Get(i) != null)
+                flagnames[i] = AbilityMoveFlags.Describe(i);
+            else if (customFlagNames.TryGetValue(i, out string custom))
                 flagnames[i] = custom;
         }
         CLB_Flags.Items.Clear();
         CLB_Flags.Items.AddRange(flagnames);
     }
 
+    /// <summary>
+    /// Binds an unused move flag to an ability, so the flag becomes a move category that ability
+    /// acts on - the same relationship Iron Fist already has with the Punch bit.
+    /// <para>
+    /// Renaming alone only ever relabelled the list. What makes a flag mean something is recording
+    /// which ability reads it and by how much it multiplies power; that pairing is what this stores.
+    /// </para>
+    /// </summary>
     private void B_RenameFlags_Click(object sender, EventArgs e)
     {
         int sel = CLB_Flags.SelectedIndex;
-        if (sel < 0 || sel < 17) return;
-        
-        string current = CLB_Flags.Items[sel].ToString();
-        string input = WinFormsUtil.PromptInput("Rename Flag", "Enter name:", current);
-        if (!string.IsNullOrWhiteSpace(input))
+        if (sel < 0)
         {
-            customFlagNames[sel] = input;
-            RefreshFlagNames();
-            SaveFlagNames();
+            WinFormsUtil.Alert("Select a flag first.");
+            return;
         }
+        if (!AbilityMoveFlags.IsFreeBit(sel))
+        {
+            WinFormsUtil.Alert("That flag already has a meaning in the games.",
+                $"Only F{AbilityMoveFlags.FirstFreeBit + 1}-F{AbilityMoveFlags.LastBit + 1} are unused and safe to reassign.");
+            return;
+        }
+
+        using var dialog = new AbilityFlagBindingDialog(sel,
+            Main.Config.GetText(TextName.AbilityNames),
+            Main.Config.GetText(TextName.ItemNames));
+        WinFormsUtil.ApplyTheme(dialog);
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        if (dialog.ClearBinding)
+        {
+            AbilityMoveFlags.Clear(sel);
+            customFlagNames.Remove(sel);
+        }
+        else
+        {
+            AbilityMoveFlags.Set(sel, dialog.Trigger, dialog.TriggerId, dialog.TriggerName, dialog.Multiplier, dialog.Label);
+        }
+
+        RefreshFlagNames();
+        SaveFlagNames();
+    }
+
+    private void B_FlagBindings_Click(object sender, EventArgs e) => ShowFlagBindings();
+
+
+    /// <summary>Lists every flag currently acting as an ability category.</summary>
+    private void ShowFlagBindings()
+    {
+        var bound = AbilityMoveFlags.All.Where(b => b.IsBound).OrderBy(b => b.Bit).ToList();
+        if (bound.Count == 0)
+        {
+            WinFormsUtil.Alert("No move flags are bound to an ability yet.",
+                "Select an unused flag (F18-F32) and use Rename/Bind Flag to create one.");
+            return;
+        }
+
+        var sb = new StringBuilder();
+        foreach (var b in bound)
+        {
+            int count = 0;
+            for (int i = 1; i < files.Length; i++)
+            {
+                if (((uint)new Move7(files[i]).Flags & (1u << b.Bit)) != 0) count++;
+            }
+            sb.AppendLine($"F{b.Bit + 1}  {b.Label}");
+            sb.AppendLine($"      {b.Trigger.ToString().ToLowerInvariant(),-8}{b.TriggerName} (#{b.TriggerId})");
+            sb.AppendLine($"      power:   x{b.Multiplier:0.##}");
+            sb.AppendLine($"      moves:   {count} carry this flag");
+            sb.AppendLine();
+        }
+        WinFormsUtil.Alert("Ability move categories", sb.ToString());
     }
 
     private void B_ExportTxt_Click(object sender, EventArgs e)

@@ -30,6 +30,7 @@ partial class MoveEditor7
     {
         this.L_Type = new System.Windows.Forms.Label();
         this.B_RenameFlags = new System.Windows.Forms.Button();
+        this.B_FlagBindings = new System.Windows.Forms.Button();
         this.CB_Move = new System.Windows.Forms.ComboBox();
         this.L_Move = new System.Windows.Forms.Label();
         this.CB_Type = new System.Windows.Forms.ComboBox();
@@ -113,13 +114,13 @@ partial class MoveEditor7
         this.B_CopyAnim = new System.Windows.Forms.Button();
         this.B_ChampionsPP = new System.Windows.Forms.Button();
         this.L_AnimID = new System.Windows.Forms.Label();
+        this.L_AnimName = new System.Windows.Forms.Label();
         this.NUD_AnimID = new System.Windows.Forms.NumericUpDown();
         this.RTB_MoveDesc = new System.Windows.Forms.RichTextBox();
         this.tcMain = new System.Windows.Forms.TabControl();
         this.tpEditor = new System.Windows.Forms.TabPage();
         this.tpLog = new System.Windows.Forms.TabPage();
         this.rtbLog = new System.Windows.Forms.RichTextBox();
-        this.B_VanillaLog = new System.Windows.Forms.Button();
         this.B_CopyData = new System.Windows.Forms.Button();
         this.B_PasteData = new System.Windows.Forms.Button();
         this.L_SaveReminder = new System.Windows.Forms.Label();
@@ -445,7 +446,7 @@ partial class MoveEditor7
         // L_PP
         // 
         this.L_PP.AutoSize = true;
-        this.L_PP.Location = new System.Drawing.Point(12, 178);
+        this.L_PP.Location = new System.Drawing.Point(13, 178);
         this.L_PP.Name = "L_PP";
         this.L_PP.Size = new System.Drawing.Size(51, 13);
         this.L_PP.TabIndex = 8;
@@ -454,10 +455,10 @@ partial class MoveEditor7
         // 
         // NUD_PP
         // 
-        this.NUD_PP.Location = new System.Drawing.Point(62, 176);
+        this.NUD_PP.Location = new System.Drawing.Point(68, 176);
         this.NUD_PP.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
         this.NUD_PP.Name = "NUD_PP";
-        this.NUD_PP.Size = new System.Drawing.Size(35, 20);
+        this.NUD_PP.Size = new System.Drawing.Size(40, 20);
         this.NUD_PP.TabIndex = 21;
         // 
         // L_Recoil
@@ -787,13 +788,24 @@ partial class MoveEditor7
         this.CLB_Flags.Size = new System.Drawing.Size(165, 454);
         this.CLB_Flags.TabIndex = 71;
         // 
+        // 
+        // B_FlagBindings
+        // 
+        this.B_FlagBindings.Location = new System.Drawing.Point(500, 472);
+        this.B_FlagBindings.Name = "B_FlagBindings";
+        this.B_FlagBindings.Size = new System.Drawing.Size(145, 28);
+        this.B_FlagBindings.TabIndex = 110;
+        this.B_FlagBindings.Text = "View Bindings";
+        this.B_FlagBindings.UseVisualStyleBackColor = true;
+        this.B_FlagBindings.Click += new System.EventHandler(this.B_FlagBindings_Click);
+        // 
         // B_RenameFlags
         // 
         this.B_RenameFlags.Location = new System.Drawing.Point(325, 472);
         this.B_RenameFlags.Name = "B_RenameFlags";
         this.B_RenameFlags.Size = new System.Drawing.Size(165, 28);
         this.B_RenameFlags.TabIndex = 109;
-        this.B_RenameFlags.Text = "Rename Flags (F18-F32)";
+        this.B_RenameFlags.Text = "Bind Flag to Ability (F18-F32)";
         this.B_RenameFlags.UseVisualStyleBackColor = true;
         this.B_RenameFlags.Click += new System.EventHandler(this.B_RenameFlags_Click);
         // 
@@ -897,10 +909,10 @@ partial class MoveEditor7
         this.GB_Expansion.Controls.Add(this.NUD_CopyAnim);
         this.GB_Expansion.Controls.Add(this.B_CopyAnim);
         this.GB_Expansion.Controls.Add(this.L_AnimID);
+        this.GB_Expansion.Controls.Add(this.L_AnimName);
         this.GB_Expansion.Controls.Add(this.NUD_AnimID);
         this.GB_Expansion.Controls.Add(this.B_ExportTxt);
         this.GB_Expansion.Controls.Add(this.B_ImportTxt);
-        this.GB_Expansion.Controls.Add(this.B_VanillaLog);
         this.GB_Expansion.Controls.Add(this.B_SaveExport);
         this.GB_Expansion.Controls.Add(this.L_SaveReminder);
         this.GB_Expansion.Location = new System.Drawing.Point(655, 10);
@@ -952,7 +964,7 @@ partial class MoveEditor7
         // NUD_CopyAnim
         // 
         this.NUD_CopyAnim.Location = new System.Drawing.Point(8, 120);
-        this.NUD_CopyAnim.Maximum = new decimal(new int[] { 2000, 0, 0, 0 });
+        this.NUD_CopyAnim.Maximum = new decimal(new int[] { 1236, 0, 0, 0 });
         this.NUD_CopyAnim.Name = "NUD_CopyAnim";
         this.NUD_CopyAnim.Size = new System.Drawing.Size(124, 20);
         this.NUD_CopyAnim.TabIndex = 111;
@@ -979,11 +991,18 @@ partial class MoveEditor7
         // NUD_AnimID
         // 
         this.NUD_AnimID.Location = new System.Drawing.Point(8, 187);
-        this.NUD_AnimID.Maximum = new decimal(new int[] { 2000, 0, 0, 0 });
+        this.NUD_AnimID.Maximum = new decimal(new int[] { 1236, 0, 0, 0 });
         this.NUD_AnimID.Name = "NUD_AnimID";
         this.NUD_AnimID.Size = new System.Drawing.Size(124, 20);
         this.NUD_AnimID.TabIndex = 114;
-        // 
+        this.NUD_AnimID.ValueChanged += new System.EventHandler(this.NUD_AnimID_ValueChanged);
+        this.L_AnimName.AutoSize = false;
+        this.L_AnimName.Location = new System.Drawing.Point(138, 189);
+        this.L_AnimName.Name = "L_AnimName";
+        this.L_AnimName.Size = new System.Drawing.Size(300, 34);
+        this.L_AnimName.TabIndex = 115;
+        this.L_AnimName.ForeColor = System.Drawing.Color.DimGray;
+        //
         // B_ExportTxt
         // 
         this.B_ExportTxt.Location = new System.Drawing.Point(8, 211);
@@ -1003,17 +1022,7 @@ partial class MoveEditor7
         this.B_ImportTxt.Text = "Import Moves .txt";
         this.B_ImportTxt.UseVisualStyleBackColor = true;
         this.B_ImportTxt.Click += new System.EventHandler(this.B_ImportTxt_Click);
-        // 
-        // B_VanillaLog
-        // 
-        this.B_VanillaLog.Location = new System.Drawing.Point(8, 267);
-        this.B_VanillaLog.Name = "B_VanillaLog";
-        this.B_VanillaLog.Size = new System.Drawing.Size(124, 25);
-        this.B_VanillaLog.TabIndex = 117;
-        this.B_VanillaLog.Text = "Load Baseline";
-        this.B_VanillaLog.UseVisualStyleBackColor = true;
-        this.B_VanillaLog.Click += new System.EventHandler(this.B_VanillaLog_Click);
-        // 
+        //
         // B_SaveExport
         // 
         this.B_SaveExport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(100)))), ((int)(((byte)(60)))));
@@ -1061,6 +1070,7 @@ partial class MoveEditor7
         this.tpEditor.Controls.Add(this.CB_ZMove);
         this.tpEditor.Controls.Add(this.NUD_RefreshAfflictPercent);
         this.tpEditor.Controls.Add(this.NUD_ZPower);
+        this.tpEditor.Controls.Add(this.B_FlagBindings);
         this.tpEditor.Controls.Add(this.B_RenameFlags);
         this.tpEditor.Controls.Add(this.CLB_Flags);
         this.tpEditor.Controls.Add(this.B_Table);
@@ -1282,14 +1292,16 @@ partial class MoveEditor7
     private System.Windows.Forms.Label L_CopyAnim;
     private System.Windows.Forms.NumericUpDown NUD_AnimID;
     private System.Windows.Forms.Label L_AnimID;
+    private System.Windows.Forms.Label L_AnimName;
     private System.Windows.Forms.GroupBox GB_Expansion;
     private System.Windows.Forms.TabControl tcMain;
     private System.Windows.Forms.TabPage tpEditor;
     private System.Windows.Forms.TabPage tpLog;
     private System.Windows.Forms.RichTextBox rtbLog;
     private System.Windows.Forms.Button B_ChampionsPP;
-    private System.Windows.Forms.Button B_VanillaLog;
     private System.Windows.Forms.Button B_RenameFlags;
+    private System.Windows.Forms.Button B_FlagBindings;
+
     private System.Windows.Forms.Button B_CopyData;
     private System.Windows.Forms.Button B_PasteData;
     private System.Windows.Forms.Label L_SaveReminder;

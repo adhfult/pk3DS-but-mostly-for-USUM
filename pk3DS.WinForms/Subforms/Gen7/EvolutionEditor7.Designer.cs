@@ -100,6 +100,7 @@ partial class EvolutionEditor7
         this.CB_M8 = new System.Windows.Forms.ComboBox();
         this.B_Trade = new System.Windows.Forms.Button();
         this.B_EveryLevel = new System.Windows.Forms.Button();
+            this.B_AddMissingEvos = new System.Windows.Forms.Button();
         this.CHK_E = new System.Windows.Forms.CheckBox();
         this.CHK_L = new System.Windows.Forms.CheckBox();
         ((System.ComponentModel.ISupportInitialize)(this.PB_1)).BeginInit();
@@ -212,11 +213,21 @@ partial class EvolutionEditor7
         this.PB_1.TabIndex = 54;
         this.PB_1.TabStop = false;
         // 
+        // B_AddMissingEvos
+        // 
+        this.B_AddMissingEvos.Location = new System.Drawing.Point(400, 385);
+        this.B_AddMissingEvos.Name = "B_AddMissingEvos";
+        this.B_AddMissingEvos.Size = new System.Drawing.Size(210, 25);
+        this.B_AddMissingEvos.TabIndex = 119;
+        this.B_AddMissingEvos.Text = "Add Missing Expansion Evos";
+        this.B_AddMissingEvos.UseVisualStyleBackColor = true;
+        this.B_AddMissingEvos.Click += new System.EventHandler(this.B_AddMissingEvos_Click);
+        // 
         // B_RandAll
         // 
-        this.B_RandAll.Location = new System.Drawing.Point(500, 310);
+        this.B_RandAll.Location = new System.Drawing.Point(400, 295);
         this.B_RandAll.Name = "B_RandAll";
-        this.B_RandAll.Size = new System.Drawing.Size(120, 23);
+        this.B_RandAll.Size = new System.Drawing.Size(210, 25);
         this.B_RandAll.TabIndex = 62;
         this.B_RandAll.Text = "Randomize All";
         this.B_RandAll.UseVisualStyleBackColor = true;
@@ -915,9 +926,9 @@ partial class EvolutionEditor7
         // 
         // B_Trade
         // 
-        this.B_Trade.Location = new System.Drawing.Point(457, 340);
+        this.B_Trade.Location = new System.Drawing.Point(400, 325);
         this.B_Trade.Name = "B_Trade";
-        this.B_Trade.Size = new System.Drawing.Size(163, 23);
+        this.B_Trade.Size = new System.Drawing.Size(210, 25);
         this.B_Trade.TabIndex = 115;
         this.B_Trade.Text = "Remove Trade Evolutions";
         this.B_Trade.UseVisualStyleBackColor = true;
@@ -925,9 +936,9 @@ partial class EvolutionEditor7
         // 
         // B_EveryLevel
         // 
-        this.B_EveryLevel.Location = new System.Drawing.Point(435, 370);
+        this.B_EveryLevel.Location = new System.Drawing.Point(400, 355);
         this.B_EveryLevel.Name = "B_EveryLevel";
-        this.B_EveryLevel.Size = new System.Drawing.Size(185, 23);
+        this.B_EveryLevel.Size = new System.Drawing.Size(210, 25);
         this.B_EveryLevel.TabIndex = 118;
         this.B_EveryLevel.Text = "Every Level Mode";
         this.B_EveryLevel.UseVisualStyleBackColor = true;
@@ -969,6 +980,7 @@ partial class EvolutionEditor7
         this.TP_General.Controls.Add(this.B_RandAll);
         this.TP_General.Controls.Add(this.B_Trade);
         this.TP_General.Controls.Add(this.B_EveryLevel);
+        this.TP_General.Controls.Add(this.B_AddMissingEvos);
         this.TP_General.Controls.Add(this.NUD_L8);
         this.TP_General.Controls.Add(this.NUD_F8);
         this.TP_General.Controls.Add(this.PB_8);
@@ -1046,7 +1058,7 @@ partial class EvolutionEditor7
         // 
         // B_GenerateChangelog
         // 
-        this.B_GenerateChangelog.Location = new System.Drawing.Point(400, 5);
+        this.B_GenerateChangelog.Location = new System.Drawing.Point(293, 11);
         this.B_GenerateChangelog.Name = "B_GenerateChangelog";
         this.B_GenerateChangelog.Size = new System.Drawing.Size(120, 23);
         this.B_GenerateChangelog.TabIndex = 1;
@@ -1069,6 +1081,8 @@ partial class EvolutionEditor7
         this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         this.ClientSize = new System.Drawing.Size(654, 561);
+        this.Controls.Add(this.B_Dump);
+        this.Controls.Add(this.B_GenerateChangelog);
         this.Controls.Add(this.TC_Editor);
         this.Controls.Add(this.L_Species);
         this.Controls.Add(this.CB_Species);
@@ -1125,6 +1139,7 @@ partial class EvolutionEditor7
     private System.Windows.Forms.ComboBox CB_P1;
     private System.Windows.Forms.PictureBox PB_1;
     private System.Windows.Forms.Button B_RandAll;
+    private System.Windows.Forms.Button B_AddMissingEvos;
     private System.Windows.Forms.GroupBox GB_Randomizer;
     private System.Windows.Forms.CheckBox CHK_Exp;
     private System.Windows.Forms.CheckBox CHK_Type;

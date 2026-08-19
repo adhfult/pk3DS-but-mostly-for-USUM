@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Linq;
 using pk3DS.Core;
 using pk3DS.Core.Modding;
+using pk3DS.Core.Modding.Research;
 using pk3DS.Core.CTR;
 
 namespace pk3DS.WinForms;
@@ -67,21 +68,121 @@ public partial class TMEditor7 : Form
         // TM expansion initialization complete
     }
 
-    private int expandedTMStartID = 960;
+    /// <summary>
+    /// True when the loaded ROM is an Expansion Pack build, which is what decides whether the TM
+    /// table is treated as 128 pure TMs or as the stock 100 TMs plus the vestigial HM block.
+    /// </summary>
+    private bool expansionActive;
+
+    // Resolved from the loaded game's item table rather than fixed, so the block lands after
+    // whatever that ROM actually has. 1024 is only correct for the checked UM Expansion build.
+    private int expandedTMStartID = ExpandedTMItems.ResolveStartId(Main.Config);
+
+    private void B_TMPreflight_Click(object sender, EventArgs e) => RunExpansionPreflight(apply: false);
+
+    private void B_TMApply_Click(object sender, EventArgs e) => RunExpansionPreflight(apply: true);
+
+    /// <summary>
+    /// Checks and applies the three patches the expanded TMs depend on.
+    /// </summary>
+    private void RunExpansionPreflight(bool apply)
+    {
+        var log = new System.Text.StringBuilder();
+
+        // Re-resolve rather than trusting the field: the language may have changed, or a previous
+        // apply may have grown the item table since this form opened.
+        expandedTMStartID = ExpandedTMItems.ResolveStartId(Main.Config);
+        int highest = ExpandedTMItems.HighestId(expandedTMStartID);
+
+        log.AppendLine(ExpandedTMItems.DescribeAllocation(Main.Config));
+
+        // Refuse rather than overwrite: this is the failure that renamed real Expansion Pack items.
+        if (!ExpandedTMItems.IsSafeStartId(Main.Config, expandedTMStartID))
+        {
+            log.AppendLine();
+            log.AppendLine($"IDs {expandedTMStartID}-{highest} are not all free - real items live there.");
+            log.AppendLine("Refusing to allocate. Grow the item name table first so the block has room past the end.");
+            WinFormsUtil.Error("TM expansion", log.ToString());
+            return;
+        }
+        log.AppendLine();
+
+        string codePath = pk3DS.Core.CTR.ExeFS.ResolveCodeBin(Main.ExeFSPath);
+        if (!File.Exists(codePath))
+        {
+            log.AppendLine($"code.bin was not found at {codePath}.");
+            log.AppendLine("The ceiling and icon patches cannot run without it.");
+            WinFormsUtil.Alert("TM expansion preflight", log.ToString());
+            return;
+        }
+
+        byte[] code = File.ReadAllBytes(codePath);
+
+        // 1. Item ceiling.
+        var sites = ItemCeilingPatcher.Analyze(code);
+        log.AppendLine($"Item ceiling: {sites.Count} candidate site(s) found.");
+        var ceiling = ItemCeilingPatcher.Raise(code, highest);
+        log.AppendLine(ceiling.Describe());
+        log.AppendLine();
+
+        // 2. TM icon routing.
+        var icon = TMIconPatcher.Retarget(code);
+        log.AppendLine($"TM icon: {icon.Message}");
+        if (icon.Applied)
+            log.AppendLine($"  icon {icon.PreviousIcon} -> {icon.NewIcon}");
+        log.AppendLine();
+
+        // 3. Name and description rows, in every language.
+        var text = ExpandedTMText.EnsureCapacity(Main.Config, highest + 1);
+        log.AppendLine("Item text capacity:");
+        log.AppendLine(text.Describe());
+        log.AppendLine();
+
+        if (!apply)
+        {
+            log.AppendLine("Preflight only - nothing was written.");
+            WinFormsUtil.Alert("TM expansion preflight", log.ToString());
+            return;
+        }
+
+        if (!ceiling.Success && !icon.Applied)
+        {
+            log.AppendLine("Neither code patch had anything to apply; code.bin left untouched.");
+            WinFormsUtil.Alert("TM expansion", log.ToString());
+            return;
+        }
+
+        bool written = BinaryWriteGuard.TryWrite(codePath, code,
+            "Apply the expanded-TM code patches",
+            $"Raises the item ceiling to {highest} and points TM icons at the status-TM icon.");
+
+        log.AppendLine(written
+            ? "code.bin written."
+            : "The write was declined; code.bin is unchanged and the expansion will not work.");
+
+        WinFormsUtil.Alert("TM expansion", log.ToString());
+    }
+
     private void DetectExpansionStartID()
     {
-        expandedTMStartID = 960; // Default
-        try {
-            if (File.Exists(codebin)) {
-                int count = (int)NUD_TMCount.Value;
-                ushort[] defaultItems = GetDefaultTMItems();
-                ushort[] itemIDs = ResearchEngine.GetTMItemArray(data, count, defaultItems);
-                if (itemIDs.Length > 107 && itemIDs[107] > 0)
-                {
-                    expandedTMStartID = itemIDs[107];
-                }
+        expansionActive = Main.Config?.Info != null && Main.Config.Info.MaxSpeciesID >= 1025;
+
+        // Where the block would go on this ROM, read from its own item table.
+        expandedTMStartID = ExpandedTMItems.ResolveStartId(Main.Config);
+
+        try
+        {
+            if (!File.Exists(codebin)) return;
+            ushort[] itemIDs = ResearchEngine.GetTMItemArray(data, (int)NUD_TMCount.Value, GetDefaultTMItems());
+            int firstNew = ExpandedTMItems.VanillaTMCount;
+            if (itemIDs.Length > firstNew
+                && itemIDs[firstNew] > 0
+                && ExpandedTMItems.IsSafeStartId(Main.Config, itemIDs[firstNew]))
+            {
+                expandedTMStartID = itemIDs[firstNew];
             }
-        } catch { }
+        }
+        catch { }
     }
 
     private static readonly byte[] Signature = [0x03, 0x40, 0x03, 0x41, 0x03, 0x42, 0x03, 0x43, 0x03]; // tail end of item::ITEM_CheckBeads
@@ -194,10 +295,16 @@ public partial class TMEditor7 : Form
             dgvTM.Rows[i].Cells[0].Value = (i + 1).ToString();
 
             ushort itemID = i < itemIDs.Length ? itemIDs[i] : (ushort)0;
-            if (i >= 107 && (itemID == 0 || IsProtectedItemID((int)itemID) || itemID >= 960)) itemID = GetUnusedItemID(i - 107);
+
+            if (expansionActive && ExpandedTMItems.IsNewSlot(i))
+                itemID = (ushort)ExpandedTMItems.GetItemId(i, expandedTMStartID);
+            else if (i >= 107 && (itemID == 0 || IsProtectedItemID(itemID) || itemID >= 960))
+                itemID = GetUnusedItemID(i - 107);
+
             dgvTM.Rows[i].Cells[1].Value = itemID.ToString();
-            // Lock vanilla item IDs (TMs 1-100 and HMs 101-107) to prevent breaking standard compatibility
-            if (i < 107) dgvTM.Rows[i].Cells[1].ReadOnly = true;
+            // Vanilla item IDs are fixed; so is the new block, which must stay contiguous.
+            if (i < 107 || (expansionActive && ExpandedTMItems.IsNewSlot(i)))
+                dgvTM.Rows[i].Cells[1].ReadOnly = true;
 
             ushort moveId = tmlist[i];
             if (moveId >= movelist.Length) moveId = 0;
@@ -257,16 +364,15 @@ public partial class TMEditor7 : Form
         return (ushort)(960 + expandedIndex); // fallback
     }
 
-    private ushort[] GetDefaultTMItems()
-    {
-        ushort[] items = new ushort[107];
-        for (int i = 0; i < 92; i++) items[i] = (ushort)(328 + i);
-        for (int i = 92; i < 95; i++) items[i] = (ushort)(618 + (i - 92));
-        for (int i = 95; i < 100; i++) items[i] = (ushort)(690 + (i - 95));
-        for (int i = 100; i < 106; i++) items[i] = (ushort)(420 + (i - 100));
-        items[106] = 737;
-        return items;
-    }
+    private ushort[] GetDefaultTMItems() => ExpandedTMItems.GetVanillaItemTable();
+
+    /// <summary>
+    /// Whether this editor may rename the item behind a slot. TM01-TM100 always, and the 28
+    /// expansion slots only on an Expansion Pack build. The leftover HM entries at 100-106 are
+    /// never touched on an unexpanded ROM.
+    /// </summary>
+    private bool IsEditorOwnedSlot(int index) =>
+        index < ExpandedTMItems.VanillaTMCount || (expansionActive && ExpandedTMItems.IsNewSlot(index));
 
     /// <summary>
     /// Scans code.bin for the CMP instruction that originally checked #100 (0x64) for TM count.
@@ -275,6 +381,18 @@ public partial class TMEditor7 : Form
     /// </summary>
     private int DetectTMCount(byte[] codeData)
     {
+        int detected = DetectTMCount(codeData, offset, out bool split);
+        isSplitTablePatchApplied = split;
+        return detected;
+    }
+
+    /// <summary>
+    /// How many TMs this build actually has, read from the bound the game itself checks.
+    /// </summary>
+    internal static int DetectTMCount(byte[] codeData, int tableOffset, out bool splitTablePatch)
+    {
+        splitTablePatch = false;
+        int offset = tableOffset;
         // Try to find if already patched with our custom generic patch
         byte[] customSig = [0x10, 0x40, 0x2D, 0xE9, 0x00, 0x00, 0x50, 0xE3, 0x0C, 0x40, 0x9F, 0x35, 0x00, 0x00, 0xA0, 0x23];
         byte[] mask = [0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
@@ -305,7 +423,7 @@ public partial class TMEditor7 : Form
             // The logic splits up TMs, meaning the patch is applied.
             if (word == 0xE350005B)
             {
-                isSplitTablePatchApplied = true;
+                splitTablePatch = true;
                 return 128; // TM HM Expansion patch implies 128 TMs
             }
         }
@@ -349,6 +467,9 @@ public partial class TMEditor7 : Form
         ushort[] tmlist = [.. tms];
         ushort[] itemlist = [.. items];
 
+        if (expansionActive)
+            ExpandedTMItems.AssignTo(itemlist, expandedTMStartID);
+
         // Saving TM table without annoying popup
 
 
@@ -375,8 +496,30 @@ public partial class TMEditor7 : Form
         {
             ResearchEngine.ApplyExpandedTMCodePatch(data, tmlist, itemlist);
         }
-        int maxItemID = 0; for (int i = 0; i < itemlist.Length; i++) { if (itemlist[i] > maxItemID) maxItemID = itemlist[i]; } 
-        ResearchEngine.ApplyExpandedTMItemAttributesPatch(Main.Config.RomFS, maxItemID, itemlist); 
+        int maxItemID = 0; for (int i = 0; i < itemlist.Length; i++) { if (itemlist[i] > maxItemID) maxItemID = itemlist[i]; }
+
+        if (expansionActive && maxItemID >= (int)ItemCeilingPatcher.RetailCeiling)
+        {
+            var ceiling = ItemCeilingPatcher.Raise(data, maxItemID);
+
+            if (!ceiling.Success)
+            {
+                WinFormsUtil.Alert("Could not widen the item ID limit in code.bin.",
+                                   "TM101-128 may not work in game.\n\n" + ceiling.Describe());
+            }
+            else if (ceiling.PatchedCount == 0)
+            {
+                // Silent by design: nothing changed because nothing needed to. The detail is still
+                // available in the log for anyone checking.
+                System.Diagnostics.Debug.WriteLine(ceiling.Describe());
+            }
+
+            // Without this the new items resolve to icon 768, which is the blank slot item 0 uses,
+            // so they would sit in the bag with no icon.
+            TMIconPatcher.Retarget(data);
+        }
+
+        ResearchEngine.ApplyExpandedTMItemAttributesPatch(Main.Config.RomFS, maxItemID, itemlist);
         ResearchEngine.ApplyExpandedTMBattleBagPatch(Main.Config.RomFS, maxItemID, itemlist);
 
         // Update descriptions
@@ -387,7 +530,13 @@ public partial class TMEditor7 : Form
             for (int i = 0; i < itemNames.Length; i++)
                 if (itemNames[i] == null) itemNames[i] = "???";
         }
-        for (int i = 0; i < tmlist.Length; i++) { int target = itemlist[i]; if (target > 0 && target < itemNames.Length) { itemNames[target] = $"TM{(i+1):D3}"; } }
+        for (int i = 0; i < tmlist.Length; i++)
+        {
+            if (!IsEditorOwnedSlot(i)) continue;
+            int target = itemlist[i];
+            if (target > 0 && target < itemNames.Length)
+                itemNames[target] = ExpandedTMItems.GetTMName(i);
+        }
         Main.Config.SetText(TextName.ItemNames, itemNames);
         
         string[] itemDescriptions = Main.Config.GetText(TextName.ItemFlavor);
@@ -399,11 +548,14 @@ public partial class TMEditor7 : Form
         }
         string[] moveDescriptions = Main.Config.GetText(TextName.MoveFlavor);
         
-        // TM01-TM92
+        // Each TM's description is the flavour text of the move it teaches. Same ownership rule as
+        // the names above, for the same reason.
         for (int i = 0; i < tmlist.Length; i++)
         {
+            if (!IsEditorOwnedSlot(i)) continue;
             int targetID = itemlist[i];
-            if (targetID > 0 && targetID < itemDescriptions.Length)
+            if (targetID > 0 && targetID < itemDescriptions.Length
+                && tmlist[i] > 0 && tmlist[i] < moveDescriptions.Length)
                 itemDescriptions[targetID] = moveDescriptions[tmlist[i]];
         }
 
@@ -411,6 +563,9 @@ public partial class TMEditor7 : Form
 
         Main.Config.SaveText(TextName.ItemNames);
         Main.Config.SaveText(TextName.ItemFlavor);
+
+        if (expansionActive && maxItemID >= (int)ItemCeilingPatcher.RetailCeiling)
+            ExpandedTMText.EnsureCapacity(Main.Config, maxItemID + 1);
 
         File.WriteAllBytes(codebin, data);
     }
@@ -462,7 +617,9 @@ public partial class TMEditor7 : Form
 
         // Static callers always get the base 100 TMs — expansion detection
         // requires the instance context (offset) to avoid false positives.
-        int count = 100;
+        int count = DetectTMCount(data, dataoffset, out _);
+        if (count < 1) count = 100;
+        if (count > 128) count = 128;   // the personal record holds exactly 128 TM bits
 
         List<ushort> tms = [];
         for (int i = 0; i < count; i++) 

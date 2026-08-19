@@ -45,8 +45,19 @@ public static class MoveEngine
         // 4. Jump Table Expansion
         if (ExpandJumpTable(ref battle, newCount)) mBattle = true;
 
-        if (mCode) File.WriteAllBytes(codePath, code);
-        if (mBattle) File.WriteAllBytes(battlePath, battle);
+        bool wroteCode = !mCode || BinaryWriteGuard.TryWrite(codePath, code,
+            "Expand the engine's move-count limit",
+            $"Raises the limit to {newCount} at code.bin offsets "
+            + string.Join(", ", Array.ConvertAll(codeOfs, o => $"0x{o:X6}")) + ".");
+
+        bool wroteBattle = !mBattle || BinaryWriteGuard.TryWrite(battlePath, battle,
+            "Expand the engine's move-count limit",
+            $"Raises the limit to {newCount} in Battle.cro, including the jump table and Metronome.");
+
+        // Only claim the patch was applied if it actually reached disk; recording it regardless
+        // would make a later run skip work that never happened.
+        if ((mCode && !wroteCode) || (mBattle && !wroteBattle))
+            return;
 
         ProjectState.Instance.MoveCount = newCount;
         ProjectState.Instance.AppliedPatches.Add("MoveCountExpansion");
@@ -138,7 +149,7 @@ public static class MoveEngine
 
         if (modified)
         {
-            File.WriteAllBytes(battlePath, data);
+            pk3DS.Core.CTR.CROUtil.SaveCro(battlePath, data);
             ProjectState.Instance.AppliedPatches.Add($"{move.Name} -> Move ID {move.CurrentID}");
             ProjectState.Instance.Save();
             return true;

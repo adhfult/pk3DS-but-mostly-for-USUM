@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -24,7 +24,7 @@ public partial class PersonalEditor6 : Form
         byte_boxes = [TB_BaseHP, TB_BaseATK, TB_BaseDEF, TB_BaseSPA, TB_BaseSPD, TB_BaseSPE, TB_Gender, TB_HatchCycles, TB_Friendship, TB_CatchRate,
         ];
         ev_boxes = [TB_HPEVs, TB_ATKEVs, TB_DEFEVs, TB_SPEEVs, TB_SPAEVs, TB_SPDEVs];
-        rstat_boxes = [CHK_rHP, CHK_rATK, CHK_rDEF, CHK_rSPA, CHK_rSPD, CHK_rSPE];
+        rstat_boxes = [CHK_rHP, CHK_rATK, CHK_rDEF, CHK_rSPE, CHK_rSPA, CHK_rSPD];
         files = infiles;
 
         abilities = Main.Config.GetText(TextName.AbilityNames);
@@ -174,8 +174,11 @@ public partial class PersonalEditor6 : Form
 
     private void CB_Species_SelectedIndexChanged(object sender, EventArgs e)
     {
-        if (entry > -1 && !dumping) SaveEntry();
+        if (dumping) return;
+        if (entry > -1 && entry < files.Length) SaveEntry();
         entry = CB_Species.SelectedIndex;
+        if (entry < 0 || entry >= files.Length || entry >= Main.SpeciesStat.Length)
+            return;
         ReadEntry();
     }
 
@@ -284,42 +287,48 @@ public partial class PersonalEditor6 : Form
                 bigImg.SetPixel((2 * x) + 1, (2 * y) + 1, c);
             }
         }
+        if (PB_MonSprite.Image != null)
+            PB_MonSprite.Image.Dispose();
         PB_MonSprite.Image = bigImg;
+        rawImg.Dispose();
     }
+
+    private byte ParseByte(string text) => byte.TryParse(text.Trim(), out byte val) ? val : (byte)0;
+    private ushort ParseUInt16(string text) => ushort.TryParse(text.Trim(), out ushort val) ? val : (ushort)0;
 
     private void SavePersonal()
     {
-        pkm.HP = Convert.ToByte(TB_BaseHP.Text);
-        pkm.ATK = Convert.ToByte(TB_BaseATK.Text);
-        pkm.DEF = Convert.ToByte(TB_BaseDEF.Text);
-        pkm.SPE = Convert.ToByte(TB_BaseSPE.Text);
-        pkm.SPA = Convert.ToByte(TB_BaseSPA.Text);
-        pkm.SPD = Convert.ToByte(TB_BaseSPD.Text);
+        pkm.HP = ParseByte(TB_BaseHP.Text);
+        pkm.ATK = ParseByte(TB_BaseATK.Text);
+        pkm.DEF = ParseByte(TB_BaseDEF.Text);
+        pkm.SPE = ParseByte(TB_BaseSPE.Text);
+        pkm.SPA = ParseByte(TB_BaseSPA.Text);
+        pkm.SPD = ParseByte(TB_BaseSPD.Text);
 
-        pkm.EV_HP = Convert.ToByte(TB_HPEVs.Text);
-        pkm.EV_ATK = Convert.ToByte(TB_ATKEVs.Text);
-        pkm.EV_DEF = Convert.ToByte(TB_DEFEVs.Text);
-        pkm.EV_SPE = Convert.ToByte(TB_SPEEVs.Text);
-        pkm.EV_SPA = Convert.ToByte(TB_SPAEVs.Text);
-        pkm.EV_SPD = Convert.ToByte(TB_SPDEVs.Text);
+        pkm.EV_HP = ParseByte(TB_HPEVs.Text);
+        pkm.EV_ATK = ParseByte(TB_ATKEVs.Text);
+        pkm.EV_DEF = ParseByte(TB_DEFEVs.Text);
+        pkm.EV_SPE = ParseByte(TB_SPEEVs.Text);
+        pkm.EV_SPA = ParseByte(TB_SPAEVs.Text);
+        pkm.EV_SPD = ParseByte(TB_SPDEVs.Text);
 
-        pkm.CatchRate = Convert.ToByte(TB_CatchRate.Text);
-        pkm.EvoStage = Convert.ToByte(TB_Stage.Text);
+        pkm.CatchRate = ParseByte(TB_CatchRate.Text);
+        pkm.EvoStage = ParseByte(TB_Stage.Text);
 
         pkm.Types = [CB_Type1.SelectedIndex, CB_Type2.SelectedIndex];
         pkm.Items = [CB_HeldItem1.SelectedIndex, CB_HeldItem2.SelectedIndex, CB_HeldItem3.SelectedIndex];
 
-        pkm.Gender = Convert.ToByte(TB_Gender.Text);
-        pkm.HatchCycles = Convert.ToByte(TB_HatchCycles.Text);
-        pkm.BaseFriendship = Convert.ToByte(TB_Friendship.Text);
+        pkm.Gender = ParseByte(TB_Gender.Text);
+        pkm.HatchCycles = ParseByte(TB_HatchCycles.Text);
+        pkm.BaseFriendship = ParseByte(TB_Friendship.Text);
         pkm.EXPGrowth = (byte)CB_EXPGroup.SelectedIndex;
         pkm.EggGroups = [CB_EggGroup1.SelectedIndex, CB_EggGroup2.SelectedIndex];
         pkm.Abilities = [CB_Ability1.SelectedIndex, CB_Ability2.SelectedIndex, CB_Ability3.SelectedIndex];
 
-        pkm.FormeSprite = Convert.ToUInt16(TB_FormeSprite.Text);
-        pkm.FormeCount = Convert.ToByte(TB_FormeCount.Text);
-        pkm.Color = (byte)(Convert.ToByte(CB_Color.SelectedIndex) | (Convert.ToByte(TB_RawColor.Text) & 0xF0));
-        pkm.BaseEXP = Convert.ToUInt16(TB_BaseExp.Text);
+        pkm.FormeSprite = ParseUInt16(TB_FormeSprite.Text);
+        pkm.FormeCount = ParseByte(TB_FormeCount.Text);
+        pkm.Color = (byte)(ParseByte(CB_Color.SelectedIndex.ToString()) | (ParseByte(TB_RawColor.Text) & 0xF0));
+        pkm.BaseEXP = ParseUInt16(TB_BaseExp.Text);
 
         _ = decimal.TryParse(TB_Height.Text, out var h);
         _ = decimal.TryParse(TB_Weight.Text, out var w);

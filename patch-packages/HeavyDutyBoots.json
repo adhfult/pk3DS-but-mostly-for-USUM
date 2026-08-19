@@ -1,0 +1,99 @@
+{
+  "Name": "Heavy-Duty Boots",
+  "Description": "The holder is unaffected by entry hazards. Four hooks in the hazard routines.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id for Heavy-Duty Boots. Must be an ARM-encodable immediate, since the hooks compare against it directly.",
+      "Type": "item",
+      "Default": "888",
+      "ExpectName": "Heavy-Duty Boots",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [],
+  "Blocks": [
+    {
+      "Name": "boots-spikes",
+      "Code": "0F502DE90800A0E10610A0E19227FEEB1C1098E5FC28FEEBDE0F50E30F50BDE888DEFE0A0610A0E147DEFEEA",
+      "SourceBase": "0x10843C",
+      "CodeBytes": "D1At6QgAoOEGEKDhkif+6xwQmOX8KP7r3g9Q4w9QveiI3v4KBhCg4Ufe/uo=",
+      "SourceBaseValue": 1082428
+    },
+    {
+      "Name": "boots-toxic-spikes",
+      "Code": "0F502DE90700A0E10610A0E19D27FEEB1C1097E50729FEEBDE0F50E30F50BDE842DEFE0A0610A0E1F8DDFEEA",
+      "SourceBase": "0x108410",
+      "CodeBytes": "D1At6QcAoOEGEKDhnSf+6xwQl+UHKf7r3g9Q4w9QvehC3v4KBhCg4fjd/uo=",
+      "SourceBaseValue": 1082384
+    },
+    {
+      "Name": "boots-sticky-web",
+      "Code": "0F502DE90600A0E10510A0E18727FEEB1C1096E5F128FEEBDE0F50E30F50BDE89CDFFE0A0510A0E17CDFFEEA",
+      "SourceBase": "0x108468",
+      "CodeBytes": "D1At6QYAoOEFEKDhhyf+6xwQluXxKP7r3g9Q4w9Qveic3/4KBRCg4Xzf/uo=",
+      "SourceBaseValue": 1082472
+    },
+    {
+      "Name": "boots-stealth-rock",
+      "Code": "0F502DE90700A0E10610A0E17C27FEEB1C1097E5E628FEEBDE0F50E30F50BDE8F6DFFE0A0080A0E1A3DFFEEA",
+      "SourceBase": "0x108494",
+      "CodeBytes": "D1At6QcAoOEGEKDhfCf+6xwQl+XmKP7r3g9Q4w9Qvej23/4KAICg4aPf/uo=",
+      "SourceBaseValue": 1082516
+    }
+  ],
+  "SitePatches": [
+    {
+      "Offset": "0x0BFD84",
+      "Original": "0610A0E1",
+      "Patched": "AC2101EA",
+      "IsHook": true,
+      "HookTarget": "boots-spikes",
+      "OffsetValue": 785796,
+      "OriginalBytes": "BhCg4Q==",
+      "PatchedBytes": "rCEB6g=="
+    },
+    {
+      "Offset": "0x0BFC1C",
+      "Original": "0610A0E1",
+      "Patched": "FB2101EA",
+      "IsHook": true,
+      "HookTarget": "boots-toxic-spikes",
+      "OffsetValue": 785436,
+      "OriginalBytes": "BhCg4Q==",
+      "PatchedBytes": "+yEB6g=="
+    },
+    {
+      "Offset": "0x0C0284",
+      "Original": "0510A0E1",
+      "Patched": "772001EA",
+      "IsHook": true,
+      "HookTarget": "boots-sticky-web",
+      "OffsetValue": 787076,
+      "OriginalBytes": "BRCg4Q==",
+      "PatchedBytes": "dyAB6g=="
+    },
+    {
+      "Offset": "0x0C034C",
+      "Original": "0080A0E1",
+      "Patched": "502001EA",
+      "IsHook": true,
+      "HookTarget": "boots-stealth-rock",
+      "OffsetValue": 787276,
+      "OriginalBytes": "AICg4Q==",
+      "PatchedBytes": "UCAB6g=="
+    }
+  ],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "80"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Heavy-Duty Boots"
+  }
+}

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -43,6 +43,10 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
             }
         }
 
+        // Kept so importers can resolve a species name back to its entry index; this array is
+        // indexed the same way "entries" is, including the alternate-form rows.
+        entryNames = names;
+
         var newlist = names.Select((_, i) => new ComboItem { Text = (names[i] ?? "Extra") + $" ({i})", Value = i });
         newlist = newlist.GroupBy(z => z.Text.StartsWith("Extra"))
             .Select(z => z.OrderBy(item => item.Text))
@@ -68,6 +72,9 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
     public int StartSpecies { get; set; } = -1;
 
     private readonly EggMoves7[] entries;
+
+    /// <summary>Species name per entry index, including alternate-form rows.</summary>
+    private readonly string[] entryNames;
     private readonly EggMoves7[] vanillaEntries;
 
     private readonly byte[][] files;
@@ -105,7 +112,7 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
             s = entry;
             f = 0;
         }
-        PB_MonSprite.Image = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
+        WinFormsUtil.SetImage(PB_MonSprite, WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config));
 
         dgv.Rows.Clear();
         pkm = entries[entry];
@@ -163,99 +170,7 @@ string[] specieslist = Main.Config.Personal.GetPersonalEntryList(AltForms, speci
         }
         RTB_Changelog.Text = sb.ToString();
     }
-private static Dictionary<string, int> formMappingCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-    private readonly string mapFilePath = Path.Combine(Application.StartupPath, "custom_form_mappings.txt");
 
-    private void LoadMappingCache()
-    {
-        if (!File.Exists(mapFilePath)) return;
-        foreach (string line in File.ReadAllLines(mapFilePath))
-        {
-            var parts = line.Split('=');
-            if (parts.Length == 2 && int.TryParse(parts[1], out int id))
-                formMappingCache[parts[0]] = id;
-        }
-    }
-
-    private void SaveMappingCache()
-    {
-        var lines = formMappingCache.Select(kvp => $"{kvp.Key}={kvp.Value}");
-        File.WriteAllLines(mapFilePath, lines);
-    }
-
-private int PromptFormMapping(string formName)
-    {
-        Form prompt = new Form()
-        {
-            Width = 420, Height = 210, FormBorderStyle = FormBorderStyle.FixedDialog,
-            Text = "Map Custom Form", StartPosition = FormStartPosition.CenterParent,
-            MaximizeBox = false, MinimizeBox = false
-        };
-        
-        Label textLabel = new Label() { 
-            Left = 15, Top = 15, Width = 380, Height = 35, 
-            Text = $"Unrecognized form '{formName}'.\nSelect the Pokémon this form corresponds to:" 
-        };
-        
-        ComboBox cb = new ComboBox() { 
-            Left = 15, Top = 55, Width = 230, 
-            DropDownStyle = ComboBoxStyle.DropDown,
-            DisplayMember = "Text", ValueMember = "Value",
-            AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-            AutoCompleteSource = AutoCompleteSource.ListItems
-        };
-        
-        // FIX: Add items directly to bypass deferred DataSource binding crashes
-        foreach (ComboItem ci in CB_Species.Items) cb.Items.Add(ci);
-        
-        PictureBox pb = new PictureBox() { 
-            Left = 260, Top = 55, Width = 120, Height = 100, 
-            SizeMode = PictureBoxSizeMode.CenterImage, BorderStyle = BorderStyle.FixedSingle 
-        };
-        
-        cb.SelectedIndexChanged += (sender, e) => {
-            var ci = cb.SelectedItem as ComboItem;
-            if (ci != null && (int)ci.Value > 0) {
-                int id = (int)ci.Value;
-                int s = id <= Main.Config.MaxSpeciesID ? id : baseForms[id];
-                int f = id <= Main.Config.MaxSpeciesID ? 0 : formVal[id];
-                
-                var rawImg = WinFormsUtil.GetSprite(s, f, 0, 0, Main.Config);
-                var bigImg = new Bitmap(rawImg.Width * 2, rawImg.Height * 2);
-                for (int x = 0; x < rawImg.Width; x++)
-                for (int y = 0; y < rawImg.Height; y++)
-                {
-                    Color c = rawImg.GetPixel(x, y);
-                    bigImg.SetPixel(2 * x, 2 * y, c);
-                    bigImg.SetPixel((2 * x) + 1, 2 * y, c);
-                    bigImg.SetPixel(2 * x, (2 * y) + 1, c);
-                    bigImg.SetPixel((2 * x) + 1, (2 * y) + 1, c);
-                }
-                pb.Image = bigImg;
-            } else {
-                pb.Image = null;
-            }
-        };
-        
-        Button confirmation = new Button() { Text = "Map Form", Left = 15, Width = 110, Top = 100, DialogResult = DialogResult.OK };
-        Button cancel = new Button() { Text = "Skip", Left = 135, Width = 110, Top = 100, DialogResult = DialogResult.Cancel };
-        
-        prompt.Controls.Add(cb);
-        prompt.Controls.Add(pb);
-        prompt.Controls.Add(confirmation);
-        prompt.Controls.Add(cancel);
-        prompt.Controls.Add(textLabel);
-        prompt.AcceptButton = confirmation;
-        prompt.CancelButton = cancel;
-        
-        // Safety check using the natively populated cb.Items count
-        if (cb.Items.Count > 0)
-        {
-            cb.SelectedIndex = cb.Items.Count > 1 ? 1 : 0; 
-        }
-        
-        return prompt.ShowDialog() == DialogResult.OK && cb.SelectedItem != null ? (int)((ComboItem)cb.SelectedItem).Value : -1;
-    }
     private void B_RandAll_Click(object sender, EventArgs e)
     {
         var sets = entries;
@@ -367,76 +282,6 @@ private int PromptFormMapping(string formName)
         WinFormsUtil.Alert($"Imported native egg moves for {count} Pokémon.");
     }
 
-private void B_ApplyModern_Click(object sender, EventArgs e)
-    {
-        OpenFileDialog ofd = new OpenFileDialog { Filter = "Text File|*.txt" };
-        if (ofd.ShowDialog() != DialogResult.OK) return;
-
-        LoadMappingCache(); // Load globally saved forms
-        string[] lines = File.ReadAllLines(ofd.FileName);
-        int successCount = 0;
-
-        // Take a snapshot of the entries before we start editing them
-        EggMoves7[] backupEntries = new EggMoves7[entries.Length];
-        for (int i = 0; i < entries.Length; i++) backupEntries[i] = new EggMoves7(entries[i].Write());
-
-        var nameToId = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        foreach (ComboItem item in CB_Species.Items)
-        {
-            if ((int)item.Value == 0) continue;
-            string cleanName = item.Text;
-            if (cleanName.Contains("(")) cleanName = cleanName.Substring(0, cleanName.LastIndexOf("(")).Trim();
-            if (!nameToId.ContainsKey(cleanName)) nameToId[cleanName] = (int)item.Value;
-        }
-
-        foreach (string line in lines)
-        {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            string[] parts = line.Split('\t');
-            if (parts.Length < 3) continue; 
-
-            string monName = parts[1].Trim();
-            int targetId = -1;
-
-            if (nameToId.ContainsKey(monName)) targetId = nameToId[monName];
-            else if (formMappingCache.ContainsKey(monName)) targetId = formMappingCache[monName];
-            else
-            {
-                targetId = PromptFormMapping(monName);
-                if (targetId == -2) // ABORT ALL trigger
-                {
-                    if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Import Aborted.", "Do you want to SAVE the progress made so far?\n\nYes = Save partial progress\nNo = Discard and revert everything"))
-                    {
-                        // Restore snapshot
-                        for (int b = 0; b < entries.Length; b++) entries[b] = new EggMoves7(backupEntries[b].Write());
-                        WinFormsUtil.Alert("Import aborted. All changes reverted.");
-                        GetList();
-                        return;
-                    }
-                    break; // End loop but keep changes
-                }
-                if (targetId <= 0) continue; // User clicked Skip
-                
-                formMappingCache[monName] = targetId; 
-                SaveMappingCache(); // Save immediately to hard drive
-            }
-
-            if (targetId <= 0 || targetId >= entries.Length) continue;
-
-            List<int> newMoves = new List<int>();
-            for (int i = 2; i < parts.Length; i++)
-            {
-                string moveName = parts[i].Trim();
-                int moveId = Array.IndexOf(movelist, moveName);
-                if (moveId > 0 && !newMoves.Contains(moveId)) newMoves.Add(moveId);
-            }
-            entries[targetId].Moves = newMoves.ToArray();
-            successCount++;
-        }
-        GetList();
-        WinFormsUtil.Alert($"Modern update complete!\nUpdated {successCount} Pokémon Egg Moves.");
-    }
-
     private void Form_Closing(object sender, FormClosingEventArgs e)
     {
         SetList();
@@ -449,8 +294,124 @@ private void B_ApplyModern_Click(object sender, EventArgs e)
         CB_Species.SelectedValue = (int)NUD_FormTable.Value;
     }
 
-    private void B_ImportJSON_Click(object sender, EventArgs e) { /* Placeholder for complex JSON parsing */ WinFormsUtil.Alert("JSON Import logic coming soon!"); }
-    private void B_ImportTS_Click(object sender, EventArgs e) { /* Placeholder for TS parsing */ WinFormsUtil.Alert(".TS Import logic coming soon!"); }
+    // Both of these used to be stubs that only announced themselves. They now read the same two
+    // shapes the level-up editor accepts, so egg moves can come from the same sources.
+    private void B_ImportJSON_Click(object sender, EventArgs e) => ImportEggMoves(".json");
+    private void B_ImportTS_Click(object sender, EventArgs e) => ImportEggMoves(".ts");
+
+    /// <summary>
+    /// Imports egg moves from JSON or a Showdown-style listing.
+    /// <para>
+    /// JSON is <c>{ "Species": ["Move", ...] }</c>. The text form is a species name on its own line
+    /// followed by moves prefixed with "-", blocks separated by a blank line - the shape a Poképaste
+    /// or a Showdown export already has.
+    /// </para>
+    /// </summary>
+    private void ImportEggMoves(string preferred)
+    {
+        using var ofd = new OpenFileDialog
+        {
+            Filter = "Supported Formats|*.json;*.txt;*.ts;*.tsv|JSON|*.json|Text|*.txt;*.ts;*.tsv",
+            FilterIndex = preferred == ".json" ? 2 : 3,
+        };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+
+        int count;
+        var skipped = new List<string>();
+        try
+        {
+            count = Path.GetExtension(ofd.FileName).Equals(".json", StringComparison.OrdinalIgnoreCase)
+                ? ImportEggJson(File.ReadAllText(ofd.FileName), skipped)
+                : ImportEggText(File.ReadAllText(ofd.FileName), skipped);
+        }
+        catch (Exception ex)
+        {
+            WinFormsUtil.Error("The file could not be read.", ex.Message);
+            return;
+        }
+
+        GetList();
+
+        // Report what did not land as well as what did - a silent partial import here looks exactly
+        // like a successful one until the moves are missing in game.
+        string detail = skipped.Count == 0
+            ? "Every entry was matched."
+            : $"Unmatched ({skipped.Count}): " + string.Join(", ", skipped.Take(15))
+              + (skipped.Count > 15 ? ", ..." : "");
+        WinFormsUtil.Alert($"Imported egg moves for {count} Pokémon.", detail);
+    }
+
+    private int ImportEggJson(string json, List<string> skipped)
+    {
+        var data = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string[]>>(json);
+        if (data == null) return 0;
+
+        int count = 0;
+        foreach (var kvp in data)
+        {
+            int id = FindSpeciesId(kvp.Key);
+            if (id <= 0) { skipped.Add(kvp.Key); continue; }
+            entries[id].Moves = ResolveMoves(kvp.Value, skipped);
+            count++;
+        }
+        return count;
+    }
+
+    private int ImportEggText(string text, List<string> skipped)
+    {
+        int count = 0;
+        var blocks = text.Replace("\r\n", "\n").Split(["\n\n"], StringSplitOptions.RemoveEmptyEntries);
+        foreach (var block in blocks)
+        {
+            var lines = block.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToArray();
+            if (lines.Length < 2) continue;
+
+            int id = FindSpeciesId(lines[0]);
+            if (id <= 0) { skipped.Add(lines[0]); continue; }
+
+            var names = lines.Skip(1)
+                             .Where(l => l.StartsWith("-"))
+                             .Select(l => l.TrimStart('-').Trim());
+            entries[id].Moves = ResolveMoves(names, skipped);
+            count++;
+        }
+        return count;
+    }
+
+    private int[] ResolveMoves(IEnumerable<string> names, List<string> skipped)
+    {
+        var ids = new List<int>();
+        foreach (string raw in names)
+        {
+            string name = raw.Trim();
+            if (name.Length == 0) continue;
+            int id = Array.FindIndex(movelist, m => string.Equals(m, name, StringComparison.OrdinalIgnoreCase));
+            if (id > 0) { if (!ids.Contains(id)) ids.Add(id); }
+            else skipped.Add(name);
+        }
+        return [.. ids];
+    }
+
+    /// <summary>Matches a species name case-insensitively, tolerating a trailing form suffix.</summary>
+    private int FindSpeciesId(string name)
+    {
+        string wanted = name.Trim();
+        if (wanted.Length == 0) return -1;
+
+        if (entryNames == null) return -1;
+
+        int exact = Array.FindIndex(entryNames, s => string.Equals(s, wanted, StringComparison.OrdinalIgnoreCase));
+        if (exact > 0) return exact;
+
+        // "Pikachu-Alola" and the like: fall back to the part before the dash.
+        int dash = wanted.IndexOf('-');
+        if (dash > 0)
+        {
+            string bare = wanted[..dash].Trim();
+            return Array.FindIndex(entryNames, s => string.Equals(s, bare, StringComparison.OrdinalIgnoreCase));
+        }
+        return -1;
+    }
 
     public void CalcStats()
     {

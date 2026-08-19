@@ -1,4 +1,4 @@
-namespace pk3DS.WinForms;
+﻿namespace pk3DS.WinForms;
 
 sealed partial class Main
 {
@@ -70,6 +70,7 @@ sealed partial class Main
         this.TC_RomFS = new System.Windows.Forms.TabControl();
         this.Tab_RomFS = new System.Windows.Forms.TabPage();
         this.FLP_RomFS = new System.Windows.Forms.FlowLayoutPanel();
+        this.B_UniversalRandomizer = new System.Windows.Forms.Button();
         this.B_GameText = new System.Windows.Forms.Button();
         this.B_StoryText = new System.Windows.Forms.Button();
         this.B_Personal = new System.Windows.Forms.Button();
@@ -96,7 +97,6 @@ sealed partial class Main
         this.B_Gift = new System.Windows.Forms.Button();
         this.B_Static = new System.Windows.Forms.Button();
         this.B_CROExpander = new System.Windows.Forms.Button();
-        this.B_GlobalRepair = new System.Windows.Forms.Button();
         this.B_ResearchCenter = new System.Windows.Forms.Button();
         this.Tab_Output = new System.Windows.Forms.TabPage();
         this.L_Status = new System.Windows.Forms.Label();
@@ -501,6 +501,7 @@ sealed partial class Main
         // FLP_RomFS
         // 
         this.FLP_RomFS.AutoScroll = true;
+        this.FLP_RomFS.Controls.Add(this.B_UniversalRandomizer);
         this.FLP_RomFS.Controls.Add(this.B_GameText);
         this.FLP_RomFS.Controls.Add(this.B_StoryText);
         this.FLP_RomFS.Controls.Add(this.B_Personal);
@@ -523,12 +524,23 @@ sealed partial class Main
         this.FLP_RomFS.Size = new System.Drawing.Size(556, 278);
         this.FLP_RomFS.TabIndex = 13;
         // 
+        // B_UniversalRandomizer
+        // 
+        this.B_UniversalRandomizer.Location = new System.Drawing.Point(3, 3);
+        this.B_UniversalRandomizer.Name = "B_UniversalRandomizer";
+        this.B_UniversalRandomizer.Size = new System.Drawing.Size(150, 42);
+        this.B_UniversalRandomizer.TabIndex = 0;
+        this.B_UniversalRandomizer.TabStop = false;
+        this.B_UniversalRandomizer.Text = "Universal Randomizer";
+        this.B_UniversalRandomizer.UseVisualStyleBackColor = true;
+        this.B_UniversalRandomizer.Click += new System.EventHandler(this.B_UniversalRandomizer_Click);
+        // 
         // B_GameText
         // 
-        this.B_GameText.Location = new System.Drawing.Point(3, 3);
+        this.B_GameText.Location = new System.Drawing.Point(159, 3);
         this.B_GameText.Name = "B_GameText";
         this.B_GameText.Size = new System.Drawing.Size(150, 42);
-        this.B_GameText.TabIndex = 0;
+        this.B_GameText.TabIndex = 1;
         this.B_GameText.Text = "Game Text";
         this.B_GameText.UseVisualStyleBackColor = true;
         this.B_GameText.Click += new System.EventHandler(this.B_GameText_Click);
@@ -731,7 +743,6 @@ sealed partial class Main
         this.FLP_CRO.Controls.Add(this.B_Starter);
         this.FLP_CRO.Controls.Add(this.B_Gift);
         this.FLP_CRO.Controls.Add(this.B_CROExpander);
-        this.FLP_CRO.Controls.Add(this.B_GlobalRepair);
         this.FLP_CRO.Controls.Add(this.B_ResearchCenter);
         this.FLP_CRO.Dock = System.Windows.Forms.DockStyle.Fill;
         this.FLP_CRO.Location = new System.Drawing.Point(0, 0);
@@ -789,15 +800,6 @@ sealed partial class Main
         this.B_CROExpander.Text = "CRO Expander";
         this.B_CROExpander.UseVisualStyleBackColor = true;
         this.B_CROExpander.Click += new System.EventHandler(this.B_CROExpander_Click);
-        // 
-        // B_GlobalRepair
-        // 
-        this.B_GlobalRepair.Location = new System.Drawing.Point(218, 35);
-        this.B_GlobalRepair.Name = "B_GlobalRepair";
-        this.B_GlobalRepair.Size = new System.Drawing.Size(150, 42);
-        this.B_GlobalRepair.TabIndex = 5;
-        this.B_GlobalRepair.Text = "Global Repair";
-        this.B_GlobalRepair.UseVisualStyleBackColor = true;
         
         // 
         // B_ResearchCenter
@@ -809,8 +811,6 @@ sealed partial class Main
         this.B_ResearchCenter.Text = "Research Center";
         this.B_ResearchCenter.UseVisualStyleBackColor = true;
         this.B_ResearchCenter.Click += new System.EventHandler(this.B_ResearchCenter_Click);
-        // 
-        // 
         // 
         // Tab_Output
         // 
@@ -914,7 +914,6 @@ sealed partial class Main
     private System.Windows.Forms.TabPage Tab_Output;
     private System.Windows.Forms.Button B_Static;
     private System.Windows.Forms.Button B_CROExpander;
-    private System.Windows.Forms.Button B_GlobalRepair;
     private System.Windows.Forms.Button B_Gift;
     private System.Windows.Forms.Button B_Starter;
     private System.Windows.Forms.Button B_TypeChart;
@@ -945,4 +944,5 @@ sealed partial class Main
     private System.Windows.Forms.ToolStripMenuItem Menu_Trimmed3DS;
     private System.Windows.Forms.ToolStripMenuItem Menu_Extract_3DS;
     private System.Windows.Forms.Button B_ResearchCenter;
+    private System.Windows.Forms.Button B_UniversalRandomizer;
 }

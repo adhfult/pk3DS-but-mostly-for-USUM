@@ -115,7 +115,7 @@ partial class PickupEditor7
         this.PB_Item.Location = new System.Drawing.Point(252, 319);
         this.PB_Item.Name = "PB_Item";
         this.PB_Item.Size = new System.Drawing.Size(48, 48);
-        this.PB_Item.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+        this.PB_Item.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
         this.PB_Item.TabIndex = 13;
         this.PB_Item.TabStop = false;
         // 

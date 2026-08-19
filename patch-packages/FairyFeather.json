@@ -1,0 +1,50 @@
+{
+  "Name": "Fairy Feather",
+  "Description": "Boosts Fairy-type moves.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Fairy Feather on. Must be a free slot or already named Fairy Feather.",
+      "Type": "item",
+      "Default": "862",
+      "ExpectName": "Fairy Feather",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Fairy Feather",
+      "Slots": [
+        {
+          "Timing": "0x47",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 644,
+            "Timing": "0x47",
+            "Name": "Pixie Plate"
+          },
+          "TimingByte": 71,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "0",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Fairy Feather"
+  }
+}

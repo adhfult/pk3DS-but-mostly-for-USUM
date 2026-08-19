@@ -93,7 +93,7 @@ public static class CTRUtil
         Len += NCCH.Header.ExheaderSize + (uint)NCCH.Exheader.AccessDescriptor.Length;
         NCCH.Header.Flags = new byte[0x8];
         //FLAGS
-        NCCH.Header.Flags[3] = 1; // Crypto: 0 = <7.x, 1=7.x;
+        NCCH.Header.Flags[3] = 0; // Crypto: 0 = decrypted (matching UPR-ZX for decrypted ROMs)
         NCCH.Header.Flags[4] = 1; // Content Platform: 1 = CTR;
         NCCH.Header.Flags[5] = 0x3; // Content Type Bitflags: 1=Data, 2=Executable, 4=SysUpdate, 8=Manual, 0x10=Trial;
         NCCH.Header.Flags[6] = 0; // MEDIA_UNIT_SIZE = 0x200*Math.Pow(2, Content.header.Flags[6]);
@@ -135,7 +135,7 @@ public static class CTRUtil
 
         if (Directory.Exists(exefsPath))
         {
-            string codePath = Path.Combine(exefsPath, "code.bin");
+            string codePath = pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefsPath);
             if (File.Exists(codePath))
                 codeBinSize = (uint)new FileInfo(codePath).Length;
         }
@@ -179,9 +179,15 @@ public static class CTRUtil
         UpdateTB(TB_Progress, $"Patching ExHeader: code.bin is 0x{delta:X} bytes larger than declared segments.");
         UpdateTB(TB_Progress, $"  .data segment: 0x{dataSize:X} → 0x{newDataSize:X}  pages: {newDataPages}");
 
-        // Write patched values back into the ExHeader buffer
+        // Write patched values back into the ExHeader buffer (both SCI and AccessDescriptor)
         Array.Copy(BitConverter.GetBytes(newDataSize), 0, exh.Data, 0x38, 4);
         Array.Copy(BitConverter.GetBytes(newDataPages), 0, exh.Data, 0x34, 4);
+
+        if (exh.AccessDescriptor != null && exh.AccessDescriptor.Length >= 0x40)
+        {
+            Array.Copy(BitConverter.GetBytes(newDataSize), 0, exh.AccessDescriptor, 0x38, 4);
+            Array.Copy(BitConverter.GetBytes(newDataPages), 0, exh.AccessDescriptor, 0x34, 4);
+        }
     }
 
     internal static NCSD SetNCSD(NCCH NCCH, bool Card2, RichTextBox TB_Progress = null)

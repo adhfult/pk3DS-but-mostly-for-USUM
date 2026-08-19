@@ -1,0 +1,45 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+ToolkitForm
+</name>
+</assembly>
+<members>
+<member name="T:ToolkitForm.My.Resources.Resources">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:ToolkitForm.My.Resources.Resources.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:ToolkitForm.My.Resources.Resources.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:ToolkitForm.ErrorWindow.ShowContinue">
+ <summary>
+ Gets or sets whether or not the "Continue" button is visible.
+ </summary>
+ <remarks>For UI exceptions, continuing could be safe.
+ For application exceptions, continuing is not possible, so the button should not be shown.</remarks>
+</member>
+<member name="P:ToolkitForm.ErrorWindow.Message">
+ <summary>
+ Friendly, context-specific method shown to the user.
+ </summary>
+ <remarks>This property is intended to be a user-friendly context-specific message about what went wrong.
+ For example: "An error occurred while attempting to automatically load the save file."</remarks>
+</member>
+<member name="M:ToolkitForm.Program.Main">
+ <summary>
+ The main entry point for the application.
+ </summary>
+</member>
+</members>
+</doc>

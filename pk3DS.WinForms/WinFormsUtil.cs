@@ -59,6 +59,41 @@ public static class WinFormsUtil
     private static ReadOnlySpan<int> GenderedSpecies => [592, 593, 521, 668];
     private static ReadOnlySpan<int> DefaultSprites => [778, 664, 665, 414, 493, 773];
 
+    private static string _extractedSprites;
+    private static bool _extractedSpritesProbed;
+
+    /// <summary>
+    /// Folder holding the extracted expanded-form sprites, or null when none is installed.
+    /// </summary>
+    public static string ExtractedSpritesFolder
+    {
+        get
+        {
+            if (_extractedSpritesProbed) return _extractedSprites;
+            _extractedSpritesProbed = true;
+
+            string profile = "";
+            try { profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); } catch { }
+
+            var candidates = new List<string>
+            {
+                Path.Combine(Application.StartupPath, "extracted_sprites"),
+                Path.Combine(Application.StartupPath, "Resources", "extracted_sprites"),
+                Path.Combine(Directory.GetCurrentDirectory(), "extracted_sprites"),
+            };
+            if (!string.IsNullOrEmpty(profile))
+            {
+                candidates.Add(Path.Combine(profile, "Downloads", "Sprites", "extracted_sprites"));
+                candidates.Add(Path.Combine(profile, "Downloads", "extracted_sprites"));
+            }
+
+            foreach (string c in candidates)
+            {
+                try { if (Directory.Exists(c)) { _extractedSprites = c; break; } } catch { }
+            }
+            return _extractedSprites;
+        }
+    }
     public static string GetResourceStringSprite(int species, int form, int gender, int generation)
     {
         if (DefaultSprites.Contains(species)) // Species who show their default sprite regardless of Form
@@ -102,35 +137,9 @@ public static class WinFormsUtil
         var file = GetResourceStringSprite(species, form, gender, config?.Generation ?? 7);
 
         Bitmap baseImage = null;
+        _ = ExtractedSpritesFolder;   // resolve once, before the fallback chain needs it
 
-        // 1. Check extracted_sprites directory for Gen 8/9 expansion species (808 to 1025)
-        string extractedFolder = @"C:\Users\fulto\Downloads\Sprites\extracted_sprites";
-        if (Directory.Exists(extractedFolder))
-        {
-            string spritePath = null;
-            int targetIdx = (species >= 808 && species <= 1025) ? species : ((formIdx >= 808 && formIdx <= 1025) ? formIdx : 0);
-            if (targetIdx >= 808 && targetIdx <= 1025)
-            {
-                string sPadded = Path.Combine(extractedFolder, $"sprite_{targetIdx:D5}.png");
-                string sDirect = Path.Combine(extractedFolder, $"sprite_{targetIdx}.png");
-                if (File.Exists(sPadded)) spritePath = sPadded;
-                else if (File.Exists(sDirect)) spritePath = sDirect;
-            }
-
-            if (spritePath != null)
-            {
-                try
-                {
-                    using (var tempImg = Image.FromFile(spritePath))
-                    {
-                        baseImage = new Bitmap(tempImg);
-                    }
-                }
-                catch { }
-            }
-        }
-
-        // 2. Check CustomSprites directory
+        // 1. Check CustomSprites directory
         if (baseImage == null)
         {
             List<string> customPaths = new List<string>();
@@ -155,46 +164,95 @@ public static class WinFormsUtil
             }
         }
 
-        // 3. Check Assembly Manifest Embedded Resources
+        // 2. Check vanilla Gen 7 alternative forms directory (highest vanilla priority)
+        if (baseImage == null)
+        {
+            string spriteDir = Path.Combine(Application.StartupPath, "Resources", "img", "Pokemon Sprites");
+            if (Directory.Exists(spriteDir))
+            {
+                string localName = file.Substring(1).Replace('_', '-') + ".png";
+                string localPath = Path.Combine(spriteDir, localName);
+                
+                // Fallback to 'b' for gender if not found (e.g., 201-11b.png)
+                if (!File.Exists(localPath) && localName.EndsWith("-1.png") && GenderedSpecies.Contains(species))
+                {
+                    localPath = Path.Combine(spriteDir, species.ToString() + "b.png");
+                }
+                
+                // Fallback to base species if alt form not found
+                if (!File.Exists(localPath) && form > 0)
+                {
+                    localPath = Path.Combine(spriteDir, species.ToString() + ".png");
+                }
+
+                if (File.Exists(localPath))
+                {
+                    try
+                    {
+                        using (var tempImg = Image.FromFile(localPath))
+                        {
+                            baseImage = new Bitmap(tempImg);
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        // 3. Check extracted_sprites directory if available (for modded/expanded forms)
+        string extractedFolder = ExtractedSpritesFolder;
+        if (baseImage == null && extractedFolder != null)
+        {
+            int targetIdx = formIdx > 0 ? formIdx : species;
+            string sPadded = Path.Combine(extractedFolder, $"sprite_{targetIdx:D5}.png");
+            string sDirect = Path.Combine(extractedFolder, $"sprite_{targetIdx}.png");
+            string spritePath = File.Exists(sPadded) ? sPadded : (File.Exists(sDirect) ? sDirect : null);
+
+            if (spritePath != null)
+            {
+                try
+                {
+                    using (var tempImg = Image.FromFile(spritePath))
+                    {
+                        baseImage = new Bitmap(tempImg);
+                    }
+                }
+                catch { }
+            }
+        }
+
+        // 3. Check Resources.ResourceManager.GetObject(file) (e.g. "_722_1" or "_722")
         if (baseImage == null)
         {
             try
             {
-                var asm = typeof(WinFormsUtil).Assembly;
-                List<string> searchNames = new List<string>();
-                if (formIdx > species)
-                    searchNames.Add($"_{formIdx}.png");
-                searchNames.Add($"{file}.png");
-
-                var allRes = asm.GetManifestResourceNames();
-                foreach (var searchName in searchNames)
-                {
-                    string targetRes = allRes.FirstOrDefault(r => r.EndsWith(searchName, StringComparison.OrdinalIgnoreCase));
-                    if (targetRes != null)
-                    {
-                        using var stream = asm.GetManifestResourceStream(targetRes);
-                        if (stream != null)
-                        {
-                            using var tempImg = Image.FromStream(stream);
-                            baseImage = new Bitmap(tempImg);
-                            break;
-                        }
-                    }
-                }
+                baseImage = (Bitmap)Resources.ResourceManager.GetObject(file);
             }
             catch { }
         }
 
-        // 4. Redrawing & Totem logic fallback
-        if (baseImage == null)
-            baseImage = (Bitmap)Resources.ResourceManager.GetObject(file);
+        // 4. Fallback for Alt Forms in Resources: if "_722_1" wasn't found in Resources, try base "_722"
+        if (baseImage == null && form > 0)
+        {
+            try
+            {
+                string baseFile = GetResourceStringSprite(species, 0, gender, config?.Generation ?? 7);
+                baseImage = (Bitmap)Resources.ResourceManager.GetObject(baseFile);
+            }
+            catch { }
+        }
+
+        // 5. Totem logic fallback
         if (IsTotemForm(species, form))
         {
             form = GetTotemBaseForm(species, form);
-            file = GetResourceStringSprite(species, form, gender, Main.Config.Generation);
-            baseImage = (Bitmap)Resources.ResourceManager.GetObject(file);
-            baseImage = ToGrayscale(baseImage);
+            file = GetResourceStringSprite(species, form, gender, config?.Generation ?? 7);
+            Bitmap totemImg = (Bitmap)Resources.ResourceManager.GetObject(file);
+            if (totemImg != null)
+                baseImage = ToGrayscale(totemImg);
         }
+
+        // 6. Final fallback if still null
         if (baseImage == null)
         {
             Bitmap baseSprite = Resources._800 ?? Resources.unknown;
@@ -219,7 +277,10 @@ public static class WinFormsUtil
         }
         if (item > 0)
         {
-            Bitmap itemimg = (Bitmap)(Resources.ResourceManager.GetObject("item_" + item) ?? Resources.helditem);
+            Bitmap itemimg = (Bitmap)ItemSpriteCache.Get(ItemName(item, config))
+                             ?? (Bitmap)(Resources.ResourceManager.GetObject("item_" + item) ?? Resources.helditem);
+            if (itemimg != null && (itemimg.Width > 24 || itemimg.Height > 24))
+                itemimg = FitWithin(itemimg, 24);
             // Redraw
             baseImage = LayerImage(baseImage, itemimg, 22 + ((15 - itemimg.Width) / 2), 15 + (15 - itemimg.Height), 1);
         }
@@ -248,8 +309,76 @@ public static class WinFormsUtil
         return form - 1;
     }
 
+    /// <summary>
+    /// Item name for an ID, using a cached copy of the name table.
+    /// <para>
+    /// GameConfig.GetText clones the whole array on every call, which is fine once per editor but
+    /// not once per icon drawn in a list. The cache is keyed on the array instance so it refreshes
+    /// by itself when the ROM or language changes.
+    /// </para>
+    /// </summary>
+    private static string[] _itemNameCache;
+    private static string[][] _itemNameCacheSource;
+
+    /// <summary>
+    /// Assigns an image to a PictureBox, disposing whatever it held.
+    /// <para>
+    /// Setting PictureBox.Image does not release the previous one, and GetSprite returns a freshly
+    /// allocated Bitmap every call. Anything that re-renders repeatedly - scrolling a list of
+    /// trainers, stepping through entries - therefore leaks one bitmap per step, and a process is
+    /// limited to about ten thousand GDI handles before allocation starts failing. That presents as
+    /// an unrelated crash a long way from the leak.
+    /// </para>
+    /// </summary>
+    public static void SetImage(PictureBox box, Image image)
+    {
+        if (box == null) return;
+        var previous = box.Image;
+        box.Image = image;
+        if (!ReferenceEquals(previous, image)) previous?.Dispose();
+    }
+
+    /// <summary>Scales an image down to fit a square, preserving aspect ratio. Never scales up.</summary>
+    private static Bitmap FitWithin(Bitmap source, int max)
+    {
+        if (source == null || (source.Width <= max && source.Height <= max)) return source;
+        float scale = Math.Min(max / (float)source.Width, max / (float)source.Height);
+        int w = Math.Max(1, (int)(source.Width * scale));
+        int h = Math.Max(1, (int)(source.Height * scale));
+
+        var scaled = new Bitmap(w, h);
+        using var g = Graphics.FromImage(scaled);
+        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+        g.DrawImage(source, 0, 0, w, h);
+        return scaled;
+    }
+
+    private static string ItemName(int item, GameConfig config)
+    {
+        if (config?.GameTextStrings == null || item < 0) return null;
+        if (!ReferenceEquals(_itemNameCacheSource, config.GameTextStrings))
+        {
+            _itemNameCache = config.GetText(TextName.ItemNames);
+            _itemNameCacheSource = config.GameTextStrings;
+        }
+        return _itemNameCache != null && item < _itemNameCache.Length ? _itemNameCache[item] : null;
+    }
+
+    /// <summary>
+    /// The icon for an item: downloaded art first, then the embedded resource, then the generic
+    /// held-item picture.
+    /// <para>
+    /// Name before ID deliberately. The ID-keyed resource is only correct while item numbering is
+    /// fixed, and this project moves it - the TM expansion claims 1024-1051, and a randomizer run
+    /// reshuffles the rest. An ID lookup then returns some other item's picture and never fails,
+    /// which is the worst way for it to be wrong.
+    /// </para>
+    /// </summary>
     public static Bitmap getIcon(int item, int _, GameConfig config)
     {
+        var byName = ItemSpriteCache.Get(ItemName(item, config));
+        if (byName != null) return (Bitmap)byName;
         return (Bitmap)Resources.ResourceManager.GetObject("item_" + item) ?? Resources.helditem;
     }
 
@@ -277,31 +406,36 @@ public static class WinFormsUtil
         return bmp;
     }
 
-    private static Dictionary<string, (Color, Color)> Gradients;
+    private static Dictionary<string, Color[]> Gradients;
     public static void LoadGradients()
     {
         if (Gradients != null) return;
-        Gradients = new Dictionary<string, (Color, Color)>
+                Gradients = new Dictionary<string, Color[]>
         {
-            ["Xerneas"] = (Color.FromArgb(30, 60, 100), Color.FromArgb(10, 20, 40)),
-            ["Yveltal"] = (Color.FromArgb(100, 20, 30), Color.FromArgb(40, 10, 10)),
-            ["Groudon"] = (Color.FromArgb(120, 40, 20), Color.FromArgb(50, 20, 10)),
-            ["Kyogre"] = (Color.FromArgb(20, 60, 120), Color.FromArgb(10, 30, 60)),
-            ["Solgaleo"] = (Color.FromArgb(140, 100, 40), Color.FromArgb(60, 40, 10)),
-            ["Lunala"] = (Color.FromArgb(60, 40, 100), Color.FromArgb(20, 10, 40)),
-            ["Dusk Mane Necrozma"] = (ColorTranslator.FromHtml("#F5E9D0"), ColorTranslator.FromHtml("#625D53")),
-            ["Dawn Wings Necrozma"] = (ColorTranslator.FromHtml("#B2DAE2"), ColorTranslator.FromHtml("#47575A")),
-            ["Necrozma"] = (ColorTranslator.FromHtml("#4A4B56"), ColorTranslator.FromHtml("#1D1E22")),
-            ["Ultra Necrozma"] = (Color.FromArgb(160, 140, 60), Color.FromArgb(80, 70, 20)),
-            ["Rayquaza"] = (Color.FromArgb(40, 100, 60), Color.FromArgb(10, 40, 20)),
-            ["Deoxys"] = (Color.FromArgb(100, 40, 100), Color.FromArgb(40, 10, 40)),
-            ["Zygarde"] = (Color.FromArgb(60, 100, 40), Color.FromArgb(20, 40, 10)),
-            ["Magearna"] = (ColorTranslator.FromHtml("#D3B6B9"), ColorTranslator.FromHtml("#54484A")),
-            ["Zeraora"] = (ColorTranslator.FromHtml("#F6D035"), ColorTranslator.FromHtml("#625315")),
-            ["Marshadow"] = (ColorTranslator.FromHtml("#4A4B56"), ColorTranslator.FromHtml("#1D1E22")),
-            ["Incineroar"] = (ColorTranslator.FromHtml("#CC2121"), ColorTranslator.FromHtml("#510D0D")),
-            ["Decidueye"] = (ColorTranslator.FromHtml("#155C41"), ColorTranslator.FromHtml("#08241A")),
-            ["Primarina"] = (ColorTranslator.FromHtml("#54B3D4"), ColorTranslator.FromHtml("#214754")),
+            ["Xerneas"] = [ColorTranslator.FromHtml("#1C4CB8"), ColorTranslator.FromHtml("#3866D1"), ColorTranslator.FromHtml("#5480EA"), ColorTranslator.FromHtml("#779EF7"), ColorTranslator.FromHtml("#9EBAF9"), ColorTranslator.FromHtml("#C5D7FC"), ColorTranslator.FromHtml("#E6EEFF")],
+            ["Yveltal"] = [ColorTranslator.FromHtml("#B81424"), ColorTranslator.FromHtml("#C92A39"), ColorTranslator.FromHtml("#DA404F"), ColorTranslator.FromHtml("#EB5765"), ColorTranslator.FromHtml("#F57884"), ColorTranslator.FromHtml("#FA9EA7"), ColorTranslator.FromHtml("#FCE1E4")],
+            ["Groudon"] = [ColorTranslator.FromHtml("#D9381E"), ColorTranslator.FromHtml("#E6532B"), ColorTranslator.FromHtml("#F27038"), ColorTranslator.FromHtml("#FA8D4B"), ColorTranslator.FromHtml("#FCAB65"), ColorTranslator.FromHtml("#FCC788"), ColorTranslator.FromHtml("#FEF0D6")],
+            ["Kyogre"] = [ColorTranslator.FromHtml("#0F52BA"), ColorTranslator.FromHtml("#1F68CE"), ColorTranslator.FromHtml("#347FE2"), ColorTranslator.FromHtml("#5097F4"), ColorTranslator.FromHtml("#73B1F9"), ColorTranslator.FromHtml("#9DCCFC"), ColorTranslator.FromHtml("#DBEEFF")],
+            ["Solgaleo"] = [ColorTranslator.FromHtml("#E69500"), ColorTranslator.FromHtml("#F2A81D"), ColorTranslator.FromHtml("#FCBD3C"), ColorTranslator.FromHtml("#FCD15D"), ColorTranslator.FromHtml("#FDE283"), ColorTranslator.FromHtml("#FEEFB0"), ColorTranslator.FromHtml("#FFFBE0")],
+            ["Lunala"] = [ColorTranslator.FromHtml("#5E2CA5"), ColorTranslator.FromHtml("#743EC2"), ColorTranslator.FromHtml("#8D53DE"), ColorTranslator.FromHtml("#A66CF7"), ColorTranslator.FromHtml("#BF8AFF"), ColorTranslator.FromHtml("#D7B0FF"), ColorTranslator.FromHtml("#F3E8FF")],
+            ["Dusk Mane Necrozma"] = [ColorTranslator.FromHtml("#D9822B"), ColorTranslator.FromHtml("#E69943"), ColorTranslator.FromHtml("#F2B05E"), ColorTranslator.FromHtml("#F9C67B"), ColorTranslator.FromHtml("#FCDA9C"), ColorTranslator.FromHtml("#FDEBBE"), ColorTranslator.FromHtml("#FFF9E6")],
+            ["Dawn Wings Necrozma"] = [ColorTranslator.FromHtml("#17A2B8"), ColorTranslator.FromHtml("#2EBBC5"), ColorTranslator.FromHtml("#4AD2D2"), ColorTranslator.FromHtml("#6DE6DE"), ColorTranslator.FromHtml("#96F2E8"), ColorTranslator.FromHtml("#C2FBF5"), ColorTranslator.FromHtml("#E8FFFF")],
+            ["Necrozma"] = [ColorTranslator.FromHtml("#3A3D52"), ColorTranslator.FromHtml("#535770"), ColorTranslator.FromHtml("#6E738F"), ColorTranslator.FromHtml("#8B91AE"), ColorTranslator.FromHtml("#AAB0CE"), ColorTranslator.FromHtml("#CBD0ED"), ColorTranslator.FromHtml("#F0F2FF")],
+            ["Ultra Necrozma"] = [ColorTranslator.FromHtml("#FFB300"), ColorTranslator.FromHtml("#FFC425"), ColorTranslator.FromHtml("#FFD44D"), ColorTranslator.FromHtml("#FFE377"), ColorTranslator.FromHtml("#FFEFA3"), ColorTranslator.FromHtml("#FFF7CC"), ColorTranslator.FromHtml("#FFFDF0")],
+            ["Rayquaza"] = [ColorTranslator.FromHtml("#0D8A5F"), ColorTranslator.FromHtml("#1EA374"), ColorTranslator.FromHtml("#33BC8B"), ColorTranslator.FromHtml("#50D4A3"), ColorTranslator.FromHtml("#79E8BD"), ColorTranslator.FromHtml("#AAFDCF"), ColorTranslator.FromHtml("#E1FCF1")],
+            ["Deoxys"] = [ColorTranslator.FromHtml("#E64A19"), ColorTranslator.FromHtml("#F46835"), ColorTranslator.FromHtml("#F98752"), ColorTranslator.FromHtml("#FBA772"), ColorTranslator.FromHtml("#F9C696"), ColorTranslator.FromHtml("#EEDFB8"), ColorTranslator.FromHtml("#E0F2F1")],
+            ["Zygarde"] = [ColorTranslator.FromHtml("#1B8036"), ColorTranslator.FromHtml("#289945"), ColorTranslator.FromHtml("#37B357"), ColorTranslator.FromHtml("#50CC6F"), ColorTranslator.FromHtml("#74E08F"), ColorTranslator.FromHtml("#9DF2B3"), ColorTranslator.FromHtml("#DCFCE6")],
+            ["Magearna"] = [ColorTranslator.FromHtml("#C97C8D"), ColorTranslator.FromHtml("#D691A0"), ColorTranslator.FromHtml("#E3A7B4"), ColorTranslator.FromHtml("#EDBDC8"), ColorTranslator.FromHtml("#F5D2DC"), ColorTranslator.FromHtml("#FAE4EB"), ColorTranslator.FromHtml("#FFF5F8")],
+            ["Zeraora"] = [ColorTranslator.FromHtml("#F5B800"), ColorTranslator.FromHtml("#F7CA28"), ColorTranslator.FromHtml("#F9DC50"), ColorTranslator.FromHtml("#FAED7A"), ColorTranslator.FromHtml("#FBF6A4"), ColorTranslator.FromHtml("#E2F9D8"), ColorTranslator.FromHtml("#D0F8FF")],
+            ["Marshadow"] = [ColorTranslator.FromHtml("#434853"), ColorTranslator.FromHtml("#5A606E"), ColorTranslator.FromHtml("#73798A"), ColorTranslator.FromHtml("#8E95A7"), ColorTranslator.FromHtml("#ABAEC4"), ColorTranslator.FromHtml("#CACFE2"), ColorTranslator.FromHtml("#EAEDF7")],
+            ["Incineroar"] = [ColorTranslator.FromHtml("#D32F2F"), ColorTranslator.FromHtml("#E54937"), ColorTranslator.FromHtml("#F46343"), ColorTranslator.FromHtml("#FB7F53"), ColorTranslator.FromHtml("#FC9C68"), ColorTranslator.FromHtml("#FDBB83"), ColorTranslator.FromHtml("#FEEBD2")],
+            ["Decidueye"] = [ColorTranslator.FromHtml("#2E7D32"), ColorTranslator.FromHtml("#3D9140"), ColorTranslator.FromHtml("#4EA651"), ColorTranslator.FromHtml("#63BC64"), ColorTranslator.FromHtml("#7ED17E"), ColorTranslator.FromHtml("#A1E3A1"), ColorTranslator.FromHtml("#E3FAE3")],
+            ["Primarina"] = [ColorTranslator.FromHtml("#00ACC1"), ColorTranslator.FromHtml("#26C6DA"), ColorTranslator.FromHtml("#4DD0E1"), ColorTranslator.FromHtml("#80DEEA"), ColorTranslator.FromHtml("#B2EBF2"), ColorTranslator.FromHtml("#E1BEE7"), ColorTranslator.FromHtml("#F3E5F5")],
+            ["Latias"] = [ColorTranslator.FromHtml("#E80606"), ColorTranslator.FromHtml("#EA2B2B"), ColorTranslator.FromHtml("#EC4F4F"), ColorTranslator.FromHtml("#EE7474"), ColorTranslator.FromHtml("#F09999"), ColorTranslator.FromHtml("#F2BDBD"), ColorTranslator.FromHtml("#F4E2E2")],
+            ["Latios"] = [ColorTranslator.FromHtml("#6A3DFE"), ColorTranslator.FromHtml("#8159F9"), ColorTranslator.FromHtml("#9874F5"), ColorTranslator.FromHtml("#AF90F0"), ColorTranslator.FromHtml("#C6ABEB"), ColorTranslator.FromHtml("#DDC7E7"), ColorTranslator.FromHtml("#F4E2E2")],
+            ["Jirachi"] = [ColorTranslator.FromHtml("#F6F39F"), ColorTranslator.FromHtml("#DEE9AE"), ColorTranslator.FromHtml("#C6DFBD"), ColorTranslator.FromHtml("#AED5CC"), ColorTranslator.FromHtml("#96CBDB"), ColorTranslator.FromHtml("#7EC1EA"), ColorTranslator.FromHtml("#66B7F9")],
+            ["Diancie"] = [ColorTranslator.FromHtml("#9EA5B1"), ColorTranslator.FromHtml("#ADB0BC"), ColorTranslator.FromHtml("#BDBAC7"), ColorTranslator.FromHtml("#CCC5D2"), ColorTranslator.FromHtml("#DBD0DC"), ColorTranslator.FromHtml("#EBDAE7"), ColorTranslator.FromHtml("#FAE5F2")],
+            ["Hoopa"] = [ColorTranslator.FromHtml("#FA6FA0"), ColorTranslator.FromHtml("#F680AC"), ColorTranslator.FromHtml("#F191B7"), ColorTranslator.FromHtml("#EDA2C3"), ColorTranslator.FromHtml("#E8B3CF"), ColorTranslator.FromHtml("#E4C4DA"), ColorTranslator.FromHtml("#DFD5E6")],
         };
 
         string data = GetInternalText("graidents.txt");
@@ -314,25 +448,46 @@ public static class WinFormsUtil
                 var colors = parts[1].Split(',');
                 if (colors.Length < 2) continue;
                 try {
-                    Gradients[parts[0].Trim()] = (ColorTranslator.FromHtml(colors[0].Trim()), ColorTranslator.FromHtml(colors[1].Trim()));
+                    Gradients[parts[0].Trim()] = colors.Select(c => ColorTranslator.FromHtml(c.Trim())).ToArray();
                 } catch { }
             }
         }
     }
 
+    public static System.Drawing.Drawing2D.LinearGradientBrush CreateGradientBrush(Rectangle rect, string name, float angle = 45f)
+    {
+        LoadGradients();
+        if (rect.Width <= 0 || rect.Height <= 0) return null;
+        if (!Gradients.TryGetValue(name, out var colors) || colors == null || colors.Length == 0) return null;
+
+        var brush = new System.Drawing.Drawing2D.LinearGradientBrush(rect, colors[0], colors[colors.Length - 1], angle);
+        if (colors.Length > 2)
+        {
+            var blend = new System.Drawing.Drawing2D.ColorBlend(colors.Length);
+            for (int i = 0; i < colors.Length; i++)
+            {
+                blend.Positions[i] = (float)i / (colors.Length - 1);
+                blend.Colors[i] = colors[i];
+            }
+            brush.InterpolationColors = blend;
+        }
+        return brush;
+    }
+
     public static void ApplyGradient(Form f, string name)
     {
         LoadGradients();
-        if (!Gradients.TryGetValue(name, out var colors)) return;
+        if (!Gradients.ContainsKey(name)) return;
         
         void UpdateBackground()
         {
             if (f.ClientRectangle.Width <= 0 || f.ClientRectangle.Height <= 0) return;
             var bmp = new Bitmap(f.ClientRectangle.Width, f.ClientRectangle.Height);
             using (var g = Graphics.FromImage(bmp))
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(f.ClientRectangle, colors.Item1, colors.Item2, 45f))
+            using (var brush = CreateGradientBrush(f.ClientRectangle, name, 45f))
             {
-                g.FillRectangle(brush, f.ClientRectangle);
+                if (brush != null)
+                    g.FillRectangle(brush, f.ClientRectangle);
             }
             if (f.BackgroundImage != null) f.BackgroundImage.Dispose();
             f.BackgroundImageLayout = ImageLayout.None;
@@ -602,6 +757,25 @@ public static class WinFormsUtil
             }
             tb.BorderStyle = BorderStyle.FixedSingle;
         }
+        else if (c is TreeView tv)
+        {
+            // TreeView was not handled at all, so it kept the system's white background whatever the
+            // theme - the OWSE script tree being the visible case.
+            if (light) {
+                tv.BackColor = SystemColors.Window;
+                tv.ForeColor = SystemColors.WindowText;
+                tv.LineColor = SystemColors.ControlDark;
+            } else if (purple) {
+                tv.BackColor = Color.FromArgb(32, 16, 36);
+                tv.ForeColor = Color.FromArgb(245, 235, 250);
+                tv.LineColor = Color.FromArgb(142, 73, 128);
+            } else {
+                tv.BackColor = dark ? Color.FromArgb(12, 12, 18) : Color.FromArgb(40, 40, 45);
+                tv.ForeColor = Color.FromArgb(220, 220, 230);
+                tv.LineColor = Color.FromArgb(90, 95, 115);
+            }
+            tv.BorderStyle = BorderStyle.FixedSingle;
+        }
         else if (c is ListControl lc)
         {
             if (light) {
@@ -674,6 +848,7 @@ public static class WinFormsUtil
         {
             tc.Appearance = TabAppearance.Normal;
             SetDoubleBuffered(tc);
+            ApplyOwnerDrawnTabs(tc, theme);
         }
 
         // Glassmorphism effect for panels
@@ -722,6 +897,206 @@ public static class WinFormsUtil
             if (sub is ToolStripMenuItem tsmi)
                 ApplyThemeToMenuItem(tsmi, theme);
         }
+    }
+
+    /// <summary>
+    /// Double-buffers a control and every container beneath it.
+    /// <para>
+    /// Buffering a TabControl on its own does nothing for tab switching: the tearing is between the
+    /// page and the panels and buttons it holds, not inside the tab strip. The recursion is what
+    /// makes this worth calling at all.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// Draws a TabControl's strip ourselves, in the theme's colours.
+    /// <para>
+    /// Left to Windows, the strip is painted by the OS in the system theme - which is why it stayed
+    /// light against a dark window - and the OS repaints a tab whenever the mouse enters or leaves
+    /// it. That hot-tracking repaint is what flickered on hover: the strip is not opaque to the
+    /// form behind it, so each repaint exposed the parent and forced the gradient through again.
+    /// Owner-drawing fills every tab opaquely and removes the hot-track pass entirely, so hovering
+    /// no longer repaints anything.
+    /// </para>
+    /// </summary>
+    private static void ApplyOwnerDrawnTabs(TabControl tc, VisualTheme theme)
+    {
+        bool light = theme == VisualTheme.Light;
+        bool purple = theme == VisualTheme.GalaxyPurple;
+
+        Color strip = light ? Color.FromArgb(235, 235, 240)
+                    : purple ? Color.FromArgb(38, 20, 44)
+                    : Color.FromArgb(20, 20, 30);
+        Color selected = light ? Color.White
+                       : purple ? Color.FromArgb(72, 40, 82)
+                       : Color.FromArgb(45, 45, 60);
+        Color text = light ? Color.FromArgb(33, 37, 41) : Color.WhiteSmoke;
+
+        tc.DrawMode = TabDrawMode.OwnerDrawFixed;
+
+        // Replace rather than add: theming runs again on every theme switch, and stacking handlers
+        // would draw each tab once per switch.
+        tc.DrawItem -= TabDrawHandler;
+        tc.DrawItem += TabDrawHandler;
+        tc.Paint -= TabStripPaintHandler;
+        tc.Paint += TabStripPaintHandler;
+        TabPalette[tc] = (strip, selected, text);
+
+        // Attached once per control; theming runs again on every switch.
+        if (!TabOverlays.ContainsKey(tc))
+            TabOverlays[tc] = new TabStripOverlay(tc);
+
+        // The strip's own background, behind and beside the tabs.
+        tc.BackColor = strip;
+    }
+
+    private static readonly Dictionary<TabControl, (Color Strip, Color Selected, Color Text)> TabPalette = new();
+
+    /// <summary>
+    /// Supplies the window's painted background so child controls can continue it rather than
+    /// guess at a matching flat colour. Set by the form that owns the gradient.
+    /// </summary>
+    public static Func<Bitmap> BackgroundProvider { get; set; }
+
+    /// <summary>
+    /// The form <see cref="BackgroundProvider"/> belongs to.
+    /// <para>
+    /// The provider is a single static, so without this every themed window borrowed the main
+    /// window's gradient for its tab strip - a gradient that is not behind it, producing a strip
+    /// that matched nothing. Tab strips on any other form fall back to the flat theme colour.
+    /// </para>
+    /// </summary>
+    public static Form BackgroundOwner { get; set; }
+
+    /// <summary>
+    /// Fills the part of the tab strip no tab covers.
+    /// <para>
+    /// Owner-drawing supplies the tab items only; the run of strip to the right of the last tab is
+    /// still painted by the control, which is why it stayed light against a dark window. Paint runs
+    /// after the items are drawn, so filling everything outside their bounds here leaves the tabs
+    /// intact and replaces only the gap.
+    /// </para>
+    /// <para>
+    /// Where the owning form exposes its background, the matching slice of it is drawn so the strip
+    /// continues the gradient instead of approximating it with a flat colour that only matches at
+    /// one point.
+    /// </para>
+    /// </summary>
+    private static void TabStripPaintHandler(object sender, PaintEventArgs e)
+    {
+        if (sender is not TabControl tc) return;
+        PaintStrip(tc, e.Graphics);
+    }
+
+    /// <summary>
+    /// Repaints the tab strip after the native control has drawn it.
+    /// <para>
+    /// A TabControl is a native common control that paints its own strip during WM_PAINT. Relying on
+    /// the managed Paint event to cover that is unreliable - the ordering depends on double
+    /// buffering and on whether visual styles drew the strip in the theme pass - which is how the
+    /// strip kept coming back as a light band across a dark window. Painting from the message loop
+    /// instead, immediately after the default handler has run, is deterministic.
+    /// </para>
+    /// </summary>
+    private sealed class TabStripOverlay : NativeWindow
+    {
+        private readonly TabControl tc;
+
+        public TabStripOverlay(TabControl control)
+        {
+            tc = control;
+            if (tc.IsHandleCreated)
+                AssignHandle(tc.Handle);
+            tc.HandleCreated += (_, _) => AssignHandle(tc.Handle);
+            tc.HandleDestroyed += (_, _) => ReleaseHandle();
+        }
+
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            const int WM_PAINT = 0x000F;
+            if (m.Msg != WM_PAINT || tc.IsDisposed || !tc.IsHandleCreated)
+                return;
+
+            try
+            {
+                using var g = Graphics.FromHwnd(tc.Handle);
+                PaintStrip(tc, g);
+            }
+            catch (Exception) { /* the control can go away mid-paint; the strip is cosmetic */ }
+        }
+    }
+
+    private static readonly Dictionary<TabControl, TabStripOverlay> TabOverlays = new();
+
+    private static void PaintStrip(TabControl tc, Graphics graphics)
+    {
+        if (!TabPalette.TryGetValue(tc, out var palette)) return;
+
+        int stripHeight = tc.ItemSize.Height + 4;
+        var strip = new Rectangle(0, 0, tc.Width, Math.Min(stripHeight, tc.Height));
+
+        // Everything in the strip that is not a tab.
+        using var region = new Region(strip);
+        for (int i = 0; i < tc.TabCount; i++)
+        {
+            try { region.Exclude(tc.GetTabRect(i)); }
+            catch { /* tab rects are unavailable mid-layout; the fill just covers more */ }
+        }
+
+        var clip = graphics.Clip;
+        graphics.Clip = region;
+
+        var form = tc.FindForm();
+        var background = ReferenceEquals(form, BackgroundOwner) ? BackgroundProvider?.Invoke() : null;
+        if (background != null)
+        {
+            // The strip's position within the form, so the gradient lines up seamlessly.
+            var origin = tc.PointToScreen(Point.Empty);
+            var formOrigin = form?.PointToScreen(Point.Empty) ?? origin;
+            int dx = origin.X - formOrigin.X;
+            int dy = origin.Y - formOrigin.Y;
+            graphics.DrawImage(background, new Rectangle(-dx, -dy, background.Width, background.Height));
+        }
+        else
+        {
+            using var brush = new SolidBrush(palette.Strip);
+            graphics.FillRectangle(brush, strip);
+        }
+
+        graphics.Clip = clip;
+    }
+
+    private static void TabDrawHandler(object sender, DrawItemEventArgs e)
+    {
+        if (sender is not TabControl tc) return;
+        if (!TabPalette.TryGetValue(tc, out var palette)) return;
+        if (e.Index < 0 || e.Index >= tc.TabPages.Count) return;
+
+        bool isSelected = e.Index == tc.SelectedIndex;
+        var bounds = e.Bounds;
+
+        using (var back = new SolidBrush(isSelected ? palette.Selected : palette.Strip))
+            e.Graphics.FillRectangle(back, bounds);
+
+        // A selected tab gets a top accent so it reads as active without relying on the OS.
+        if (isSelected)
+        {
+            using var accent = new SolidBrush(Color.FromArgb(90, 140, 220));
+            e.Graphics.FillRectangle(accent, bounds.X, bounds.Y, bounds.Width, 2);
+        }
+
+        TextRenderer.DrawText(e.Graphics, tc.TabPages[e.Index].Text, tc.Font, bounds, palette.Text,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis
+            | TextFormatFlags.NoPrefix);
+    }
+
+    public static void SetDoubleBufferedTree(Control c)
+    {
+        if (c == null) return;
+        SetDoubleBuffered(c);
+        foreach (Control child in c.Controls)
+            SetDoubleBufferedTree(child);
     }
 
     public static void SetDoubleBuffered(Control c)
@@ -821,17 +1196,23 @@ public static class WinFormsUtil
     }
 
     // Message Displays
+    //
+    // Both of these run their text through the same redaction the crash window uses. Only that
+    // window was redacting before, so the far more common path - a caught exception handed to
+    // Error() as e.ToString() - printed the full stack trace, and with it the account name and the
+    // whole directory layout, straight into a message box. Doing it here covers every call site at
+    // once rather than relying on each one to remember.
     public static DialogResult Error(params string[] lines)
     {
         System.Media.SystemSounds.Exclamation.Play();
-        string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
+        string msg = ErrorWindow.Redact(string.Join(Environment.NewLine + Environment.NewLine, lines));
         return MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 
     public static DialogResult Alert(params string[] lines)
     {
         System.Media.SystemSounds.Asterisk.Play();
-        string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
+        string msg = ErrorWindow.Redact(string.Join(Environment.NewLine + Environment.NewLine, lines));
         return MessageBox.Show(msg, "Alert", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
@@ -840,6 +1221,61 @@ public static class WinFormsUtil
         System.Media.SystemSounds.Question.Play();
         string msg = string.Join(Environment.NewLine + Environment.NewLine, lines);
         return MessageBox.Show(msg, "Prompt", btn, MessageBoxIcon.Asterisk);
+    }
+
+    /// <summary>
+    /// Asks the user to choose between the Regular and Competitive randomizer up front, before
+    /// the Universal Randomizer window itself opens. Returns true for Competitive, false for
+    /// Regular, or null if the user closed the prompt without choosing.
+    /// </summary>
+    public static bool? PromptRandomizerMode()
+    {
+        using var dialog = new Form
+        {
+            Text = "Choose Randomizer Mode",
+            // Shorter now that the two captions under the buttons are gone.
+            Size = new System.Drawing.Size(420, 215),
+            FormBorderStyle = FormBorderStyle.FixedDialog,
+            StartPosition = FormStartPosition.CenterScreen,
+            MaximizeBox = false,
+            MinimizeBox = false,
+        };
+        ApplyTheme(dialog);
+
+        var label = new Label
+        {
+            Text = "How would you like to randomize?",
+            Location = new System.Drawing.Point(20, 20),
+            Size = new System.Drawing.Size(380, 25),
+            Font = new System.Drawing.Font("Segoe UI", 10F, FontStyle.Bold),
+            TextAlign = ContentAlignment.MiddleCenter,
+        };
+
+        var btnRegular = new Button
+        {
+            Text = "Regular",
+            Location = new System.Drawing.Point(30, 70),
+            Size = new System.Drawing.Size(160, 90),
+            DialogResult = DialogResult.No,
+        };
+
+        var btnCompetitive = new Button
+        {
+            Text = "Competitive",
+            Location = new System.Drawing.Point(220, 70),
+            Size = new System.Drawing.Size(160, 90),
+            DialogResult = DialogResult.Yes,
+        };
+
+        dialog.Controls.AddRange(new Control[] { label, btnRegular, btnCompetitive });
+
+        var result = dialog.ShowDialog();
+        return result switch
+        {
+            DialogResult.Yes => true,
+            DialogResult.No => false,
+            _ => null,
+        };
     }
 
     public static string PromptInput(string title, string prompt, string defaultText = "") => GetInput(title, prompt, defaultText);

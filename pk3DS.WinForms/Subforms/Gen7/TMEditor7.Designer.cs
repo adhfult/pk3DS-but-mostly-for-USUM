@@ -109,7 +109,7 @@ partial class TMEditor7
         // TB_Offset
         // 
         this.TB_Offset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-        this.TB_Offset.Location = new System.Drawing.Point(82, 332);
+        this.TB_Offset.Location = new System.Drawing.Point(100, 332);  // row 1
         this.TB_Offset.Name = "TB_Offset";
         this.TB_Offset.Size = new System.Drawing.Size(100, 20);
         this.TB_Offset.TabIndex = 9;
@@ -118,17 +118,17 @@ partial class TMEditor7
         // L_Offset
         // 
         this.L_Offset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-        this.L_Offset.AutoSize = true;
+        // Fixed width and right-aligned: AutoSize made this row depend on the rendered width of
         this.L_Offset.Location = new System.Drawing.Point(9, 335);
         this.L_Offset.Name = "L_Offset";
-        this.L_Offset.Size = new System.Drawing.Size(68, 13);
+        this.L_Offset.Size = new System.Drawing.Size(86, 15);
         this.L_Offset.TabIndex = 10;
         this.L_Offset.Text = "Table Offset:";
         // 
         // NUD_TMCount
         // 
         this.NUD_TMCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-        this.NUD_TMCount.Location = new System.Drawing.Point(200, 332);
+        this.NUD_TMCount.Location = new System.Drawing.Point(275, 332);  // row 1
         this.NUD_TMCount.Maximum = new decimal(new int[] { 128, 0, 0, 0 });
         this.NUD_TMCount.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
         this.NUD_TMCount.Name = "NUD_TMCount";
@@ -141,7 +141,7 @@ partial class TMEditor7
         //
         this.L_TMCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
         this.L_TMCount.AutoSize = true;
-        this.L_TMCount.Location = new System.Drawing.Point(265, 335);
+        this.L_TMCount.Location = new System.Drawing.Point(215, 335);  // row 1, before its NUD
         this.L_TMCount.Name = "L_TMCount";
         this.L_TMCount.Size = new System.Drawing.Size(55, 13);
         this.L_TMCount.TabIndex = 12;
@@ -151,9 +151,29 @@ partial class TMEditor7
         // 
         this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(380, 360);
+        this.ClientSize = new System.Drawing.Size(380, 400);
         this.Controls.Add(this.L_Offset);
         this.Controls.Add(this.TB_Offset);
+        // The expansion's code and text patches had no entry point in the UI at all, so the extra
+        // item IDs could be assigned while nothing that makes them usable ever ran.
+        this.B_TMPreflight = new System.Windows.Forms.Button();
+        this.B_TMPreflight.Location = new System.Drawing.Point(8, 362);   // row 2
+        this.B_TMPreflight.Name = "B_TMPreflight";
+        this.B_TMPreflight.Size = new System.Drawing.Size(175, 25);
+        this.B_TMPreflight.Text = "Check Expansion Patches";
+        this.B_TMPreflight.UseVisualStyleBackColor = true;
+        this.B_TMPreflight.Click += new System.EventHandler(this.B_TMPreflight_Click);
+        this.Controls.Add(this.B_TMPreflight);
+
+        this.B_TMApply = new System.Windows.Forms.Button();
+        this.B_TMApply.Location = new System.Drawing.Point(189, 362);  // row 2
+        this.B_TMApply.Name = "B_TMApply";
+        this.B_TMApply.Size = new System.Drawing.Size(180, 25);
+        this.B_TMApply.Text = "Apply Expansion Patches...";
+        this.B_TMApply.UseVisualStyleBackColor = true;
+        this.B_TMApply.Click += new System.EventHandler(this.B_TMApply_Click);
+        this.Controls.Add(this.B_TMApply);
+
         this.Controls.Add(this.B_UpdateDesc);
         this.Controls.Add(this.B_ImportTxt);
         this.Controls.Add(this.B_ExportTxt);
@@ -184,6 +204,8 @@ partial class TMEditor7
     private System.Windows.Forms.Button B_ExportTxt;
     private System.Windows.Forms.Button B_ImportTxt;
     private System.Windows.Forms.Button B_UpdateDesc;
+    private System.Windows.Forms.Button B_TMPreflight;
+    private System.Windows.Forms.Button B_TMApply;
     private System.Windows.Forms.TextBox TB_Offset;
     private System.Windows.Forms.Label L_Offset;
     private System.Windows.Forms.NumericUpDown NUD_TMCount;

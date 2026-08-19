@@ -51,6 +51,7 @@ namespace pk3DS.WinForms;
         this.SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
         this.Paint += new PaintEventHandler(Main_Paint);
         ShowdownSetManager.Load();
+        ExpansionCodeMap.EnsureLoaded();
 
         // Prepare DragDrop Functionality
         AllowDrop = TB_Path.AllowDrop = true;
@@ -65,7 +66,9 @@ namespace pk3DS.WinForms;
             t.DragDrop += TabMain_DragDrop;
         }
 
-        // Reload Previous Editing Files if the file exists
+        randomizationToolStripMenuItem.Click += (s, e) => { OpenUniversalRandomizer(); };
+        B_UniversalRandomizer.TabStop = false;
+
         var settings = Properties.Settings.Default;
         if (CB_Lang.Items.Count == 0)
         {
@@ -102,8 +105,33 @@ namespace pk3DS.WinForms;
                 RandSettings.Load(defaultRand.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None));
         }
 
+        // Lets the tab strip continue the window's gradient instead of guessing a flat colour that
+        // only matches it at one point.
+        WinFormsUtil.BackgroundProvider = () => _gradientCache;
+        WinFormsUtil.BackgroundOwner = this;
+
+        // Nothing may overwrite code.bin or a CRO without the user seeing it first.
+        pk3DS.Core.Modding.BinaryWriteGuard.ApprovalHandler = ConfirmBinaryWrite;
+
         WinFormsUtil.ApplyTheme(this);
-        WinFormsUtil.SetDoubleBuffered(TC_RomFS);
+        // The pages and the panels inside them, not just the tab strip - see SetDoubleBufferedTree.
+        WinFormsUtil.SetDoubleBufferedTree(TC_RomFS);
+
+        // Button widths are derived from the panel, so they have to be recomputed when it changes.
+        foreach (var panel in new[] { FLP_RomFS, FLP_ExeFS, FLP_CRO })
+        {
+            if (panel == null) continue;
+            var captured = panel;
+            captured.SizeChanged += (s, e) => LayoutEditorButtons(captured);
+        }
+
+        // A hidden tab page reports a stale client size, so its panel has to be measured again the
+        // first time it is actually shown - otherwise only the tab open at startup lays out right.
+        TC_RomFS.SelectedIndexChanged += (s, e) =>
+        {
+            foreach (var p in TC_RomFS.SelectedTab?.Controls.OfType<FlowLayoutPanel>() ?? [])
+                LayoutEditorButtons(p);
+        };
         
         // Add Toggle to Options
         var themeToggle = new ToolStripMenuItem("Visual Mode");
@@ -154,23 +182,13 @@ namespace pk3DS.WinForms;
             object obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject("_800");
             if (obj is Bitmap img) 
             {
-                this.PB_Sprite.Image = WinFormsUtil.ScaleImage(img, 2);
+                WinFormsUtil.SetImage(this.PB_Sprite, WinFormsUtil.ScaleImage(img, 2));
                 this.PB_Sprite.SizeMode = PictureBoxSizeMode.Zoom;
             }
         }
         catch { }
 
-        // Thought bubble (top of sidebar, above mascot) - HIDDEN
-        this.PNL_MascotGlass.Visible = false;
-        this.PNL_MascotGlass.Location = new System.Drawing.Point(5, 5);
-        this.PNL_MascotGlass.Size = new System.Drawing.Size(170, 36);
-        this.PNL_Sidebar.Controls.Add(this.PNL_MascotGlass);
 
-        this.L_MascotThought.Dock = System.Windows.Forms.DockStyle.Fill;
-        this.L_MascotThought.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic);
-        this.L_MascotThought.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-        this.L_MascotThought.ForeColor = System.Drawing.Color.White;
-        this.L_MascotThought.BackColor = System.Drawing.Color.Transparent;
 
         // Path label for the top area
         var L_PathLabel = new Label { Text = "Path:", Location = new Point(12, 30), AutoSize = true, ForeColor = Color.White, BackColor = Color.Transparent };
@@ -246,6 +264,8 @@ namespace pk3DS.WinForms;
         this.PB_Sprite.Click += Mascot_Click;
         SetMascotQuote();
 
+        WinFormsUtil.SetDoubleBufferedTree(this.PNL_Sidebar);
+
         // Expand window to fit content + sidebar
         this.ClientSize = new System.Drawing.Size(800, 450);
         this.MinimumSize = new System.Drawing.Size(800, 490);
@@ -253,28 +273,172 @@ namespace pk3DS.WinForms;
         this.MaximizeBox = false;
     }
 
+    /// <summary>
+    /// Composites the whole window off-screen before it reaches the display.
+    /// <para>
+    /// The form paints a gradient under everything with <see cref="ControlStyles.UserPaint"/>, but
+    /// a TabControl draws its pages itself and its children draw over that in turn. Switching tabs
+    /// therefore repainted in layers - background, page, then every button - and each layer was
+    /// briefly visible, which is the flicker. Double-buffering the TabControl alone could not fix
+    /// it, because that buffers one control while the tearing happens between controls.
+    /// </para>
+    /// <para>
+    /// WS_EX_COMPOSITED moves the whole hierarchy to a single bottom-up composite, so the window
+    /// updates in one step no matter how many nested containers are involved.
+    /// </para>
+    /// </summary>
+    protected override CreateParams CreateParams
+    {
+        get
+        {
+            var cp = base.CreateParams;
+            const int WS_EX_COMPOSITED = 0x02000000;
+            cp.ExStyle |= WS_EX_COMPOSITED;
+            return cp;
+        }
+    }
+
+    // The painted background, rendered once and reused. Rebuilt only when the size or theme
+    // changes.
+    private Bitmap _gradientCache;
+    private Size _gradientCacheSize;
+    private string _gradientCacheTheme;
+
+    /// <summary>
+    /// Paints the cached background.
+    /// <para>
+    /// This used to build the gradient from scratch on every paint: a dictionary load, a fresh
+    /// LinearGradientBrush, a seven-stop ColorBlend and a full-client fill, all per repaint.
+    /// Switching tabs fires several repaints in a row, so that cost landed several times in a
+    /// single interaction and was the flicker - not a buffering problem, which is why buffering
+    /// the tab control did not help. Blitting a prepared bitmap is a memory copy instead.
+    /// </para>
+    /// </summary>
     private void Main_Paint(object sender, PaintEventArgs e)
     {
-        using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(this.ClientRectangle, GradientStart, GradientEnd, 90F))
+        string themeName = GetThemeForGame();
+        string customTheme = Properties.Settings.Default.CustomTheme;
+        if (!string.IsNullOrEmpty(customTheme) && customTheme != "Dark" && customTheme != "Light" && customTheme != "Grey" && customTheme != "GalaxyPurple")
+            themeName = customTheme;
+
+        var size = ClientSize;
+        if (size.Width <= 0 || size.Height <= 0) return;
+
+        if (_gradientCache == null || _gradientCacheSize != size || _gradientCacheTheme != themeName)
         {
-            e.Graphics.FillRectangle(brush, this.ClientRectangle);
+            _gradientCache?.Dispose();
+            _gradientCache = new Bitmap(size.Width, size.Height);
+            var rect = new Rectangle(Point.Empty, size);
+            using (var g = Graphics.FromImage(_gradientCache))
+            using (var brush = WinFormsUtil.CreateGradientBrush(rect, themeName, 45f)
+                               ?? new System.Drawing.Drawing2D.LinearGradientBrush(rect, GradientStart, GradientEnd, 90F))
+            {
+                g.FillRectangle(brush, rect);
+            }
+            _gradientCacheSize = size;
+            _gradientCacheTheme = themeName;
+
+            // Child controls that continue the background need the new one, and the tab strip is
+            // only repainted when something invalidates it.
+            TC_RomFS?.Invalidate();
         }
+
+        e.Graphics.DrawImageUnscaled(_gradientCache, 0, 0);
+    }
+
+    /// <summary>
+    /// Asks before an executable binary is overwritten, and says what is about to change.
+    /// <para>
+    /// Marshalled to the UI thread because most of these patches run on a worker - a MessageBox
+    /// raised from there would appear behind the window or not at all.
+    /// </para>
+    /// </summary>
+    private bool ConfirmBinaryWrite(pk3DS.Core.Modding.BinaryWriteRequest request)
+    {
+        if (InvokeRequired)
+            return (bool)Invoke(new Func<bool>(() => ConfirmBinaryWrite(request)));
+
+        string changed = request.ChangedBytes switch
+        {
+            < 0 => "Unknown number of bytes differ.",
+            0 => "No bytes differ - this write would change nothing.",
+            1 => "1 byte differs from the file on disk.",
+            _ => $"{request.ChangedBytes:N0} bytes differ from the file on disk.",
+        };
+
+        var answer = WinFormsUtil.Prompt(MessageBoxButtons.YesNo,
+            $"Allow {request.FileName} to be modified?",
+            request.Reason,
+            request.Detail,
+            changed,
+            Environment.NewLine
+            + "These patches target fixed offsets from one specific build. If this ROM is a "
+            + "different region, revision, or an already-expanded build, the write can corrupt "
+            + "unrelated code. A copy of the original is kept alongside it as .orig.");
+
+        return answer == DialogResult.Yes;
+    }
+
+    /// <summary>Drops the cached background so the next paint rebuilds it.</summary>
+    private void InvalidateGradientCache()
+    {
+        _gradientCache?.Dispose();
+        _gradientCache = null;
+        Invalidate();
     }
 
     private void AddThemeMenu()
     {
         var themeMenu = new ToolStripMenuItem("Visual Theme");
-        foreach (var theme in new[] { "Xerneas", "Yveltal", "Groudon", "Kyogre", "Solgaleo", "Lunala", "Necrozma", "Dusk Mane Necrozma", "Dawn Wings Necrozma", "Ultra Necrozma", "Rayquaza", "Deoxys", "Zygarde", "Magearna", "Zeraora", "Marshadow", "Incineroar", "Decidueye", "Primarina" })
+
+        void AddGenerationMenu(string label, string[] themes)
         {
-            var item = new ToolStripMenuItem(theme);
-            item.Click += (s, e) => {
-                Properties.Settings.Default.CustomTheme = theme;
-                Properties.Settings.Default.Save();
-                UpdateMascot(); // This will now update GradientStart and Sprite
-                this.Invalidate();
-            };
-            themeMenu.DropDownItems.Add(item);
+            var menu = new ToolStripMenuItem(label);
+            foreach (var theme in themes)
+            {
+                string chosen = theme; // captured per iteration, not shared by every handler
+                var item = new ToolStripMenuItem(chosen);
+                item.Click += (s, e) =>
+                {
+                    Properties.Settings.Default.CustomTheme = chosen;
+                    Properties.Settings.Default.Save();
+                    UpdateMascot();
+                    this.Invalidate();
+                };
+                menu.DropDownItems.Add(item);
+            }
+            themeMenu.DropDownItems.Add(menu);
         }
+
+        AddGenerationMenu("Gen 6 (XY / ORAS)",
+        [
+            "Xerneas", "Yveltal", "Zygarde", "Groudon", "Kyogre", "Rayquaza", "Deoxys", "Jirachi",
+            "Latias", "Latios", "Hoopa", "Diancie", "Sceptile", "Blaziken", "Swampert", "Metagross",
+            "Salamence", "Regice", "Regirock", "Registeel",
+        ]);
+
+        AddGenerationMenu("Gen 7 (SM / USUM)",
+        [
+            "Solgaleo", "Lunala", "Dawn Wings Necrozma", "Dusk Mane Necrozma", "Necrozma",
+            "Ultra Necrozma", "Magearna", "Zeraora", "Marshadow", "Incineroar", "Primarina",
+            "Decidueye",
+        ]);
+
+        AddGenerationMenu("Gen 8 (SwSh)",
+        [
+            "Cinderace", "Rillaboom", "Inteleon", "Zacian", "Zamazenta", "Dragapult", "Eternatus",
+            "Calyrex", "Calyrex Ice Rider", "Calyrex Shadow Rider", "Glastrier", "Spectrier",
+            "Regieleki", "Regidrago", "Zarude", "Urshifu", "Urshifu Rapid Strike",
+        ]);
+
+        AddGenerationMenu("Gen 9 (SV)",
+        [
+            "Skeledirge", "Meowscarada", "Quaquaval", "Baxcalibur", "Tinkaton", "Bellibolt",
+            "Miraidon", "Koraidon", "Roaring Moon", "Iron Valiant", "Chi-Yu", "Ting-Lu",
+            "Chien-Pao", "Wo-Chien", "Hydrapple", "Archaludon", "Pecharunt",
+            "Ogerpon", "Ogerpon Wellspring", "Ogerpon Hearthflame", "Ogerpon Cornerstone",
+            "Okidogi", "Munkidori", "Fezandipiti", "Terapagos",
+        ]);
 
         themeMenu.DropDownItems.Add(new ToolStripSeparator());
 
@@ -304,6 +468,7 @@ namespace pk3DS.WinForms;
         };
         themeMenu.DropDownItems.Add(clearCustomMascotItem);
 
+        WinFormsUtil.ApplyThemeToMenuItem(themeMenu, WinFormsUtil.CurrentTheme);
         Menu_Options.DropDownItems.Add(themeMenu);
         
         string savedTheme = Properties.Settings.Default.CustomTheme;
@@ -323,9 +488,9 @@ namespace pk3DS.WinForms;
                 return;
             }
 
-            bool detectedIsUS = Config.UltraSun;
+            string detected = DetectUltraVersion();
             var versionPrompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel,
-                $"Detected workspace: {(Config.UltraSun ? "Ultra Sun" : Config.UltraMoon ? "Ultra Moon" : "Gen 7 Game")}\n\n" +
+                $"Detected workspace: {(detected == "US" ? "Ultra Sun" : detected == "UM" ? "Ultra Moon" : "Gen 7 Game")}\n\n" +
                 "Which Expansion Patch version do you want to apply?\n\n" +
                 "YES = Ultra Sun (US folder)\n" +
                 "NO = Ultra Moon (UM folder)\n" +
@@ -380,11 +545,49 @@ namespace pk3DS.WinForms;
             }
         };
 
-        var configItem = new ToolStripMenuItem("Expansion Options & Custom Offsets");
+        // "&&" renders one literal ampersand. A single "&" is taken as the mnemonic marker and is
+        // swallowed, which is why this menu read "Expansion Options  Custom Offsets".
+        var configItem = new ToolStripMenuItem("Expansion Options && Custom Offsets");
         configItem.Click += (s, e) => {
-            var cfg = pk3DS.Core.Modding.ExpansionConfig.Load(Path.Combine(Directory.GetCurrentDirectory(), "ExpansionConfig.json"));
-            string infoStr = $"Max Species: {cfg.MaxSpecies}\nMax Moves: {cfg.MaxMoves}\nMax Items: {cfg.MaxItems}\nMax Abilities: {cfg.MaxAbilities}\n16-Bit Abilities Enabled: {cfg.Enable16BitAbilities}";
-            WinFormsUtil.Alert(infoStr, "Expansion Options & Custom Offsets Configuration");
+            var cfg = pk3DS.Core.Modding.ExpansionConfig.Load(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ExpansionConfig.json"));
+            var sb = new StringBuilder();
+            sb.AppendLine("=== Expansion Options ===");
+            sb.AppendLine($"Max Species: {cfg.MaxSpecies}");
+            sb.AppendLine($"Max Moves: {cfg.MaxMoves}");
+            sb.AppendLine($"Max Items: {cfg.MaxItems}");
+            sb.AppendLine($"Max Abilities: {cfg.MaxAbilities}");
+            sb.AppendLine($"16-Bit Abilities Enabled: {cfg.Enable16BitAbilities}");
+            sb.AppendLine();
+
+            sb.AppendLine("=== Custom Offsets (Expansion Pack code map) ===");
+            if (!ExpansionCodeMap.IsAvailable)
+            {
+                sb.AppendLine("code_map.csv could not be loaded.");
+            }
+            else
+            {
+                foreach (var byFile in ExpansionCodeMap.Entries.GroupBy(x => x.TargetFile).OrderByDescending(g => g.Count()))
+                {
+                    var addressed = byFile.Where(x => x.HasAddress).ToList();
+                    string span = addressed.Count > 0
+                        ? $"  0x{addressed.Min(x => x.StartOffset):X6}-0x{addressed.Max(x => x.EndOffset):X6}"
+                        : "";
+                    sb.AppendLine();
+                    sb.AppendLine($"-- {byFile.Key}  ({byFile.Count()} edits){span}");
+
+                    foreach (var section in byFile.GroupBy(x => x.Section))
+                    {
+                        var first = section.FirstOrDefault(x => x.HasAddress) ?? section.First();
+                        string at = first.HasAddress ? $"0x{first.StartOffset:X6}" : first.Offset;
+                        sb.AppendLine($"   {at,-18} {section.Key} ({section.Count()})");
+                        if (!string.IsNullOrWhiteSpace(first.Purpose))
+                            sb.AppendLine($"   {"",-18} {first.Purpose}");
+                    }
+                }
+            }
+
+            ShowScrollableReport(sb.ToString(), "Expansion Options && Custom Offsets");
         };
 
         var statusItem = new ToolStripMenuItem("View Modded Game Status");
@@ -395,13 +598,53 @@ namespace pk3DS.WinForms;
                 return;
             }
             Config.Info.RecalculateLimits(Config);
-            string statusStr = $"Game Version: {Config.Version}\n" +
+
+            var checks = new (string File, string Path)[]
+            {
+                ("code.bin",   ExeFSPath == null ? null
+                                 : Directory.GetFiles(ExeFSPath)
+                                     .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f)
+                                         .Contains("code", StringComparison.OrdinalIgnoreCase))),
+                ("Battle.cro", RomFSPath == null ? null : Path.Combine(RomFSPath, "Battle.cro")),
+                ("Bag.cro",    RomFSPath == null ? null : Path.Combine(RomFSPath, "Bag.cro")),
+            };
+
+            var lines = new List<string>();
+            int patched = 0, testable = 0;
+            foreach (var (file, path) in checks)
+            {
+                if (path == null || !File.Exists(path)) { lines.Add($"  {file}: not found"); continue; }
+                try
+                {
+                    bool isPatched = ExpansionCodeMap.IsExpansionPatched(File.ReadAllBytes(path), file);
+                    testable++;
+                    if (isPatched) patched++;
+                    lines.Add($"  {file}: {(isPatched ? "Expansion Pack detected" : "looks like retail")}");
+                }
+                catch (Exception ex) { lines.Add($"  {file}: could not be read ({ex.GetType().Name})"); }
+            }
+
+            string verdict = testable == 0 ? "Could not check any files."
+                : patched == testable ? "This game IS modded with the Expansion Pack."
+                : patched == 0 ? "This game does NOT appear to be modded."
+                : $"PARTIALLY modded - {patched} of {testable} files carry the pack.";
+
+            string statusStr = verdict + "\n\n" + string.Join("\n", lines) +
+                               $"\n\nGame Version: {Config.Version}\n" +
                                $"Max Species ID: {Config.Info.MaxSpeciesID}\n" +
                                $"Max Move ID: {Config.Info.MaxMoveID}\n" +
                                $"Max Item ID: {Config.Info.MaxItemID}\n" +
                                $"Max Ability ID: {Config.Info.MaxAbilityID}\n" +
                                $"Applied Patches: {string.Join(", ", pk3DS.Core.Modding.ProjectState.Instance.AppliedPatches)}";
             WinFormsUtil.Alert(statusStr, "Modded Game Status");
+        };
+
+        var launchToolkitItem = new ToolStripMenuItem("Open 3DS Toolkit GUI (DotNet.3DS.Toolkit)");
+        launchToolkitItem.Click += (s, e) => {
+            if (!ExternalRebuilder.LaunchToolkitGUI(msg => UpdateStatus(msg)))
+            {
+                WinFormsUtil.Error("Could not find ToolkitForm.exe in tools directory.");
+            }
         };
 
         var exportLumaItem = new ToolStripMenuItem("Export Luma3DS / LayeredFS Mod Package (Compact)");
@@ -426,6 +669,31 @@ namespace pk3DS.WinForms;
         moddingMenu.DropDownItems.Add(exportLumaItem);
         moddingMenu.DropDownItems.Add(configItem);
         moddingMenu.DropDownItems.Add(statusItem);
+        moddingMenu.DropDownItems.Add(launchToolkitItem);
+        moddingMenu.DropDownItems.Add(new ToolStripSeparator());
+
+        // Several patches used to rewrite code.bin and the CROs as a side effect of an ordinary
+        // edit, at offsets only valid for one build. This puts a confirmation in front of them.
+        var approveWritesItem = new ToolStripMenuItem("Confirm before editing code.bin / CROs")
+        {
+            CheckOnClick = true,
+            Checked = pk3DS.Core.Modding.BinaryWriteGuard.RequireApproval,
+            ToolTipText = "When on, any patch that rewrites an executable binary must be approved first.",
+        };
+        approveWritesItem.CheckedChanged += (_, _) =>
+            pk3DS.Core.Modding.BinaryWriteGuard.RequireApproval = approveWritesItem.Checked;
+        moddingMenu.DropDownItems.Add(approveWritesItem);
+
+        var writeHistoryItem = new ToolStripMenuItem("View Binary Write History...");
+        writeHistoryItem.Click += (_, _) =>
+        {
+            var history = pk3DS.Core.Modding.BinaryWriteGuard.History;
+            ShowScrollableReport("Binary Write History",
+                history.Count == 0
+                    ? "No executable binary has been written this session."
+                    : string.Join(Environment.NewLine, history));
+        };
+        moddingMenu.DropDownItems.Add(writeHistoryItem);
 
         menuStrip1.Items.Add(moddingMenu);
         WinFormsUtil.ApplyThemeToMenuItem(moddingMenu, WinFormsUtil.CurrentTheme);
@@ -470,7 +738,7 @@ namespace pk3DS.WinForms;
             return customNick;
 
         string theme = Properties.Settings.Default.CustomTheme;
-        if (!string.IsNullOrEmpty(theme))
+        if (!string.IsNullOrEmpty(theme) && theme != "Dark" && theme != "Light" && theme != "Grey" && theme != "GalaxyPurple")
         {
             if (theme == "Ultra Necrozma") return "Ultra Necrozma";
             return theme;
@@ -490,10 +758,10 @@ namespace pk3DS.WinForms;
 
     private void UpdateFriendshipUI()
     {
-        if (Friendship >= 255) PB_Friendship.Image = WinFormsUtil.GetFriendshipIcon(3); // Max
-        else if (Friendship >= 150) PB_Friendship.Image = WinFormsUtil.GetFriendshipIcon(2); // Mid
-        else if (Friendship >= 50) PB_Friendship.Image = WinFormsUtil.GetFriendshipIcon(1); // Low
-        else PB_Friendship.Image = WinFormsUtil.GetFriendshipIcon(0); // None
+        if (Friendship >= 255) WinFormsUtil.SetImage(PB_Friendship, WinFormsUtil.GetFriendshipIcon(3)); // Max
+        else if (Friendship >= 150) WinFormsUtil.SetImage(PB_Friendship, WinFormsUtil.GetFriendshipIcon(2)); // Mid
+        else if (Friendship >= 50) WinFormsUtil.SetImage(PB_Friendship, WinFormsUtil.GetFriendshipIcon(1)); // Low
+        else WinFormsUtil.SetImage(PB_Friendship, WinFormsUtil.GetFriendshipIcon(0)); // None
     }
 
     public void HandleFriendship(int points)
@@ -551,13 +819,28 @@ namespace pk3DS.WinForms;
                 case "Incineroar": species = 727; GradientStart = ColorTranslator.FromHtml("#CC2121"); break;
                 case "Decidueye": species = 724; GradientStart = ColorTranslator.FromHtml("#155C41"); break;
                 case "Primarina": species = 730; GradientStart = ColorTranslator.FromHtml("#54B3D4"); break;
+                case "Latias": species = 380; GradientStart = ColorTranslator.FromHtml("#E80606"); break;
+                case "Latios": species = 381; GradientStart = ColorTranslator.FromHtml("#6A3DFE"); break;
+                case "Jirachi": species = 385; GradientStart = ColorTranslator.FromHtml("#F6F39F"); break;
+                case "Diancie": species = 719; GradientStart = ColorTranslator.FromHtml("#9EA5B1"); break;
+                case "Hoopa": species = 720; GradientStart = ColorTranslator.FromHtml("#FA6FA0"); break;
+
+                default:
+                    if (MascotTransforms.ThemeSpecies.TryGetValue(customTheme, out var mapped))
+                    {
+                        species = mapped.Species;
+                        form = mapped.Form;
+                    }
+                    break;
             }
         }
         else // Fallback to Game-based detection
         {
             string path = (RomFSPath ?? TB_Path.Text).ToLower();
-            if (path.Contains("ultra sun") || path.Contains("ultrasun") || path.Contains("usum")) { species = 800; form = 1; GradientStart = ColorTranslator.FromHtml("#F5E9D0"); }
-            else if (path.Contains("ultra moon") || path.Contains("ultramoon")) { species = 800; form = 2; GradientStart = ColorTranslator.FromHtml("#B2DAE2"); }
+
+            string ultra = DetectUltraVersion();
+            if (ultra == "UM") { species = 800; form = 2; GradientStart = ColorTranslator.FromHtml("#B2DAE2"); }
+            else if (ultra == "US") { species = 800; form = 1; GradientStart = ColorTranslator.FromHtml("#F5E9D0"); }
             else if (path.Contains("omega ruby") || path.Contains("oras")) { species = 383; GradientStart = ColorTranslator.FromHtml("#DA1B22"); }
             else if (path.Contains("alpha sapphire")) { species = 382; GradientStart = ColorTranslator.FromHtml("#3A16A9"); }
             else if (path.Contains("sun")) { species = 791; GradientStart = ColorTranslator.FromHtml("#FF6A01"); }
@@ -572,20 +855,22 @@ namespace pk3DS.WinForms;
                 else if (Config.OR) { species = 383; GradientStart = ColorTranslator.FromHtml("#DA1B22"); }
                 else if (Config.Sun) { species = 791; GradientStart = ColorTranslator.FromHtml("#FF6A01"); }
                 else if (Config.Moon) { species = 792; GradientStart = ColorTranslator.FromHtml("#6B30C9"); }
-                else if (Config.UltraSun) { species = 800; form = 1; GradientStart = ColorTranslator.FromHtml("#F5E9D0"); }
-                else if (Config.UltraMoon) { species = 800; form = 2; GradientStart = ColorTranslator.FromHtml("#B2DAE2"); }
+                // No UltraSun/UltraMoon test here: DetectUltraVersion above already settled the
+                // Ultra pair, and Config cannot tell them apart to settle it again.
                 else { species = 800; }
             }
             else { species = 800; }
         }
 
-        // Item-based Form Overrides
-        var ownedItemsList = (Properties.Settings.Default.MascotItems ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        if (species == 383 && ownedItemsList.Contains("Red Orb")) form = 1; // Primal Groudon
-        if (species == 382 && ownedItemsList.Contains("Blue Orb")) form = 1; // Primal Kyogre
-        if (species == 384 && ownedItemsList.Contains("Meteorite")) form = 1; // Mega Rayquaza
-        if (species == 718 && ownedItemsList.Contains("Leftovers")) form = 4; // Zygarde Complete
-        if (species == 386) form = DeoxysForm % 4; // Use persistent Deoxys form counter
+        // Item-based form overrides. The whole table lives in MascotTransforms so the chained and
+        // friendship-gated cases sit alongside the simple ones instead of as special cases here.
+        var ownedItemsList = (Properties.Settings.Default.MascotItems ?? "")
+            .Split([','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(i => i.Trim()).ToList();
+
+        form = MascotTransforms.Resolve(species, form, ownedItemsList, Friendship, CalyrexRiderChoice);
+
+        if (species == 386) form = DeoxysForm % 4; // Deoxys cycles on click rather than by item
 
 
         // Check if a Custom Mascot image is configured by the user
@@ -630,7 +915,14 @@ namespace pk3DS.WinForms;
                 if (form > 0) resName += $"_{form}";
                 object obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject(resName);
                 if (obj is Bitmap resImg) sprite = resImg;
-                else if (obj == null) {
+
+                sprite ??= LoadCustomSprite(resName);
+
+                // Still nothing: fall back within the species before falling back to another one.
+                sprite ??= LoadAnySpeciesSprite(species);
+
+                if (sprite == null)
+                {
                     obj = pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject("_800");
                     if (obj is Bitmap defImg) sprite = defImg;
                 }
@@ -640,7 +932,7 @@ namespace pk3DS.WinForms;
         }
 
         if (sprite != null)
-            PB_Sprite.Image = sprite;
+            WinFormsUtil.SetImage(PB_Sprite, sprite);
         
         this.Invalidate(); // Redraw with new gradient
         
@@ -654,15 +946,19 @@ namespace pk3DS.WinForms;
         UpdateFriendshipUI();
         
         string themeName = GetThemeForGame();
+        if (!string.IsNullOrEmpty(customTheme) && customTheme != "Dark" && customTheme != "Light" && customTheme != "Grey" && customTheme != "GalaxyPurple")
+            themeName = customTheme;
         if (species == 800 && form == 3) themeName = "Ultra Necrozma";
         WinFormsUtil.ApplyGradient(this, themeName);
         
         // Update Game Info
         if (Config != null)
         {
-            L_Game.Text = Config.X ? "Pokémon X" : Config.Y ? "Pokémon Y" : Config.OR ? "Pokémon Omega Ruby" : Config.AS ? "Pokémon Alpha Sapphire" : Config.Sun ? "Pokémon Sun" : Config.Moon ? "Pokémon Moon" : Config.UltraSun ? "Pokémon Ultra Sun" : Config.UltraMoon ? "Pokémon Ultra Moon" : "Pokémon Game";
-            L_Version.Text = $"v{Config.Version}";
-            if (SMDH != null) PB_GameIcon.Image = SMDH.LargeIcon.Icon;
+            string ultraName = DetectUltraVersion();
+            L_Game.Text = ultraName == "UM" ? "Pokémon Ultra Moon" : ultraName == "US" ? "Pokémon Ultra Sun"
+                : Config.X ? "Pokémon X" : Config.Y ? "Pokémon Y" : Config.OR ? "Pokémon Omega Ruby" : Config.AS ? "Pokémon Alpha Sapphire" : Config.Sun ? "Pokémon Sun" : Config.Moon ? "Pokémon Moon" : "Pokémon Game";
+            L_Version.Text = GetGameVersionString();
+            WinFormsUtil.SetImage(PB_GameIcon, GetGameIcon());
         }
         else
         {
@@ -672,35 +968,247 @@ namespace pk3DS.WinForms;
         }
     }
 
+    /// <summary>
+    /// Which Ultra game is loaded: "US", "UM", or null when it is not an Ultra title.
+    /// </summary>
+    private static string DetectUltraVersion()
+    {
+        string raw = RomFSPath ?? "";
+        string path = raw.ToLowerInvariant();
+
+        // Unambiguous spelled-out names win outright. Moon first: a path naming both is a parent
+        // folder, and the more specific token should not be masked by the shorter one.
+        if (path.Contains("ultra moon") || path.Contains("ultramoon")) return "UM";
+        if (path.Contains("ultra sun") || path.Contains("ultrasun")) return "US";
+
+        foreach (string seg in raw.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+                                         StringSplitOptions.RemoveEmptyEntries))
+        {
+            foreach (string word in seg.Split([char.Parse(" "), char.Parse("_"), char.Parse("-"), char.Parse(".")],
+                                              StringSplitOptions.RemoveEmptyEntries))
+            {
+                string w = word.Trim().ToLowerInvariant();
+                if (w == "um") return "UM";
+                if (w == "us") return "US";
+            }
+        }
+
+        // Only now the config, which cannot tell the pair apart on its own.
+        if (Config != null)
+        {
+            if (Config.Version == pk3DS.Core.GameVersion.UM) return "UM";
+            if (Config.Version == pk3DS.Core.GameVersion.US) return "US";
+            if (Config.UltraMoon) return "UM";
+            if (Config.UltraSun) return "US";
+        }
+        return null;
+    }
+
+    private static string GetGameVersionString()
+    {
+        if (Config == null) return "";
+        string path = (RomFSPath ?? "").ToLower();
+        string ultra = DetectUltraVersion();
+        if (ultra == "UM") return "Ultra Moon";
+        if (ultra == "US") return "Ultra Sun";
+        if (Config.Moon || path.Contains("moon")) return "Moon";
+        if (Config.Sun || path.Contains("sun")) return "Sun";
+        if (Config.AS || path.Contains("alpha sapphire") || path.Contains("sapphire")) return "Alpha Sapphire";
+        if (Config.OR || path.Contains("omega ruby") || path.Contains("ruby")) return "Omega Ruby";
+        if (Config.Y || path.Contains("pokemon y") || path.EndsWith(" y")) return "Y";
+        if (Config.X || path.Contains("pokemon x") || path.EndsWith(" x")) return "X";
+
+        return Config.Version.ToString();
+    }
+
+    private static Image GetGameIcon()
+    {
+        if (Config == null && ExeFSPath == null) return null;
+        string ultra = DetectUltraVersion();
+        if (ultra == "UM")
+        {
+            if (SMDH?.LargeIcon?.Icon != null && (SMDH.AppInfo?[1]?.ShortDescription?.Contains("Moon", StringComparison.OrdinalIgnoreCase) ?? false))
+                return SMDH.LargeIcon.Icon;
+            return GetFallbackGameIcon();
+        }
+        if (ultra == "US")
+        {
+            if (SMDH?.LargeIcon?.Icon != null && (SMDH.AppInfo?[1]?.ShortDescription?.Contains("Sun", StringComparison.OrdinalIgnoreCase) ?? false))
+                return SMDH.LargeIcon.Icon;
+            return GetFallbackGameIcon();
+        }
+
+        if (SMDH?.LargeIcon?.Icon != null)
+            return SMDH.LargeIcon.Icon;
+
+        return GetFallbackGameIcon();
+    }
+
+    private static Bitmap GetFallbackGameIcon()
+    {
+        if (Config == null) return null;
+        string path = (RomFSPath ?? "").ToLower();
+        string ultraIcon = DetectUltraVersion();
+        if (ultraIcon == "UM")
+            return WinFormsUtil.GetSprite(800, 2, 0, 0, Config); // Dawn Wings Necrozma
+        if (ultraIcon == "US")
+            return WinFormsUtil.GetSprite(800, 1, 0, 0, Config); // Dusk Mane Necrozma
+        if (Config.Moon || path.Contains("moon"))
+            return WinFormsUtil.GetSprite(792, 0, 0, 0, Config); // Lunala
+        if (Config.Sun || path.Contains("sun"))
+            return WinFormsUtil.GetSprite(791, 0, 0, 0, Config); // Solgaleo
+        if (Config.AS || path.Contains("alpha sapphire") || path.Contains("sapphire"))
+            return WinFormsUtil.GetSprite(382, 0, 0, 0, Config); // Kyogre
+        if (Config.OR || path.Contains("omega ruby") || path.Contains("ruby"))
+            return WinFormsUtil.GetSprite(383, 0, 0, 0, Config); // Groudon
+        if (Config.Y || path.Contains("pokemon y"))
+            return WinFormsUtil.GetSprite(717, 0, 0, 0, Config); // Yveltal
+        if (Config.X || path.Contains("pokemon x"))
+            return WinFormsUtil.GetSprite(716, 0, 0, 0, Config); // Xerneas
+
+        return WinFormsUtil.GetSprite(800, 0, 0, 0, Config);
+    }
+
     private string GetThemeForGame()
     {
         string path = (RomFSPath ?? TB_Path.Text).ToLower();
-        if (path.Contains("ultra sun") || path.Contains("ultrasun") || path.Contains("usum")) return "Dusk Mane Necrozma";
-        if (path.Contains("ultra moon") || path.Contains("ultramoon")) return "Dawn Wings Necrozma";
-        if (path.Contains("sun")) return "Solgaleo";
-        if (path.Contains("moon")) return "Lunala";
-        if (path.Contains("omega ruby") || path.Contains("oras")) return "Groudon";
-        if (path.Contains("alpha sapphire")) return "Kyogre";
-        if (path.Contains("pokemon x") || path.EndsWith(" x")) return "Xerneas";
-        if (path.Contains("pokemon y") || path.EndsWith(" y")) return "Yveltal";
-
         if (Config != null)
         {
-            if (Config.X) return "Xerneas";
-            if (Config.Y) return "Yveltal";
+            if (DetectUltraVersion() == "UM") return "Dawn Wings Necrozma";
+            if (DetectUltraVersion() == "US") return "Dusk Mane Necrozma";
+            if (Config.Moon) return "Lunala";
+            if (Config.Sun) return "Solgaleo";
             if (Config.AS) return "Kyogre";
             if (Config.OR) return "Groudon";
-            if (Config.Sun) return "Solgaleo";
-            if (Config.Moon) return "Lunala";
-            if (Config.UltraSun) return "Dusk Mane Necrozma";
-            if (Config.UltraMoon) return "Dawn Wings Necrozma";
+            if (Config.Y) return "Yveltal";
+            if (Config.X) return "Xerneas";
         }
+        if (path.Contains("ultra moon") || path.Contains("ultramoon") || path.Contains(@"\um") || path.Contains("_um") || path.EndsWith("um")) return "Dawn Wings Necrozma";
+        if (path.Contains("ultra sun") || path.Contains("ultrasun") || path.Contains(@"\us") || path.Contains("_us") || path.EndsWith("us")) return "Dusk Mane Necrozma";
+        if (path.Contains("moon")) return "Lunala";
+        if (path.Contains("sun")) return "Solgaleo";
+        if (path.Contains("omega ruby") || path.Contains("ruby")) return "Groudon";
+        if (path.Contains("alpha sapphire") || path.Contains("sapphire")) return "Kyogre";
+        if (path.Contains("pokemon y") || path.EndsWith(" y")) return "Yveltal";
+        if (path.Contains("pokemon x") || path.EndsWith(" x")) return "Xerneas";
+
         return "Necrozma";
+    }
+
+    /// <summary>
+    /// A sprite from the CustomSprites folder beside the executable, or null when absent.
+    /// <para>
+    /// Read through memory so the file is not left locked - CustomSprites is a folder the user
+    /// drops images into while the editor is running.
+    /// </para>
+    /// </summary>
+    private static Bitmap LoadCustomSprite(string resName)
+    {
+        try
+        {
+            string dir = Path.Combine(Application.StartupPath, "CustomSprites");
+            foreach (string ext in new[] { ".png", ".bmp", ".gif", ".jpg" })
+            {
+                string path = Path.Combine(dir, resName + ext);
+                if (!File.Exists(path)) continue;
+                using var ms = new MemoryStream(File.ReadAllBytes(path));
+                return new Bitmap(ms);
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    /// <summary>
+    /// Any sprite at all for a species, preferring its base form.
+    /// <para>
+    /// Every Gen 8 and Gen 9 mascot ships only as form variants - CustomSprites has _888_1 for
+    /// Crowned Zacian but no plain _888 - so an exact lookup missed and the mascot fell all the way
+    /// through to the Necrozma default. Showing the species in a form the user did not select is a
+    /// far smaller error than showing a different species entirely, so a form sprite is taken as a
+    /// last resort before that default.
+    /// </para>
+    /// </summary>
+    private static Bitmap LoadAnySpeciesSprite(int species)
+    {
+        var exact = LoadCustomSprite($"_{species}");
+        if (exact != null) return exact;
+
+        if (pk3DS.WinForms.Properties.Resources.ResourceManager.GetObject($"_{species}") is Bitmap fromResx)
+            return fromResx;
+
+        try
+        {
+            string dir = Path.Combine(Application.StartupPath, "CustomSprites");
+            if (!Directory.Exists(dir)) return null;
+
+            // Lowest form index first, so a base-form stand-in beats an exotic one.
+            var candidate = Directory.EnumerateFiles(dir, $"_{species}_*.*")
+                .Where(f => Path.GetExtension(f).ToLowerInvariant() is ".png" or ".bmp" or ".gif" or ".jpg")
+                .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault();
+            if (candidate == null) return null;
+
+            using var ms = new MemoryStream(File.ReadAllBytes(candidate));
+            return new Bitmap(ms);
+        }
+        catch { return null; }
+    }
+
+    /// <summary>
+    /// Which rider the player picked for the Reins of Unity, or null if they have not been asked.
+    /// <para>
+    /// Stored as a marker inside MascotItems rather than as its own setting, because the shop
+    /// already persists that string and adding a generated settings key for one nullable int is
+    /// more machinery than the choice is worth.
+    /// </para>
+    /// </summary>
+    private int? CalyrexRiderChoice
+    {
+        get
+        {
+            string items = Properties.Settings.Default.MascotItems ?? "";
+            foreach (var (label, form) in MascotTransforms.ReinsChoices)
+            {
+                if (items.Contains("Rider:" + label, StringComparison.OrdinalIgnoreCase))
+                    return form;
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Asks which rider the Reins of Unity should summon and records the answer. Called once, when
+    /// the item is first applied - re-picking means clearing the mascot's items.
+    /// </summary>
+    private void PromptForRiderChoice()
+    {
+        if (CalyrexRiderChoice.HasValue) return;
+
+        var choices = MascotTransforms.ReinsChoices;
+        var result = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel,
+            "The Reins of Unity bind Calyrex to a steed.",
+            $"Yes: {choices[0].Label}\nNo: {choices[1].Label}\nCancel: decide later");
+        if (result == DialogResult.Cancel) return;
+
+        string picked = result == DialogResult.Yes ? choices[0].Label : choices[1].Label;
+        var items = Properties.Settings.Default.MascotItems ?? "";
+        Properties.Settings.Default.MascotItems = (items.Length == 0 ? "" : items + ",") + "Rider:" + picked;
+        Properties.Settings.Default.Save();
+        UpdateMascot();
     }
 
     private static int DeoxysForm = 0;
     private void PB_Sprite_Click(object sender, EventArgs e)
     {
+        // Asking here rather than at purchase time keeps the shop a pure transaction: buying the
+        // item never opens a second dialog on top of the shop's own.
+        if (Properties.Settings.Default.CustomTheme is "Calyrex"
+            && (Properties.Settings.Default.MascotItems ?? "").Contains(MascotTransforms.ChoiceItem))
+        {
+            PromptForRiderChoice();
+        }
+
         var items = Properties.Settings.Default.MascotItems ?? "";
         if (items.Contains("Meteorite") && PB_Sprite.Image != null)
         {
@@ -724,13 +1232,7 @@ namespace pk3DS.WinForms;
             else if (active == B_LevelUp) quote = "Maybe it could use a new move or two!";
         }
 
-        L_MascotThought.Text = quote;
-        
-        // Visual feedback
-        PNL_MascotGlass.Visible = true;
-        var timer = new System.Windows.Forms.Timer { Interval = 3000 };
-        timer.Tick += (s, ev) => { PNL_MascotGlass.Visible = false; timer.Stop(); };
-        timer.Start();
+        SetMascotQuote();
     }
 
     private void B_Store_Click(object sender, EventArgs e)
@@ -741,11 +1243,26 @@ namespace pk3DS.WinForms;
             return;
         }
 
-        var storeItems = new (string Name, int ID)[] { 
-            ("Red Orb", 534), ("Blue Orb", 535), ("Meteorite", 729), ("Big Root", 296), 
-            ("Black Glasses", 240), ("Leftovers", 234), ("Solganium Z", 927), 
-            ("Lunalium Z", 928), ("Ultranecrozium Z", 929) 
+        var extras = new (string Name, int ID)[]
+        {
+            ("Solganium Z", 927), ("Lunalium Z", 928),
         };
+
+        // Known icon IDs for the stock items; anything else falls back to the name-keyed sprite
+        // cache and then to the generic held-item icon, so a missing ID costs a picture, not a crash.
+        var knownIds = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Red Orb"] = 534, ["Blue Orb"] = 535, ["Meteorite"] = 729,
+            ["Latiasite"] = 684, ["Latiosite"] = 685, ["Diancite"] = 764,
+            ["Prison Bottle"] = 720, ["Ultranecrozium Z"] = 929,
+        };
+
+        var storeItems = extras
+            .Concat(MascotTransforms.AllItems()
+                .Select(n => (Name: n, ID: knownIds.TryGetValue(n, out int id) ? id : 0)))
+            .GroupBy(i => i.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(g => g.First())
+            .ToArray();
         var ownedItems = (Properties.Settings.Default.MascotItems ?? "").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
         using (var f = new Form { Text = "Mascot Store", Size = new Size(400, 500), StartPosition = FormStartPosition.CenterParent, FormBorderStyle = FormBorderStyle.FixedDialog })
@@ -755,7 +1272,9 @@ namespace pk3DS.WinForms;
             {
                 var pnl = new Panel { Size = new Size(350, 60), BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(0, 0, 0, 5) };
                 var pb = new PictureBox { Size = new Size(48, 48), Location = new Point(5, 5), SizeMode = PictureBoxSizeMode.Zoom };
-                pb.Image = (Bitmap)Properties.Resources.ResourceManager.GetObject($"item_{item.ID}") ?? Properties.Resources.helditem;
+                pb.Image = ItemSpriteCache.Get(item.Name)
+                           ?? (item.ID > 0 ? (Bitmap)Properties.Resources.ResourceManager.GetObject($"item_{item.ID}") : null)
+                           ?? Properties.Resources.helditem;
                 var lbl = new Label { Text = item.Name, Location = new Point(60, 10), Font = new Font("Segoe UI", 10, FontStyle.Bold), AutoSize = true };
                 var cost = new Label { Text = ownedItems.Contains(item.Name) ? "OWNED" : "50 PTS", Location = new Point(60, 30), AutoSize = true, ForeColor = Color.Gold };
                 
@@ -799,7 +1318,6 @@ namespace pk3DS.WinForms;
 
     private void Menu_CustomSprites_Click(object sender, EventArgs e)
     {
-        if (Config == null) return;
         var ed = new CustomSpriteEditor();
         WinFormsUtil.ApplyTheme(ed);
         ed.ShowDialog();
@@ -863,9 +1381,70 @@ namespace pk3DS.WinForms;
         }
 
         UpdateProgramTitle();
-        Config.InitializeGameText();
+
+        try
+        {
+            if (!string.IsNullOrEmpty(RomFSPath))
+                Config.Initialize(RomFSPath, ExeFSPath, Language);
+            else
+                Config.InitializeGameText();
+        }
+        catch (Exception ex)
+        {
+            WinFormsUtil.Error("Could not load this language's data.", ex.Message);
+            return;
+        }
+
+        if (Config.GameTextStrings == null)
+        {
+            WinFormsUtil.Error("This language's text could not be read; keeping the previous one.");
+            return;
+        }
+
+        if (!LanguageCoversData(out string shortfall))
+        {
+            WinFormsUtil.Alert(
+                "This language's text has not been expanded to match the ROM." + Environment.NewLine + Environment.NewLine +
+                shortfall + Environment.NewLine + Environment.NewLine +
+                "Editors would run off the end of the name lists, so the language is being reset to English.");
+
+            if (InvokeRequired)
+                Invoke((MethodInvoker)delegate { CB_Lang.SelectedIndex = 2; });
+            else CB_Lang.SelectedIndex = 2;
+            return; // set event re-triggers this method
+        }
+
         Properties.Settings.Default.Language = Language;
         Properties.Settings.Default.Save();
+    }
+
+    /// <summary>
+    /// True when the selected language names everything the ROM's data files contain.
+    /// </summary>
+    private bool LanguageCoversData(out string shortfall)
+    {
+        shortfall = "";
+        try
+        {
+            var lines = new List<string>();
+
+            int itemData = Config.GetGARCData("item")?.Files.Length ?? 0;
+            int itemText = Config.GetText(TextName.ItemNames).Length;
+            if (itemData > 0 && itemText < itemData)
+                lines.Add($"Items: {itemText} names for {itemData} items");
+
+            int moveData = Config.Moves?.Length ?? 0;
+            int moveText = Config.GetText(TextName.MoveNames).Length;
+            if (moveData > 0 && moveText < moveData)
+                lines.Add($"Moves: {moveText} names for {moveData} moves");
+
+            shortfall = string.Join(Environment.NewLine, lines);
+            return lines.Count == 0;
+        }
+        catch
+        {
+            return true; // never block on a check that itself failed
+        }
     }
 
     private void Menu_Exit_Click(object sender, EventArgs e)
@@ -875,12 +1454,22 @@ namespace pk3DS.WinForms;
 
     private void CloseForm(object sender, FormClosingEventArgs e)
     {
-        if (Config == null)
-            return;
-        var g = Config.GARCGameText;
-        string[][] files = Config.GameTextStrings;
-        g.Files = files.Select(x => TextFile.GetBytes(Config, x)).ToArray();
-        g.Save();
+        try
+        {
+            var g = Config?.GARCGameText;
+            string[][] files = Config?.GameTextStrings;
+
+            if (g?.Files != null && files != null && files.All(f => f != null))
+            {
+                g.Files = files.Select(x => TextFile.GetBytes(Config, x)).ToArray();
+                g.Save();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Never let saving text stop the program from closing.
+            System.Diagnostics.Debug.WriteLine($"Game text was not saved on exit: {ex}");
+        }
 
         try
         {
@@ -952,13 +1541,11 @@ namespace pk3DS.WinForms;
         if (prompt != DialogResult.Yes)
             return;
 
-        new Thread(() =>
+        RunWorker("Unpacking the ExeFS", () =>
         {
-            Interlocked.Increment(ref threads);
             ExeFS.UnpackExeFS(path, dir);
-            Interlocked.Decrement(ref threads);
             WinFormsUtil.Alert("Unpacked!");
-        }).Start();
+        });
     }
 
     private void OpenExeFSCodeBinary(string path, FileInfo fi)
@@ -968,26 +1555,22 @@ namespace pk3DS.WinForms;
             var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Detected Decompressed code.bin.", "Compress? File will be replaced.");
             if (prompt != DialogResult.Yes)
                 return;
-            new Thread(() =>
+            RunWorker("Compressing code.bin", () =>
             {
-                Interlocked.Increment(ref threads);
                 new BLZCoder(["-en", path], pBar1);
-                Interlocked.Decrement(ref threads);
                 WinFormsUtil.Alert("Compressed!");
-            }).Start();
+            });
         }
         else
         {
             var prompt = WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Detected Compressed code.bin.", "Decompress? File will be replaced.");
             if (prompt != DialogResult.Yes)
                 return;
-            new Thread(() =>
+            RunWorker("Decompressing code.bin", () =>
             {
-                Interlocked.Increment(ref threads);
                 new BLZCoder(["-d", path], pBar1);
-                Interlocked.Decrement(ref threads);
                 WinFormsUtil.Alert("Decompressed!");
-            }).Start();
+            });
         }
     }
 
@@ -999,6 +1582,8 @@ namespace pk3DS.WinForms;
         // Check for ROMFS/EXEFS/EXHEADER
         RomFSPath = ExeFSPath = null; // Reset
         Config = null;
+        SMDH = null;
+        HANSgameID = 0;
 
         string[] folders = Directory.GetDirectories(path);
         int count = folders.Length;
@@ -1009,6 +1594,12 @@ namespace pk3DS.WinForms;
         // Find ExeFS folder
         foreach (string f in folders.Where(f => new DirectoryInfo(f).Name.Contains("exe", StringComparison.OrdinalIgnoreCase) && Directory.Exists(f)))
             CheckIfExeFS(f);
+
+        if (ExeFSPath != null && File.Exists(Path.Combine(ExeFSPath, "icon.bin")))
+        {
+            try { SMDH = new SMDH(Path.Combine(ExeFSPath, "icon.bin")); } catch { SMDH = null; }
+            HANSgameID = SMDH?.AppSettings?.StreetPassID ?? 0;
+        }
 
         if (count > 3)
             if (Properties.Settings.Default.ShowFolderWarning)
@@ -1027,11 +1618,9 @@ namespace pk3DS.WinForms;
         if (RomFSPath != null && Config != null)
         {
             ToggleSubEditors();
-            L_Version.Text = $"v{Config.Version}";
+            L_Version.Text = GetGameVersionString();
             L_Version.Visible = true;
-            
-            if (SMDH != null) PB_GameIcon.Image = SMDH.LargeIcon.Icon;
-            else PB_GameIcon.Image = WinFormsUtil.GetSprite(Config.Sun ? 791 : 716, 0, 0, 0, Config); // Default mascot icon
+            WinFormsUtil.SetImage(PB_GameIcon, GetGameIcon());
             
             if (Directory.Exists("personal"))
                 Directory.Delete("personal", true); // Force reloading of personal data if the game is switched.
@@ -1058,13 +1647,6 @@ namespace pk3DS.WinForms;
             HandleFriendship(1); // Editor open
             UpdateMascot();
             
-            // Extract SMDH info
-            if (SMDH != null)
-            {
-                PB_GameIcon.Image = SMDH.LargeIcon.Icon;
-                L_Version.Text = $"v{SMDH.Version}";
-                L_Version.Visible = true;
-            }
             // Trigger Data Loading
             if (RTB_Status.Text.Length > 0)
                 RTB_Status.Clear();
@@ -1084,6 +1666,13 @@ namespace pk3DS.WinForms;
                 ResetStatus();
                 return;
             }
+        }
+
+        // Take a pristine backup the first time this game folder is opened.
+        if (Config != null && RomFSPath != null)
+        {
+            try { Config.BackupFiles(); }
+            catch (Exception ex) { UpdateStatus("Could not create a backup: " + ex.Message, false); }
         }
 
         UpdateProgramTitle();
@@ -1109,12 +1698,7 @@ namespace pk3DS.WinForms;
             
         WinFormsUtil.ApplyGradient(this, gradientName);
 
-        // Change L_Game if RomFS and ExeFS exists to a better descriptor
-        SMDH = ExeFSPath != null
-            ? File.Exists(Path.Combine(ExeFSPath, "icon.bin")) ? new SMDH(Path.Combine(ExeFSPath, "icon.bin")) : null
-            : null;
-        HANSgameID = SMDH != null ? (SMDH.AppSettings?.StreetPassID ?? 0) : 0;
-        L_Game.Visible = SMDH == null && RomFSPath != null;
+        L_Game.Visible = RomFSPath != null;
         TB_Path.Select(TB_Path.TextLength, 0);
         // Method finished.
         System.Media.SystemSounds.Asterisk.Play();
@@ -1172,13 +1756,11 @@ namespace pk3DS.WinForms;
 
         var ncch = new NCCH();
 
-        new Thread(() =>
+        RunWorker("Extracting the NCCH", () =>
         {
-            Interlocked.Increment(ref threads);
             ncch.ExtractNCCHFromFile(ncchPath, outputDirectory, RTB_Status, pBar1);
-            Interlocked.Decrement(ref threads);
             WinFormsUtil.Alert("Extraction complete!");
-        }).Start();
+        });
     }
 
     private void ExtractNCSD(string ncsdPath, string outputDirectory)
@@ -1187,13 +1769,149 @@ namespace pk3DS.WinForms;
             return;
 
         var ncsd = new NCSD();
-        new Thread(() =>
+        RunWorker("Extracting the NCSD", () =>
         {
-            Interlocked.Increment(ref threads);
             ncsd.ExtractFilesFromNCSD(ncsdPath, outputDirectory, RTB_Status, pBar1);
-            Interlocked.Decrement(ref threads);
             WinFormsUtil.Alert("Extraction complete!");
-        }).Start();
+        });
+    }
+
+    /// <summary>Editor buttons per row.</summary>
+    private const int EditorButtonColumns = 4;
+
+    /// <summary>
+    /// Sizes the editor buttons so a fixed number fit per row and the grid fills its panel.
+    /// <para>
+    /// A FlowLayoutPanel wraps purely on available width, so with fixed-size buttons the column
+    /// count was whatever happened to fit - three here - and the remaining width was left empty.
+    /// Deriving the width from the panel instead makes the count deliberate and removes the gap;
+    /// re-running on resize keeps it true when the window changes.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// Shows a long report in a scrollable, selectable window.
+    /// <para>
+    /// A MessageBox truncates and cannot be scrolled or copied out of, which makes it useless for
+    /// the code map - the whole value of that listing is being able to look through it and paste an
+    /// offset elsewhere.
+    /// </para>
+    /// </summary>
+    private static void ShowScrollableReport(string text, string title)
+    {
+        using var form = new Form
+        {
+            Text = title,
+            Size = new Size(720, 560),
+            StartPosition = FormStartPosition.CenterParent,
+        };
+        var box = new TextBox
+        {
+            Multiline = true,
+            ReadOnly = true,
+            ScrollBars = ScrollBars.Both,
+            WordWrap = false,
+            Dock = DockStyle.Fill,
+            Font = new Font("Consolas", 9F),
+            Text = text.Replace("\n", Environment.NewLine),
+        };
+        form.Controls.Add(box);
+        WinFormsUtil.ApplyTheme(form);
+        form.ShowDialog();
+    }
+
+    /// <summary>
+    /// How much of a panel is actually on screen, which is not the same as how wide it is.
+    /// <para>
+    /// The panel is docked inside a tab page that extends past the window's client area and behind
+    /// the mascot sidebar, so its own ClientSize is larger than the region the user can see. Sizing
+    /// against that put the fourth column in a part of the panel that exists but is clipped - and
+    /// made it invisible to a check comparing button.Right against ClientSize.Width, because by the
+    /// panel's own reckoning everything fit.
+    /// </para>
+    /// </summary>
+    private int VisibleWidthOf(Control panel)
+    {
+        int width = panel.ClientSize.Width;
+        var form = panel.FindForm();
+        if (form == null) return width;
+
+        try
+        {
+            int panelLeft = panel.PointToScreen(Point.Empty).X;
+            int limit = form.PointToScreen(new Point(form.ClientSize.Width, 0)).X;
+
+            // The sidebar overlaps the tab area rather than reducing it, so it clips too.
+            if (PNL_Sidebar is { Visible: true })
+                limit = Math.Min(limit, PNL_Sidebar.PointToScreen(Point.Empty).X);
+
+            return Math.Max(0, Math.Min(width, limit - panelLeft));
+        }
+        catch { return width; }
+    }
+
+    private void LayoutEditorButtons(FlowLayoutPanel panel)
+    {
+        if (panel == null || panel.Controls.Count == 0) return;
+
+        var buttons = panel.Controls.OfType<Control>().Where(c => c is not Label).ToList();
+        if (buttons.Count == 0) return;
+
+        const int rightReserve = 28;
+
+        int available = VisibleWidthOf(panel) - panel.Padding.Horizontal - rightReserve;
+        if (available <= 0) return;
+
+        bool hadAutoScroll = panel.AutoScroll;
+        panel.AutoScroll = false;
+
+        // Reserve the vertical scrollbar when the rows cannot fit, since it will appear and take
+        // width away the moment the buttons are placed.
+        int rows = (int)Math.Ceiling(buttons.Count / (double)EditorButtonColumns);
+        int rowHeight = buttons[0].Height + buttons[0].Margin.Vertical;
+        if (rows * rowHeight > panel.ClientSize.Height - panel.Padding.Vertical)
+            available -= SystemInformation.VerticalScrollBarWidth;
+
+        int spacing = buttons.Max(b => b.Margin.Horizontal);
+        int width = ((available - (spacing * EditorButtonColumns)) / EditorButtonColumns) - 1;
+        panel.AutoScroll = hadAutoScroll;
+        if (width < 60) return; // too narrow to force; let it flow naturally
+
+        // AutoSize wins over any assigned width, so it has to go first or the sizing below is
+        // silently discarded and the buttons keep their designer width.
+        foreach (var b in buttons)
+        {
+            if (b is ButtonBase bb) bb.AutoSize = false;
+        }
+
+        int usableHeight = panel.ClientSize.Height - panel.Padding.Vertical;
+        if (usableHeight > 0)
+        {
+            int rowCount = (int)Math.Ceiling(buttons.Count / (double)EditorButtonColumns);
+            int perRow = usableHeight / Math.Max(1, rowCount);
+            int height = Math.Clamp(perRow - buttons[0].Margin.Vertical, 40, 96);
+            foreach (var b in buttons)
+                b.Height = height;
+        }
+
+        for (int attempt = 0; attempt < 12 && width >= 60; attempt++)
+        {
+            panel.SuspendLayout();
+            foreach (var b in buttons)
+                b.Width = width;
+            panel.ResumeLayout(true);
+
+            // Against the visible edge, not the panel's own width - the panel is wider than what
+            // is on screen, so measuring against itself reports a fit that the user cannot see.
+            int limit = VisibleWidthOf(panel) - panel.Padding.Right;
+            int overhang = buttons.Max(b => b.Right) - limit;
+
+            // Also catch the case where it fits but wrapped early, leaving fewer than four per row.
+            int firstRowCount = buttons.Count(b => b.Top == buttons[0].Top);
+            if (overhang <= 0 && firstRowCount >= Math.Min(EditorButtonColumns, buttons.Count))
+                break;
+
+            width -= Math.Max(1, (overhang + EditorButtonColumns - 1) / EditorButtonColumns);
+        }
     }
 
     private void ToggleSubEditors()
@@ -1212,14 +1930,14 @@ namespace pk3DS.WinForms;
         switch (Config.Generation)
         {
             case 6:
-                romfs = [B_GameText, B_StoryText, B_Personal, B_Evolution, B_LevelUp, B_Wild, B_MegaEvo, B_EggMove, B_Trainer, B_Item, B_Move, B_Maison, B_TitleScreen, B_OWSE,
+                romfs = [B_UniversalRandomizer, B_GameText, B_StoryText, B_Personal, B_Evolution, B_LevelUp, B_Wild, B_MegaEvo, B_EggMove, B_Trainer, B_Item, B_Move, B_Maison, B_TitleScreen, B_OWSE,
                 ];
                 exefs = [B_MoveTutor, B_TMHM, B_Mart, B_Pickup, B_OPower, B_ShinyRate];
                 cro = [B_TypeChart, B_Starter, B_Gift, B_Static, B_CROExpander];
                 B_MoveTutor.Visible = Config.ORAS; // Default false unless loaded
                 break;
             case 7:
-                romfs = [B_GameText, B_StoryText, B_Personal, B_Evolution, B_LevelUp, B_Wild, B_MegaEvo, B_EggMove, B_Trainer, B_Item, B_Move, B_Royal, B_Pickup, B_OWSE,
+                romfs = [B_UniversalRandomizer, B_GameText, B_StoryText, B_Personal, B_Evolution, B_LevelUp, B_Wild, B_MegaEvo, B_EggMove, B_Trainer, B_Item, B_Move, B_Royal, B_Pickup, B_OWSE,
                 ];
                 exefs = [B_TM, B_TypeChart, B_ShinyRate];
                 cro = [B_Mart, B_MoveTutor, B_CROExpander, B_ResearchCenter];
@@ -1236,26 +1954,37 @@ namespace pk3DS.WinForms;
         FLP_RomFS.Controls.AddRange(romfs);
         FLP_ExeFS.Controls.AddRange(exefs);
         FLP_CRO.Controls.AddRange(cro);
+
+        foreach (var panel in new[] { FLP_RomFS, FLP_ExeFS, FLP_CRO })
+            LayoutEditorButtons(panel);
+
+        B_UniversalRandomizer.TabStop = false;
+        WinFormsUtil.ApplyCyberSlateTheme(this, WinFormsUtil.CurrentTheme);
     }
 
     private void UpdateProgramTitle() => Text = GetProgramTitle();
 
     private static string GetProgramTitle()
     {
-        // 0 - JP
-        // 1 - EN
-        // 2 - FR
-        // 3 - DE
-        // 4 - IT
-        // 5 - ES
-        // 6 - CHS
-        // 7 - KO
-        // 8 -
-        // 11 - CHT
-        if (SMDH?.AppSettings == null)
-            return "pk3DS";
-        int[] AILang = [0, 0, 1, 2, 4, 3, 5, 7, 8, 9, 6, 11];
-        return "pk3DS - " + SMDH.AppInfo[AILang[Language]].ShortDescription;
+        string ultra = DetectUltraVersion();
+        if (ultra == "UM") return "pk3DS - Pokémon Ultra Moon";
+        if (ultra == "US") return "pk3DS - Pokémon Ultra Sun";
+
+        if (SMDH?.AppSettings != null && SMDH.AppInfo != null)
+        {
+            int[] AILang = [0, 0, 1, 2, 4, 3, 5, 7, 8, 9, 6, 11];
+            int langIdx = Language >= 0 && Language < AILang.Length ? AILang[Language] : 1;
+            if (langIdx < SMDH.AppInfo.Length && !string.IsNullOrEmpty(SMDH.AppInfo[langIdx]?.ShortDescription))
+                return "pk3DS - " + SMDH.AppInfo[langIdx].ShortDescription;
+        }
+
+        if (Config != null)
+        {
+            string v = GetGameVersionString();
+            return string.IsNullOrEmpty(v) ? "pk3DS" : "pk3DS - Pokémon " + v;
+        }
+
+        return "pk3DS";
     }
 
     private static GameConfig CheckGameType(string[] files)
@@ -1324,7 +2053,24 @@ namespace pk3DS.WinForms;
             // unpack successful, continue onward!
         }
 
-        if (files.Length != 3 && files.Length != 4)
+        string cBin = Path.Combine(path, "code.bin");
+        string dotCBin = Path.Combine(path, ".code.bin");
+        if (File.Exists(cBin) && File.Exists(dotCBin) && SameFile(cBin, dotCBin))
+            try { File.Delete(cBin); } catch { }
+
+        string bBnr = Path.Combine(path, "banner.bnr");
+        string bBin = Path.Combine(path, "banner.bin");
+        if (File.Exists(bBnr) && File.Exists(bBin))
+            try { File.Delete(bBnr); } catch { }
+
+        string iIcn = Path.Combine(path, "icon.icn");
+        string iBin = Path.Combine(path, "icon.bin");
+        if (File.Exists(iIcn) && File.Exists(iBin))
+            try { File.Delete(iIcn); } catch { }
+
+        files = Directory.GetFiles(path);
+
+        if (files.Length < 3 || files.Length > 6)
             return false;
 
         var fi = new FileInfo(files[0]);
@@ -1338,7 +2084,7 @@ namespace pk3DS.WinForms;
             fi = new FileInfo(files[0]);
         }
         if (fi.Length % 0x200 != 0 && WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Detected Compressed code binary.", "Decompress? File will be replaced.") == DialogResult.Yes)
-            new Thread(() => { Interlocked.Increment(ref threads); new BLZCoder(["-d", files[0]], pBar1); Interlocked.Decrement(ref threads); WinFormsUtil.Alert("Decompressed!"); }).Start();
+            RunWorker("Decompressing code.bin", () => { new BLZCoder(["-d", files[0]], pBar1); WinFormsUtil.Alert("Decompressed!"); });
 
         ExeFSPath = path;
         return true;
@@ -1397,45 +2143,180 @@ namespace pk3DS.WinForms;
         {
             new Thread(() =>
             {
-                UpdateStatus(Environment.NewLine + "Building RomFS binary. Please wait until the program finishes.");
-
                 Interlocked.Increment(ref threads);
-                RomFS.BuildRomFS(RomFSPath, sfd.FileName, RTB_Status, pBar1);
-                Interlocked.Decrement(ref threads);
-
-                HandleFriendship(10); // Rebuild gain
-                UpdateStatus("RomFS binary saved." + Environment.NewLine);
-                WinFormsUtil.Alert("Wrote RomFS binary:", sfd.FileName);
+                try
+                {
+                    UpdateStatus(Environment.NewLine + "Building RomFS binary...");
+                    bool success = ExternalRebuilder.RebuildRomFS(RomFSPath, sfd.FileName, msg => UpdateStatus(msg));
+                    if (!success)
+                    {
+                        UpdateStatus("3dstool build failed or unavailable; building RomFS binary internally...");
+                        RomFS.BuildRomFS(RomFSPath, sfd.FileName, RTB_Status, pBar1);
+                    }
+                    HandleFriendship(5);
+                    UpdateStatus("RomFS Binary rebuild complete." + Environment.NewLine);
+                    WinFormsUtil.Alert("Wrote RomFS Binary:", sfd.FileName);
+                }
+                catch (Exception ex)
+                {
+                    UpdateStatus($"RomFS rebuild error: {ex.Message}" + Environment.NewLine);
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref threads);
+                }
             }).Start();
         }
+    }
+
+
+    private void B_UniversalRandomizer_Click(object sender, EventArgs e)
+    {
+        OpenUniversalRandomizer();
+    }
+
+    private void OpenUniversalRandomizer()
+    {
+        bool? competitive = WinFormsUtil.PromptRandomizerMode();
+        if (competitive == null) return; // user closed the prompt without choosing
+
+        // This window was the one editor that never had the theme applied, so it opened in the
+        // system's own colours - including a native, light tab strip against everything else.
+        using var form = new pk3DS.WinForms.Subforms.UniversalRandomizerForm(competitive.Value);
+        WinFormsUtil.ApplyTheme(form);
+        form.ShowDialog();
+    }
+
+    /// <summary>
+    /// Runs an editor on a worker thread, turning a failure into a message instead of a crash.
+    /// <para>
+    /// Every one of these handlers reaches straight into <see cref="Config"/> and its GARCs. When a
+    /// ROM has not finished loading, or a language's archive is missing, those are null and the
+    /// dereference throws on a thread with no handler - which Windows Forms can only turn into a
+    /// process kill. The editors themselves are unchanged; this only decides what happens when the
+    /// data they need is not there.
+    /// </para>
+    /// </summary>
+    private void RunEditor(string what, Action work) => StartGuarded(what, work, count: false, editor: true);
+
+    /// <summary>
+    /// Runs non-editor background work (packing, compression, extraction) under the same guard.
+    /// <para>
+    /// These sites all bracketed themselves with <c>Interlocked.Increment</c>/<c>Decrement</c> on
+    /// <see cref="threads"/> but without a <c>finally</c>, so a throw did two things: it killed the
+    /// process, and - had it not - it would have left the counter stuck above zero, after which
+    /// <see cref="ThreadActive"/> refuses every later operation for the rest of the session. Both
+    /// are handled here so no caller has to remember either half.
+    /// </para>
+    /// </summary>
+    private void RunWorker(string what, Action work) => StartGuarded(what, work, count: true, editor: false);
+
+    /// <summary>
+    /// The one place a worker thread is created, so the guard cannot be forgotten at a call site.
+    /// <para>
+    /// The thread is deliberately left in the foreground. Marking it background would let the
+    /// runtime tear it down at exit, which for a GARC repack or a RomFS build means a half-written
+    /// file on disk - a worse outcome than the wait.
+    /// </para>
+    /// <para>
+    /// The busy count is raised on the calling thread rather than inside the lambda: incrementing
+    /// inside meant a window between <c>Start()</c> and the thread being scheduled during which
+    /// <see cref="ThreadActive"/> still read zero and a second operation could start on the same
+    /// data.
+    /// </para>
+    /// </summary>
+    private void StartGuarded(string what, Action work, bool count, bool editor)
+    {
+        if (count)
+            Interlocked.Increment(ref threads);
+
+        new Thread(() =>
+        {
+            try
+            {
+                if (editor && Config == null)
+                {
+                    Invoke(() => WinFormsUtil.Alert("No game is loaded.", $"Open a ROM before using the {what} editor."));
+                    return;
+                }
+                work();
+            }
+            catch (Exception ex)
+            {
+                ReportWorkerFailure(what, ex, editor);
+            }
+            finally
+            {
+                if (count)
+                    Interlocked.Decrement(ref threads);
+            }
+        }).Start();
+    }
+
+    /// <summary>
+    /// Surfaces a background failure on the UI thread, tolerating a form that is already closing.
+    /// </summary>
+    private void ReportWorkerFailure(string what, Exception ex, bool editor)
+    {
+        string title = editor ? $"The {what} editor could not open." : $"{what} could not be completed.";
+        string detail = ex is NullReferenceException
+            ? "Some of the game data it needs is missing. This usually means the ROM did not finish loading, "
+              + "or the selected language has no data for it."
+            : ex.Message;
+
+        try
+        {
+            if (IsHandleCreated && !IsDisposed)
+                Invoke(() => WinFormsUtil.Error(title, detail));
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
+    }
+
+    /// <summary>Fetches a GARC, or explains which one is missing rather than throwing later.</summary>
+    private bool TryGetGarc(string name, out GARCFile garc)
+    {
+        garc = Config?.GetGARCData(name);
+        if (garc?.Files != null) return true;
+        Invoke(() => WinFormsUtil.Error("Missing game data.",
+            $"'{name}' could not be read from this ROM. If the language was changed recently, try setting it back to English."));
+        return false;
     }
 
     private void B_GameText_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Game Text", () =>
         {
             var g = Config.GARCGameText;
             string[][] files = Config.GameTextStrings;
+            if (g?.Files == null || files == null)
+            {
+                Invoke(() => WinFormsUtil.Error("Game text is not loaded.",
+                    "The text archive for the selected language could not be read."));
+                return;
+            }
             Invoke(() => { var ed = new TextEditor(files, "gametext"); WinFormsUtil.ApplyTheme(ed); HandleFriendship(1); ed.ShowDialog(); });
             g.Files = TryWriteText(files, g);
             g.Save();
-        }).Start();
+        });
     }
 
     private void B_StoryText_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        // The thread here was constructed and never started, so this button did nothing at all.
+        RunEditor("Story Text", () =>
         {
-            var g = Config.GetGARCData("storytext");
+            if (!TryGetGarc("storytext", out var g))
+                return;
             string[][] files = g.Files.Select(file => new TextFile(Config, file).Lines).ToArray();
             Invoke(() => { var ed = new TextEditor(files, "storytext"); WinFormsUtil.ApplyTheme(ed); HandleFriendship(1); ed.ShowDialog(); });
             g.Files = TryWriteText(files, g);
             g.Save();
-        }).Start();
+        });
     }
 
     private static byte[][] TryWriteText(string[][] files, GARCFile g)
@@ -1502,7 +2383,7 @@ namespace pk3DS.WinForms;
         if (dr == DialogResult.Cancel)
             return;
 
-        new Thread(() =>
+        RunEditor("Battle Maison", () =>
         {
             bool super = dr == DialogResult.Yes;
             string c = super ? "S" : "N";
@@ -1523,21 +2404,27 @@ namespace pk3DS.WinForms;
             trpoke.Files = trp;
             trdata.Save();
             trpoke.Save();
-        }).Start();
+        });
     }
 
     private void B_Personal_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Personal Stats", () =>
         {
+            if (Config.GARCPersonal?.Files == null || Config.GARCLearnsets?.Files == null)
+            {
+                Invoke(() => WinFormsUtil.Error("Missing game data.", "Personal or learnset data could not be read from this ROM."));
+                return;
+            }
+            if (!TryGetGarc("eggmove", out var ge) || !TryGetGarc("evolution", out var gev)) return;
+
             byte[][] d = Config.GARCPersonal.Files;
             var gl = Config.GARCLearnsets;
-            var ge = Config.GetGARCData("eggmove");
             byte[][] l = gl.Files;
             byte[][] eg = ge.Files;
-            byte[][] ev = Config.GetGARCData("evolution").Files;
+            byte[][] ev = gev.Files;
             switch (Config.Generation)
             {
                 case 6:
@@ -1598,18 +2485,18 @@ namespace pk3DS.WinForms;
                 g_evo.Save();
                 Config.InitializeEvos();
             }
-        }).Start();
+        });
     }
 
     private void B_Trainer_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Trainer", () =>
         {
-            var trclass = Config.GetGARCData("trclass");
-            var trdata = Config.GetGARCData("trdata");
-            var trpoke = Config.GetGARCData("trpoke");
+            if (!TryGetGarc("trclass", out var trclass)) return;
+            if (!TryGetGarc("trdata", out var trdata)) return;
+            if (!TryGetGarc("trpoke", out var trpoke)) return;
             byte[][] trc = trclass.Files;
             byte[][] trd = trdata.Files;
             byte[][] trp = trpoke.Files;
@@ -1638,58 +2525,89 @@ namespace pk3DS.WinForms;
             trclass.Save();
             trdata.Save();
             trpoke.Save();
-        }).Start();
+        });
     }
 
     private void B_Wild_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Wild Encounter", () =>
         {
-            string[] files;
-            Action action;
             switch (Config.Generation)
             {
                 case 6:
-                    files = ["encdata"];
+                {
+                    Action action;
                     if (Config.ORAS)
                         action = () => { var ed = new RSWE(); WinFormsUtil.ApplyTheme(ed); ed.ShowDialog(); };
                     else if (Config.XY)
                         action = () => { var ed = new XYWE(); WinFormsUtil.ApplyTheme(ed); ed.ShowDialog(); };
                     else return;
 
-                    Invoke((MethodInvoker)delegate { Enabled = false; });
-                    FileGet(files, false);
-                    Invoke(action);
-                    FileSet(files);
-                    Invoke((MethodInvoker)delegate { Enabled = true; });
+                    string[] files = ["encdata"];
+                    SetMainEnabled(false);
+                    try
+                    {
+                        FileGet(files, false);
+                        Invoke(action);
+                        FileSet(files);
+                    }
+                    finally { SetMainEnabled(true); }
                     break;
+                }
                 case 7:
-                    Invoke((MethodInvoker)delegate { Enabled = false; });
+                {
+                    string[] files = ["encdata", "zonedata", "worlddata"];
+                    SetMainEnabled(false);
                     Interlocked.Increment(ref threads);
+                    try
+                    {
+                        UpdateStatus($"GARC Get: {files[0]}... ");
+                        var ed = Config.GetlzGARCData(files[0]);
+                        UpdateStatus($"GARC Get: {files[1]}... ");
+                        var zd = Config.GetlzGARCData(files[1]);
+                        UpdateStatus($"GARC Get: {files[2]}... ");
+                        var wd = Config.GetlzGARCData(files[2]);
+                        if (ed == null || zd == null || wd == null)
+                        {
+                            Invoke(() => WinFormsUtil.Error("Missing game data.",
+                                "The encounter, zone or world archive could not be read from this ROM."));
+                            return;
+                        }
 
-                    files = ["encdata", "zonedata", "worlddata"];
-                    UpdateStatus($"GARC Get: {files[0]}... ");
-                    var ed = Config.GetlzGARCData(files[0]);
-                    UpdateStatus($"GARC Get: {files[1]}... ");
-                    var zd = Config.GetlzGARCData(files[1]);
-                    UpdateStatus($"GARC Get: {files[2]}... ");
-                    var wd = Config.GetlzGARCData(files[2]);
-                    UpdateStatus("Running SMWE... ");
-                    action = () => { var editor = new SMWE(ed, zd, wd); WinFormsUtil.ApplyTheme(editor); HandleFriendship(1); editor.ShowDialog(); };
-                    Invoke(action);
+                        UpdateStatus("Running SMWE... ");
+                        Invoke(() => { var editor = new SMWE(ed, zd, wd); WinFormsUtil.ApplyTheme(editor); HandleFriendship(1); editor.ShowDialog(); });
 
-                    UpdateStatus($"GARC Set: {files[0]}... ");
-                    ed.Save();
-                    ResetStatus();
-                    Interlocked.Decrement(ref threads);
-                    Invoke((MethodInvoker)delegate { Enabled = true; });
+                        UpdateStatus($"GARC Set: {files[0]}... ");
+                        ed.Save();
+                        ResetStatus();
+                    }
+                    finally
+                    {
+                        Interlocked.Decrement(ref threads);
+                        SetMainEnabled(true);
+                    }
                     break;
+                }
                 default:
                     return;
             }
-        }).Start();
+        });
+    }
+
+    /// <summary>
+    /// Enables or disables the main window from a worker thread, tolerating a closed form.
+    /// </summary>
+    private void SetMainEnabled(bool enabled)
+    {
+        try
+        {
+            if (IsHandleCreated && !IsDisposed)
+                Invoke((MethodInvoker)delegate { Enabled = enabled; });
+        }
+        catch (ObjectDisposedException) { }
+        catch (InvalidOperationException) { }
     }
 
     private void B_OWSE_Click(object sender, EventArgs e)
@@ -1724,7 +2642,7 @@ namespace pk3DS.WinForms;
     private void RunOWSE6()
     {
         Enabled = false;
-        new Thread(() =>
+        RunEditor("Overworld", () =>
         {
             bool reload = ModifierKeys is Keys.Control or (Keys.Alt | Keys.Control);
             string[] files = ["encdata", "storytext", "mapGR", "mapMatrix"];
@@ -1735,20 +2653,20 @@ namespace pk3DS.WinForms;
             {
                 var g = Config.GetGARCData("storytext");
                 string[][] tfiles = g.Files.Select(file => new TextFile(Config, file).Lines).ToArray();
-                Invoke(() => new OWSE().Show());
-                Invoke(() => new TextEditor(tfiles, "storytext").Show());
+                Invoke(() => { var ed = new OWSE(); WinFormsUtil.ApplyTheme(ed); ed.Show(); });
+                Invoke(() => { var te = new TextEditor(tfiles, "storytext"); WinFormsUtil.ApplyTheme(te); te.Show(); });
                 while (Application.OpenForms.Count > 1)
                     Thread.Sleep(200);
             }
             Invoke((MethodInvoker)delegate { Enabled = true; });
             FileSet(files);
-        }).Start();
+        });
     }
 
     private void RunOWSE7()
     {
         Enabled = false;
-        new Thread(() =>
+        RunEditor("Overworld", () =>
         {
             var files = new[] { "encdata", "zonedata", "worlddata" };
             UpdateStatus($"GARC Get: {files[0]}... ");
@@ -1760,19 +2678,19 @@ namespace pk3DS.WinForms;
 
             var g = Config.GetGARCData("storytext");
             string[][] tfiles = g.Files.Select(file => new TextFile(Config, file).Lines).ToArray();
-            Invoke(() => new TextEditor(tfiles, "storytext").Show());
-            Invoke(() => new OWSE7(ed, zd, wd).Show());
+            Invoke(() => { var te = new TextEditor(tfiles, "storytext"); WinFormsUtil.ApplyTheme(te); te.Show(); });
+            Invoke(() => { var ow = new OWSE7(ed, zd, wd); WinFormsUtil.ApplyTheme(ow); ow.Show(); });
             while (Application.OpenForms.Count > 1)
                 Thread.Sleep(200);
             Invoke((MethodInvoker)delegate { Enabled = true; });
-        }).Start();
+        });
     }
 
     private void B_Evolution_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Evolution", () =>
         {
             var g = Config.GetGARCData("evolution");
             byte[][] d = g.Files;
@@ -1788,14 +2706,14 @@ namespace pk3DS.WinForms;
             g.Files = d;
             Config.InitializeEvos();
             g.Save();
-        }).Start();
+        });
     }
 
     private void B_MegaEvo_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Mega Evolution", () =>
         {
             var g = Config.GetGARCData("megaevo");
             byte[][] d = g.Files;
@@ -1824,14 +2742,14 @@ namespace pk3DS.WinForms;
             }
             g.Files = d;
             g.Save();
-        }).Start();
+        });
     }
 
     private void B_Item_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Item", () =>
         {
             var g = Config.GetGARCData("item");
             byte[][] d = g.Files;
@@ -1864,14 +2782,14 @@ namespace pk3DS.WinForms;
             gt.Files = TryWriteText(Config.GameTextStrings, gt);
             gt.Save();
             Config.InitializeGameText();
-        }).Start();
+        });
     }
 
     private void B_Move_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Move", () =>
         {
             var g = Config.GARCMoves;
             byte[][] Moves;
@@ -1898,14 +2816,14 @@ namespace pk3DS.WinForms;
             }
             g.Save();
             Config.InitializeMoves();
-        }).Start();
+        });
     }
 
     private void B_LevelUp_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Level Up Moves", () =>
         {
             byte[][] d = Config.GARCLearnsets.Files;
             switch (Config.Generation)
@@ -1920,14 +2838,14 @@ namespace pk3DS.WinForms;
             Config.GARCLearnsets.Files = d;
             Config.GARCLearnsets.Save();
             Config.InitializeLearnset();
-        }).Start();
+        });
     }
 
     private void B_EggMove_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Egg Move", () =>
         {
             var g = Config.GetGARCData("eggmove");
             byte[][] d = g.Files;
@@ -1942,20 +2860,20 @@ namespace pk3DS.WinForms;
             }
             g.Files = d;
             g.Save();
-        }).Start();
+        });
     }
 
     private void B_TitleScreen_Click(object sender, EventArgs e)
     {
         if (ThreadActive())
             return;
-        new Thread(() =>
+        RunEditor("Title Screen", () =>
         {
             string[] files = ["titlescreen"];
             FileGet(files); // Compressed files exist, handled in the other form since there's so many
             Invoke(() => { var ed = new TitleScreenEditor6(); WinFormsUtil.ApplyTheme(ed); HandleFriendship(1); ed.ShowDialog(); });
             FileSet(files);
-        }).Start();
+        });
     }
     // RomFS File Requesting Method Wrapper
     private void FileGet(string[] files, bool skipDecompression = true, bool skipGet = false)
@@ -2009,15 +2927,13 @@ namespace pk3DS.WinForms;
 
         if (sfd.ShowDialog() == DialogResult.OK)
         {
-            new Thread(() =>
+            RunWorker("Rebuilding the ExeFS", () =>
             {
-                Interlocked.Increment(ref threads);
                 new BLZCoder(["-en", files[file]], pBar1);
                 WinFormsUtil.Alert("Compressed!");
                 ExeFS.PackExeFS(ExeFS.GetExeFSFiles(ExeFSPath), sfd.FileName);
                 HandleFriendship(10);
-                Interlocked.Decrement(ref threads);
-            }).Start();
+            });
         }
     }
 
@@ -2120,15 +3036,12 @@ namespace pk3DS.WinForms;
             return;
         if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Rebuilding CRO/CRR is not necessary if you patch the RO module.", "Continue?"))
             return;
-        new Thread(() =>
+        RunWorker("Updating the CRO and CRR hashes", () =>
         {
-            Interlocked.Increment(ref threads);
             CRO.E_HashCRR(Path.Combine(RomFSPath, ".crr", "static.crr"), RomFSPath, true, /* true // don't patch crr for now */ false, RTB_Status, pBar1);
-            Interlocked.Decrement(ref threads);
-
             WinFormsUtil.Alert("CRO's and CRR have been updated.",
                 "If you have made any modifications, it is required that the RSA Verification check be patched on the system in order for the modified CROs to load (ie, no file redirection like NTR's layeredFS).");
-        }).Start();
+        });
     }
 
     private void B_Starter_Click(object sender, EventArgs e)
@@ -2206,7 +3119,7 @@ namespace pk3DS.WinForms;
 
         if (Config.Generation == 7)
         {
-            new Thread(() =>
+            RunEditor("Static Encounter", () =>
             {
                 var esg = Config.GetGARCData("encounterstatic");
                 byte[][] es = esg.Files;
@@ -2214,7 +3127,7 @@ namespace pk3DS.WinForms;
                 Invoke(() => { var ed = new StaticEncounterEditor7(es); WinFormsUtil.ApplyTheme(ed); ed.ShowDialog(); });
                 esg.Files = es;
                 esg.Save();
-            }).Start();
+            });
             return;
         }
 
@@ -2236,65 +3149,104 @@ namespace pk3DS.WinForms;
         var ed = new CROExpander(); WinFormsUtil.ApplyTheme(ed); ed.ShowDialog();
     }
 
-    // CXI Building
+    // Trimmed 3DS Building
     private void B_RebuildTrimmed3DS_Click(object sender, EventArgs e)
     {
-        if (ThreadActive())
-            return;
-
-        var sfd = new SaveFileDialog
-        {
-            FileName = "newROM.3ds",
-            Filter = "Binary File|*.*",
-        };
-        if (sfd.ShowDialog() != DialogResult.OK)
-            return;
-        string path = sfd.FileName;
-
-        new Thread(() =>
-        {
-            Interlocked.Increment(ref threads);
-            var exh = new Exheader(ExHeaderPath);
-            CTRUtil.BuildROM(true, "Nintendo", ExeFSPath, RomFSPath, ExHeaderPath, exh.GetSerial(), path,
-                true, pBar1, RTB_Status);
-            Interlocked.Decrement(ref threads);
-        }).Start();
+        Rebuild3DSExternal(trimmed: true);
     }
 
     // 3DS Building
     private void B_Rebuild3DS_Click(object sender, EventArgs e)
     {
+        Rebuild3DSExternal(trimmed: false);
+    }
+
+    private void Rebuild3DSExternal(bool trimmed)
+    {
         if (ThreadActive())
             return;
 
-        var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel,
-            "Do you want to add blank 3DS cartridge padding?\n\n" +
-            "Yes = Pad to 8.0 GB (physical cartridge standard, ~3.5 GB blank padding)\n" +
-            "No = Exact Trimmed Size (~4.52 GB, recommended for Citra & CFW)\n" +
-            "Cancel = Abort",
-            "Rebuild 3DS ROM");
-        if (dr == DialogResult.Cancel)
-            return;
-
-        bool trimmed = (dr == DialogResult.No);
+        string gameParentDir = !string.IsNullOrEmpty(RomFSPath) 
+            ? Path.GetDirectoryName(RomFSPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)) 
+            : null;
 
         var sfd = new SaveFileDialog
         {
-            FileName = "newROM.3ds",
-            Filter = "Binary File|*.*",
+            InitialDirectory = (!string.IsNullOrEmpty(gameParentDir) && Directory.Exists(gameParentDir)) ? gameParentDir : null,
+            FileName = trimmed ? "newROM_trimmed.3ds" : "newROM.3ds",
+            Filter = "3DS ROM (*.3ds)|*.3ds|CCI File (*.cci)|*.cci|All Files (*.*)|*.*",
         };
         if (sfd.ShowDialog() != DialogResult.OK)
             return;
         string path = sfd.FileName;
 
-        new Thread(() =>
+        UpdateStatus(Environment.NewLine + $"Launching external {(trimmed ? "Trimmed " : "")}3DS Toolkit rebuilder in CMD window...");
+
+        string script = ExternalRebuilder.LaunchExternalBatchRebuild(
+            RomFSPath, ExeFSPath, ExHeaderPath, path, out string sentinelDone, out string sentinelError, msg => UpdateStatus(msg), trim: trimmed);
+
+        if (script != null && sentinelDone != null)
         {
-            Interlocked.Increment(ref threads);
-            var exh = new Exheader(ExHeaderPath);
-            CTRUtil.BuildROM(true, "Nintendo", ExeFSPath, RomFSPath, ExHeaderPath, exh.GetSerial(), path,
-                trimmed, pBar1, RTB_Status);
-            Interlocked.Decrement(ref threads);
-        }).Start();
+            StartRebuildMonitoring(sentinelDone, sentinelError, path, trimmed ? "Trimmed 3DS ROM" : "3DS ROM");
+        }
+        else
+        {
+            WinFormsUtil.Error("Failed to launch external 3DS Toolkit rebuild script.");
+        }
+    }
+
+    private void StartRebuildMonitoring(string doneFlag, string errorFlag, string targetPath, string labelText)
+    {
+        var timer = new System.Windows.Forms.Timer { Interval = 1000 };
+        timer.Tick += (s, e) =>
+        {
+            if (File.Exists(doneFlag))
+            {
+                timer.Stop();
+                timer.Dispose();
+                HandleFriendship(10);
+
+                var romfsFix = NcchRomFsHash.Fix(targetPath);
+                UpdateStatus((romfsFix.Changed ? "Repaired RomFS hash: " : "RomFS hash: ") + romfsFix.Message + Environment.NewLine);
+
+                UpdateStatus($"{labelText} rebuild complete." + Environment.NewLine);
+                WinFormsUtil.Alert($"Wrote {labelText}:", targetPath);
+            }
+            else if (File.Exists(errorFlag))
+            {
+                timer.Stop();
+                timer.Dispose();
+                UpdateStatus($"{labelText} rebuild failed." + Environment.NewLine);
+                WinFormsUtil.Error($"Failed to rebuild {labelText}. Check command window for details.");
+            }
+        };
+        timer.Start();
+    }
+
+
+    /// <summary>Whether two files hold exactly the same bytes.</summary>
+    private static bool SameFile(string a, string b)
+    {
+        try
+        {
+            var fa = new FileInfo(a);
+            var fb = new FileInfo(b);
+            if (fa.Length != fb.Length) return false;
+
+            using var sa = File.OpenRead(a);
+            using var sb = File.OpenRead(b);
+            var ba = new byte[64 * 1024];
+            var bb = new byte[64 * 1024];
+            while (true)
+            {
+                int na = sa.Read(ba, 0, ba.Length);
+                int nb = sb.Read(bb, 0, bb.Length);
+                if (na != nb) return false;
+                if (na == 0) return true;
+                if (!ba.AsSpan(0, na).SequenceEqual(bb.AsSpan(0, nb))) return false;
+            }
+        }
+        catch { return false; }
     }
 
     // Extra Tools
@@ -2319,10 +3271,28 @@ namespace pk3DS.WinForms;
         if (fi.Length > 15 * 1024 * 1024) // 15MB
         { WinFormsUtil.Error("File too big!", fi.Length + " bytes."); return; }
 
+        void RunCoder(string mode, string doneMessage)
+        {
+            new Thread(() =>
+            {
+                Interlocked.Increment(ref threads);
+                try
+                {
+                    new BLZCoder([mode, path], pBar1);
+                    WinFormsUtil.Alert(doneMessage);
+                }
+                catch (Exception ex)
+                {
+                    WinFormsUtil.Error($"Could not {(mode == "-en" ? "compress" : "decompress")} the file.", ex.Message);
+                }
+                finally { Interlocked.Decrement(ref threads); }
+            }).Start();
+        }
+
         if (ModifierKeys != Keys.Control && fi.Length % 0x200 == 0 && WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Detected Decompressed Binary.", "Compress? File will be replaced.") == DialogResult.Yes)
-            new Thread(() => { Interlocked.Increment(ref threads); new BLZCoder(["-en", path], pBar1); Interlocked.Decrement(ref threads); WinFormsUtil.Alert("Compressed!"); }).Start();
+            RunCoder("-en", "Compressed!");
         else if (WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Detected Compressed Binary", "Decompress? File will be replaced.") == DialogResult.Yes)
-            new Thread(() => { Interlocked.Increment(ref threads); new BLZCoder(["-d", path], pBar1); Interlocked.Decrement(ref threads); WinFormsUtil.Alert("Decompressed!"); }).Start();
+            RunCoder("-d", "Decompressed!");
     }
 
     private void Menu_LZ11_Click(object sender, EventArgs e)
@@ -2340,9 +3310,8 @@ namespace pk3DS.WinForms;
         string predict = data[0] == 0x11 ? "compressed" : "decompressed";
         var dr = WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, $"Detected {predict} file. Do what?",
             "Yes = Decompress\nNo = Compress\nCancel = Abort");
-        new Thread(() =>
+        RunWorker("LZ11 compression", () =>
         {
-            Interlocked.Increment(ref threads);
             if (dr == DialogResult.Yes)
             {
                 try
@@ -2357,8 +3326,7 @@ namespace pk3DS.WinForms;
                 LZSS.Compress(path, Path.Combine(Directory.GetParent(path).FullName, Path.GetFileNameWithoutExtension(path).Replace("_dec", "") + ".lz"));
                 WinFormsUtil.Alert("File Compressed!", path);
             }
-            Interlocked.Decrement(ref threads);
-        }).Start();
+        });
     }
 
     private void Menu_SMDH_Click(object sender, EventArgs e)
@@ -2383,35 +3351,37 @@ namespace pk3DS.WinForms;
 
     private bool GetGARC(string infile, string outfolder, bool PB, bool bypassExt = false)
     {
-        if (skipBoth && Directory.Exists(outfolder))
-        {
-            UpdateStatus("Skipped - Exists!", false);
-            Interlocked.Decrement(ref threads);
-            return true;
-        }
         try
         {
+            if (skipBoth && Directory.Exists(outfolder))
+            {
+                UpdateStatus("Skipped - Exists!", false);
+                return true;
+            }
             bool success = GarcUtil.UnpackGARC(infile, outfolder, bypassExt, PB ? pBar1 : null, L_Status, true);
-            UpdateStatus(string.Format(success ? "Success!" : "Failed!"), false);
-            Interlocked.Decrement(ref threads);
+            UpdateStatus(success ? "Success!" : "Failed!", false);
             return success;
         }
-        catch (Exception e) { WinFormsUtil.Error("Could not get the GARC:", e.ToString()); Interlocked.Decrement(ref threads); return false; }
+        catch (Exception e) { WinFormsUtil.Error("Could not get the GARC:", e.Message); return false; }
+        finally { Interlocked.Decrement(ref threads); }
     }
 
     private bool SetGARC(string outfile, string infolder, int padBytes, bool PB)
     {
-        if (skipBoth || (ModifierKeys == Keys.Control && WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Cancel writing data back to GARC?") == DialogResult.Yes))
-        { Interlocked.Decrement(ref threads); UpdateStatus("Aborted!", false); return false; }
-
         try
         {
+            if (skipBoth || (ModifierKeys == Keys.Control && WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Cancel writing data back to GARC?") == DialogResult.Yes))
+            {
+                UpdateStatus("Aborted!", false);
+                return false;
+            }
+
             bool success = GarcUtil.PackGARC(infolder, outfile, Config.GARCVersion, padBytes, PB ? pBar1 : null, L_Status, true);
-            Interlocked.Decrement(ref threads);
-            UpdateStatus(string.Format(success ? "Success!" : "Failed!"), false);
+            UpdateStatus(success ? "Success!" : "Failed!", false);
             return success;
         }
-        catch (Exception e) { WinFormsUtil.Error("Could not set the GARC back:", e.ToString()); Interlocked.Decrement(ref threads); return false; }
+        catch (Exception e) { WinFormsUtil.Error("Could not set the GARC back:", e.Message); return false; }
+        finally { Interlocked.Decrement(ref threads); }
     }
 
     private void ThreadGet(string infile, string outfolder, bool PB = true, bool bypassExt = false)

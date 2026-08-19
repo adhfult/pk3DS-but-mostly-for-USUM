@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 
@@ -175,6 +175,15 @@ public class NCCH
 
         File.WriteAllBytes(exefsbinpath, exefsbytes);
         ExeFS.UnpackExeFS(exefsbinpath, exefspath);
+
+        // Write Header.bin (first 0x200 bytes) so 3dstool.exe has the header when rebuilding
+        if (exefsbytes.Length >= 0x200 && Directory.Exists(exefspath))
+        {
+            byte[] headerBytes = new byte[0x200];
+            Array.Copy(exefsbytes, 0, headerBytes, 0, 0x200);
+            File.WriteAllBytes(Path.Combine(exefspath, "Header.bin"), headerBytes);
+        }
+
         File.Delete(exefsbinpath);
     }
 

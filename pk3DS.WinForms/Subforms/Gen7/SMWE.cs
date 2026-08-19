@@ -11,6 +11,7 @@ using pk3DS.Core;
 using pk3DS.Core.CTR;
 using pk3DS.Core.Structures;
 using pk3DS.Core.Randomizers;
+using pk3DS.Core.Modding;
 
 namespace pk3DS.WinForms;
 
@@ -45,12 +46,14 @@ public partial class SMWE : Form
         LoadData();
         RandSettings.GetFormSettings(this, GB_Tweak.Controls);
 
+        // One ToolTip serves every control on the form. Each ToolTip is a native window, and the
+        // eight created here were separate instances that nothing ever disposed.
         var weather = string.Format("If weather is active, create a random number.{0}If 0, use slot 0.{0}If <= 10, use slot 1.{0}Else, pick an SOS table and a slot.", Environment.NewLine);
-        new ToolTip().SetToolTip(L_AddSOS, weather);
+        tips.SetToolTip(L_AddSOS, weather);
         var sos = new[] { L_SOS1, L_SOS2, L_SOS3, L_SOS4, L_SOS5, L_SOS6, L_SOS7 };
         var rates = new[] { 1, 1, 1, 10, 10, 10, 67 };
         for (int i = 0; i < sos.Length; i++)
-            new ToolTip().SetToolTip(sos[i], $"Table Selection Rate: {rates[i]}%");
+            tips.SetToolTip(sos[i], $"Table Selection Rate: {rates[i]}%");
 
         // ExportEncounters("um", "uu");
     }
@@ -121,6 +124,7 @@ public partial class SMWE : Form
     }
 
     private readonly Area7[] Areas;
+    private readonly ToolTip tips = new();
     private readonly LazyGARCFile encdata;
     private readonly string[] speciesList = Main.Config.GetText(TextName.SpeciesNames);
     private readonly Font font;
@@ -136,6 +140,12 @@ public partial class SMWE : Form
     private readonly string[] locationlist;
     private readonly byte[][] infiles;
     private byte[][] evolutionFiles;
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        tips.Dispose();
+        base.OnFormClosed(e);
+    }
 
     private void AutoSave()
     {
@@ -159,7 +169,7 @@ public partial class SMWE : Form
         CB_LocationID.Items.AddRange(Areas.Select(a => a.Name).ToArray());
         CB_LocationID.SelectedIndex = 0;
 
-        vanillaFiles = infiles.Select(z => (byte[])z.Clone()).ToArray();
+        vanillaHashes = infiles.Select(GetContentHash).ToArray();
         UpdateEncounterChangelog();
 
         CB_SlotRand.SelectedIndex = 0;
@@ -169,7 +179,20 @@ public partial class SMWE : Form
     }
 
     private byte[][] files;
-    private byte[][] vanillaFiles;
+    private ulong[] vanillaHashes;
+
+    /// <summary>FNV-1a over the file's bytes, used only to detect "differs from vanilla".</summary>
+    private static ulong GetContentHash(byte[] data)
+    {
+        if (data == null) return 0;
+        ulong hash = 14695981039346656037;
+        foreach (byte b in data)
+        {
+            hash ^= b;
+            hash *= 1099511628211;
+        }
+        return hash ^ (ulong)data.Length;
+    }
 
     private void ChangeMap(object sender, EventArgs e)
     {
@@ -177,8 +200,10 @@ public partial class SMWE : Form
         loadingdata = true;
         CB_TableID.Items.Clear();
         var Map = Areas[CB_LocationID.SelectedIndex];
+        // Tables come in day/night pairs - the editor already relies on that everywhere it splits on
+        // "SelectedIndex % 2" - so name them for it instead of leaving the caller to work it out.
         for (int i = 0; i < Map.Tables.Count; i++)
-            CB_TableID.Items.Add($"Table {i}");
+            CB_TableID.Items.Add($"Table {i / 2} ({(i % 2 == 0 ? "Day" : "Night")})");
         
         if (CB_TableID.Items.Count > 0) CB_TableID.SelectedIndex = 0;
         loadingdata = false;
@@ -191,23 +216,84 @@ public partial class SMWE : Form
         sb.AppendLine("=== Encounter Changes ===");
         for (int i = 0; i < files.Length; i++)
         {
-            if (files[i].SequenceEqual(vanillaFiles[i])) continue;
+            if (i >= vanillaHashes.Length || i >= Areas.Length) break;
+            if (GetContentHash(files[i]) == vanillaHashes[i]) continue;
             sb.AppendLine($"\n[{Areas[i].Name}]");
             sb.AppendLine("Data modified from vanilla.");
         }
         // RTB_EncounterChangelog.Text = sb.ToString();
     }
 
+    /// <summary>
+    /// Imports one version's exclusive list and files it under a heading the user supplies.
+    /// </summary>
+    private bool PromptImportExclusives()
+    {
+        using var ofd = new OpenFileDialog
+        {
+            Title = "Import Version Exclusives",
+            Filter = "All supported|*.txt;*.json;*.csv;*.tsv|Poképaste / Text|*.txt|JSON|*.json|CSV|*.csv",
+        };
+        if (ofd.ShowDialog() != DialogResult.OK) return false;
+
+        string header = WinFormsUtil.PromptInput("Version Heading",
+            "Name this version - it is what separates this list from the others.",
+            Path.GetFileNameWithoutExtension(ofd.FileName));
+        if (string.IsNullOrWhiteSpace(header)) return false;
+
+        List<string> names;
+        List<string> problems;
+        try
+        {
+            names = VersionExclusiveSets.Parse(ofd.FileName, out problems);
+        }
+        catch (Exception ex)
+        {
+            WinFormsUtil.Error("The file could not be read.", ex.Message);
+            return false;
+        }
+
+        if (names.Count == 0)
+        {
+            WinFormsUtil.Error("No species names were found in that file.",
+                problems.Count > 0 ? string.Join(Environment.NewLine, problems) : "Check the file's format.");
+            return false;
+        }
+
+        VersionExclusiveSets.Add(new ExclusiveSet
+        {
+            Header = header.Trim(),
+            Species = names,
+            Source = Path.GetFileName(ofd.FileName),
+        });
+
+        int known = names.Count(n => Array.FindIndex(speciesList, s => s.Equals(n, StringComparison.OrdinalIgnoreCase)) > 0);
+        WinFormsUtil.Alert($"Imported {names.Count} entries as \"{header.Trim()}\".",
+            $"{known} matched a species in this ROM; {names.Count - known} did not and are listed in the guide.");
+        return true;
+    }
+
     private void B_Exclusives_Click(object sender, EventArgs e)
     {
-        Form f = new Form { Text = "Ultra Alola Field Guide - Version Exclusives & Rarities", Width = 800, Height = 700, StartPosition = FormStartPosition.CenterParent, BackColor = Color.FromArgb(30, 30, 40) };
+        using var f = new Form { Text = "Version Exclusives", Width = 820, Height = 720, StartPosition = FormStartPosition.CenterParent, BackColor = Color.FromArgb(30, 30, 40) };
+        using var guideTips = new ToolTip();
+        var fonts = new Dictionary<(int Size, bool Bold), Font>();
+        var sprites = new List<Image>();
+
         var mainScroll = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoScroll = true, FlowDirection = FlowDirection.TopDown, WrapContents = false, Padding = new Padding(20) };
-        
+
         int GetID(string name) => Array.FindIndex(speciesList, s => s.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        Font GetFont(int size, bool bold)
+        {
+            if (!fonts.TryGetValue((size, bold), out var got))
+                fonts[(size, bold)] = got = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular);
+            return got;
+        }
 
         void AddText(string text, Color color, bool bold = false, int size = 10)
         {
-            var l = new Label { Text = text, ForeColor = color, Font = new Font("Segoe UI", size, bold ? FontStyle.Bold : FontStyle.Regular), AutoSize = true, Margin = new Padding(0, 5, 0, 5), MaximumSize = new Size(740, 0) };
+            var l = new Label { Text = text, ForeColor = color, Font = GetFont(size, bold), AutoSize = true, Margin = new Padding(0, 5, 0, 5), MaximumSize = new Size(740, 0) };
             mainScroll.Controls.Add(l);
         }
 
@@ -220,8 +306,10 @@ public partial class SMWE : Form
                 int id = GetID(s.Name);
                 if (id <= 0) continue;
                 var pb = new PictureBox { Size = new Size(40, 30), SizeMode = PictureBoxSizeMode.CenterImage, Cursor = Cursors.Help };
-                pb.Image = WinFormsUtil.GetSprite(id, s.Form, 0, 0, Main.Config);
-                new ToolTip().SetToolTip(pb, $"{s.Name}{(s.Form > 0 ? $" (Form {s.Form})" : "")}");
+                var sprite = WinFormsUtil.GetSprite(id, s.Form, 0, 0, Main.Config);
+                if (sprite != null) sprites.Add(sprite);
+                WinFormsUtil.SetImage(pb, sprite);
+                guideTips.SetToolTip(pb, $"{s.Name}{(s.Form > 0 ? $" (Form {s.Form})" : "")}");
                 flow.Controls.Add(pb);
             }
             mainScroll.Controls.Add(flow);
@@ -290,13 +378,120 @@ public partial class SMWE : Form
         if (Main.Config.MaxSpeciesID >= 1025)
             AddFamily("Generation 9", Enumerable.Range(906, 1025 - 906 + 1).Where(i => i < speciesNames.Length).Select(i => speciesNames[i]).ToArray());
 
+        VersionExclusiveSets.SetStorePath(
+            Path.Combine(Path.GetDirectoryName(Main.RomFSPath) ?? "", "version_exclusives.json"));
+
+        void RenderImportedSets()
+        {
+            foreach (var set in VersionExclusiveSets.All)
+            {
+                AddText($"--- {set.Header} ---", Color.Aquamarine, true, 12);
+                if (!string.IsNullOrEmpty(set.Source))
+                    AddText($"imported from {set.Source} on {set.Imported:yyyy-MM-dd}", Color.Gray, false, 8);
+
+                var resolved = set.Species.Select(n => (Name: n, Form: 0))
+                                          .Where(s => GetID(s.Name) > 0).ToArray();
+                AddIcons("", resolved);
+
+                var missing = set.Species.Where(n => GetID(n) <= 0).ToList();
+                if (missing.Count > 0)
+                    AddText($"not matched ({missing.Count}): {string.Join(", ", missing.Take(20))}"
+                            + (missing.Count > 20 ? ", ..." : ""), Color.IndianRed, false, 8);
+            }
+        }
+
+        AddText("2. Your Imported Version Exclusives", Color.Cyan, true, 14);
+        int importedAnchor = mainScroll.Controls.Count;
+
+        void ReloadImported()
+        {
+            // Drop and rebuild only the imported section, so the built-in guide above is untouched.
+            while (mainScroll.Controls.Count > importedAnchor)
+            {
+                var last = mainScroll.Controls[mainScroll.Controls.Count - 1];
+                mainScroll.Controls.Remove(last);
+                last.Dispose();
+            }
+            RenderImportedSets();
+        }
+
+        RenderImportedSets();
+
+        var toolbar = new Panel { Dock = DockStyle.Top, Height = 42, BackColor = Color.FromArgb(40, 40, 52) };
+        var bImport = new Button { Text = "Import…", Location = new Point(12, 8), Size = new Size(90, 26) };
+        var bRemove = new Button { Text = "Remove…", Location = new Point(108, 8), Size = new Size(90, 26) };
+        var lShow = new Label { Text = "Show:", Location = new Point(212, 13), AutoSize = true, ForeColor = Color.WhiteSmoke };
+        var cbShow = new ComboBox
+        {
+            Location = new Point(256, 9),
+            Size = new Size(150, 24),
+            DropDownStyle = ComboBoxStyle.DropDownList,
+        };
+        cbShow.Items.AddRange(["Everything", "My sets only", "Retail guide only"]);
+        cbShow.SelectedIndex = 0;
+
+        var lCount = new Label { Location = new Point(418, 13), AutoSize = true, ForeColor = Color.Gray };
+        void UpdateCount()
+        {
+            int sets = VersionExclusiveSets.All.Count;
+            int mons = VersionExclusiveSets.All.Sum(s => s.Species.Count);
+            lCount.Text = sets == 0 ? "no sets imported" : $"{sets} set(s), {mons} entries";
+        }
+        UpdateCount();
+
+        toolbar.Controls.AddRange([bImport, bRemove, lShow, cbShow, lCount]);
+
+        void ApplyFilter()
+        {
+            mainScroll.SuspendLayout();
+            for (int i = 0; i < mainScroll.Controls.Count; i++)
+            {
+                bool imported = i >= importedAnchor - 1;   // -1 keeps the section heading with it
+                mainScroll.Controls[i].Visible = cbShow.SelectedIndex switch
+                {
+                    1 => imported,
+                    2 => !imported,
+                    _ => true,
+                };
+            }
+            mainScroll.ResumeLayout();
+        }
+        cbShow.SelectedIndexChanged += (_, _) => ApplyFilter();
+
+        bImport.Click += (_, _) =>
+        {
+            if (!PromptImportExclusives()) return;
+            ReloadImported();
+            UpdateCount();
+            ApplyFilter();
+        };
+
+        bRemove.Click += (_, _) =>
+        {
+            var headers = VersionExclusiveSets.All.Select(s => s.Header).ToList();
+            if (headers.Count == 0) { WinFormsUtil.Alert("Nothing has been imported yet."); return; }
+            string pick = WinFormsUtil.PromptInput("Remove Set",
+                "Heading to remove:\n\n" + string.Join("\n", headers), headers[0]);
+            if (string.IsNullOrWhiteSpace(pick) || !VersionExclusiveSets.Remove(pick.Trim())) return;
+            ReloadImported();
+            UpdateCount();
+            ApplyFilter();
+        };
+
+        // Added in this order so the toolbar takes its space from the top and the scroll fills
+        // what is left; docking a Fill control first would put it under the bar.
         f.Controls.Add(mainScroll);
+        f.Controls.Add(toolbar);
         f.ShowDialog();
+
+        // A PictureBox does not dispose the image it was handed, so the sprites have to go here.
+        foreach (var img in sprites) img.Dispose();
+        foreach (var fo in fonts.Values) fo.Dispose();
     }
 
     private Dictionary<int, List<int>> GetEvolutionFamilies()
     {
-        int max = Main.Config.MaxSpeciesID;
+        int max = Math.Min(Main.Config.MaxSpeciesID, (evolutionFiles?.Length ?? 1) - 1);
         var adj = new Dictionary<int, List<int>>();
         for (int i = 1; i <= max; i++)
         {
@@ -400,8 +595,8 @@ private void UpdatePanel(object sender, EventArgs e)
     {
         int base_id = CB_TableID.SelectedIndex / 2;
         base_id *= 2;
-        PB_DayTable.Image = Map.Tables[base_id].GetTableImg(font);
-        PB_NightTable.Image = Map.Tables[base_id + 1].GetTableImg(font);
+        WinFormsUtil.SetImage(PB_DayTable, Map.Tables[base_id].GetTableImg(font));
+        WinFormsUtil.SetImage(PB_NightTable, Map.Tables[base_id + 1].GetTableImg(font));
     }
 
     private void LoadTable(EncounterTable table)
@@ -868,7 +1063,7 @@ private void CopySOS_Click(object sender, EventArgs e)
             species = (int)cb_spec[0][0].SelectedIndex;
             form = (int)nup_spec[0][0].Value;
         }
-        PB_Mascot.Image = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
+        WinFormsUtil.SetImage(PB_Mascot, WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config));
     }
 }
 
@@ -890,27 +1085,30 @@ public static class Extensions
             for (int j = 0; j < table.Encounter7s[i].Length; j++)
             {
                 var slot = table.Encounter7s[i][j];
-                var sprite = GetSprite((int)slot.Species, (int)slot.Forme);
-                g.DrawImage(sprite, new Point(40 * j, 30 * (i + 1)));
+                DrawSlot(g, (int)slot.Species, (int)slot.Forme, new Point(40 * j, 30 * (i + 1)));
             }
         }
 
         for (int i = 0; i < table.AdditionalSOS.Length; i++)
         {
             var slot = table.AdditionalSOS[i];
-            var sprite = GetSprite((int)slot.Species, (int)slot.Forme);
-            g.DrawImage(sprite, new Point((40 * i) + 60, 270));
+            DrawSlot(g, (int)slot.Species, (int)slot.Forme, new Point((40 * i) + 60, 270));
         }
 
-        static Bitmap GetSprite(int species, int form)
+        static void DrawSlot(Graphics g, int species, int form, Point at)
         {
-            return species == 0
-                ? Properties.Resources.empty
-                : WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
+            if (species == 0)
+            {
+                g.DrawImage(Properties.Resources.empty, at);
+                return;
+            }
+
+            using var sprite = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
+            if (sprite != null)
+                g.DrawImage(sprite, at);
         }
 
         return img;
     }
 
 }
-

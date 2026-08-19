@@ -1,0 +1,2540 @@
+﻿<?xml version="1.0"?>
+<doc>
+<assembly>
+<name>
+SkyEditor.Core
+</name>
+</assembly>
+<members>
+<member name="T:SkyEditor.Core.My.Resources.SettingNames">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.SettingNames.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.SettingNames.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.SettingNames.DevMode">
+<summary>
+  Looks up a localized string similar to SkyEditor.Core.Settings.IsDevMode.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.SettingNames.DirectoriesForDeletion">
+<summary>
+  Looks up a localized string similar to SkyEditor.Core.Settings.DirectoriesForDeletion.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.SettingNames.FilesForDeletion">
+<summary>
+  Looks up a localized string similar to SkyEditor.Core.Settings.FilesForDeletion.
+</summary>
+</member>
+<member name="T:SkyEditor.Core.My.Resources.Language">
+<summary>
+  A strongly-typed resource class, for looking up localized strings, etc.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ResourceManager">
+<summary>
+  Returns the cached ResourceManager instance used by this class.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.Culture">
+<summary>
+  Overrides the current thread's CurrentUICulture property for all
+  resource lookups using this strongly typed resource class.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.AllFiles">
+<summary>
+  Looks up a localized string similar to All Files.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.BuildProgress">
+<summary>
+  Looks up a localized string similar to Build Progress.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ConsoleAvailableCommands">
+<summary>
+  Looks up a localized string similar to The following commands are available:.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ConsoleUnknownCommand">
+<summary>
+  Looks up a localized string similar to Unknown command &quot;{0}&quot;..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.DuplicateItemException">
+<summary>
+  Looks up a localized string similar to Item with the same name already exists.  Path: &quot;{0}&quot;.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorAsyncForInfiniteLoop">
+<summary>
+  Looks up a localized string similar to StepCount cannot be 0..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorCantAddFile">
+<summary>
+  Looks up a localized string similar to Cannot add a file at the given path: {0}.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorCantLoadSiblingViewModels">
+<summary>
+  Looks up a localized string similar to Cannot load sibling view models..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorFileOrDirDoesntExist">
+<summary>
+  Looks up a localized string similar to The specified path neither points to an existing file nor an existing directory..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorMenuActionEmptyActionPath">
+<summary>
+  Looks up a localized string similar to The action&apos;s ActionPath needs to contain at least 1 item..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorNoFileOpener">
+<summary>
+  Looks up a localized string similar to No method to open the file of type &quot;{0}&quot; could be found.  This type must either implement IOpenableFile or have a registered IFileOpener that supports this type..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorNoSaveFilename">
+<summary>
+  Looks up a localized string similar to Using GenericFile.Save() requires GenericFile.OriginalFilename to not be null..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorNoSiblingViewModelOfType">
+<summary>
+  Looks up a localized string similar to No sibling view model of type &quot;{0}&quot; could be found..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorProjectNullRoot">
+<summary>
+  Looks up a localized string similar to The root node of the project should not be null..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorSanityNoMax">
+<summary>
+  Looks up a localized string similar to Sanity check failed.  Out of a list of non-zero length, no item exists that equals the max item..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorTypeMustInheritICreatableFile">
+<summary>
+  Looks up a localized string similar to The given type must implement ICreatableFile..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorTypeMustInheritIOpenableFile">
+<summary>
+  Looks up a localized string similar to The given type must implement IOpenableFile..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorTypeNoDefaultConstructor">
+<summary>
+  Looks up a localized string similar to The given type must provide a default constructor..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.ErrorWrittenReadonly">
+<summary>
+  Looks up a localized string similar to Attempted to write to a read-only file..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.File">
+<summary>
+  Looks up a localized string similar to File.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.Loading">
+<summary>
+  Looks up a localized string similar to Loading....
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.PluginDevExtAuthor">
+<summary>
+  Looks up a localized string similar to You!.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.PluginDevExtDescription">
+<summary>
+  Looks up a localized string similar to All of the plugins that are placed in the development directory..
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.PluginDevExtName">
+<summary>
+  Looks up a localized string similar to Development Plugins.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.PluginDevExtVersion">
+<summary>
+  Looks up a localized string similar to 0.0.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.Ready">
+<summary>
+  Looks up a localized string similar to Ready.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.SkyEditorProjects">
+<summary>
+  Looks up a localized string similar to Sky Editor Projects.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.SupportedFiles">
+<summary>
+  Looks up a localized string similar to Supported Files.
+</summary>
+</member>
+<member name="P:SkyEditor.Core.My.Resources.Language.UnknownFileRegisterTemplate">
+<summary>
+  Looks up a localized string similar to {0} Files.
+</summary>
+</member>
+<member name="T:SkyEditor.Core.ConsoleCommands.ConsoleCommand">
+ <summary>
+ Represents a console command subroutine.
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.ConsoleCommands.DummyConsoleProvider">
+ <summary>
+ An IConsoleProvider that does nothing, existing to allow running ConsoleCommands outside of an environment with a console.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionHelper.GetExtensionBank(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets the <see cref="T:SkyEditor.Core.Extensions.ExtensionType"/> with the given type name.
+ </summary>
+ <param name="extensionTypeName">Name of the type of the extension.</param>
+ <param name="manager">Instance of the current plugin manager.</param>
+ <returns>An instance of <see cref="T:SkyEditor.Core.Extensions.ExtensionType"/> corresponsing to <paramref name="extensionTypeName"/>, or null if it cannot be found.</returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionHelper.InstallPendingExtensions(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Installs all extension zips at the root of the extension directory.  Intended to be run before plugins are loaded.
+ </summary>
+ <param name="extensionDirectory"></param>
+ <param name="manager"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionType.GetName">
+ <summary>
+ The user-friendly name of the extension type.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Extensions.ExtensionType.RootExtensionDirectory">
+ <summary>
+ Gets or sets the directory the ExtensionType stores extensions in.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Extensions.ExtensionType.InternalName">
+ <summary>
+ The internal name of the extension type used in paths.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionType.GetInstalledExtensions(System.Int32,System.Int32,SkyEditor.Core.PluginManager)">
+ <summary>
+ Lists the extensions that are currently installed.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionType.InstallExtension(System.String,System.String)">
+ <summary>
+ Installs the extension that's stored in the given directory.
+ </summary>
+ <param name="TempDir">Temporary directory that contains the extension's files.</param>
+</member>
+<member name="M:SkyEditor.Core.Extensions.ExtensionType.UninstallExtension(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Uninstalls the given extension.
+ </summary>
+ <param name="extensionID">ID of the extension to uninstall</param>
+</member>
+<member name="T:SkyEditor.Core.Extensions.ExtensionInfo">
+ <summary>
+ Contains the metadata of an extension
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Extensions.ExtensionInfo.ID">
+ <summary>
+ Unique ID of the extension
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.PluginExtensionType.GetExtensionDirectory(System.String)">
+ <summary>
+ Gets the directory that stores the files for the given extension ID.
+ </summary>
+ <param name="extensionID">ID of the extension for which to get the directory.</param>
+ <returns></returns>
+ <remarks>If the extensionID is an empty Guid, returns the plugin development directory.</remarks>
+</member>
+<member name="M:SkyEditor.Core.Extensions.PluginExtensionType.GetDevDirectory">
+ <summary>
+ Gets the plugin development directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Extensions.PluginExtensionType.UninstallExtension(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Uninstalls the given extension.
+ </summary>
+ <param name="extensionID">ID of the extension to uninstall</param>
+</member>
+<member name="T:SkyEditor.Core.IOUIManager">
+ <summary>
+ Class that manages open files, solutions, and projects, and helps with the UI display them.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.CurrentPluginManager">
+ <summary>
+ Instance of the current plugin manager.
+ </summary>
+ <returns>The instance of the current plugin manager.</returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.OpenFiles">
+ <summary>
+ The files that are currently open
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.AnchorableViewModels">
+ <summary>
+ The view models for anchorable views.
+ </summary>
+ <returns>The view models for anchorable views.</returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.SelectedFile">
+ <summary>
+ Gets or sets the selected file
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.ActiveContent">
+ <summary>
+ Gets or sets the currently selected view model (Anchorable or File)
+ </summary>
+ <returns>The currently selected view model (Anchorable or File)</returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.FileDisposalSettings">
+ <summary>
+ Stores whether or not to dispose of files on close
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.OpenedProjectFiles">
+ <summary>
+ Matches opened files to their parent projects
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IOUIManager.IOFilters">
+ <summary>
+ Dictionary of (Extension, Friendly Name) used in the Open and Save file dialogs.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.ShowLoading(System.Threading.Tasks.Task)">
+ <summary>
+ Adds the given <paramref name="task"/> to the list of currently loading tasks.
+ </summary>
+ <param name="task"><see cref="T:System.Threading.Tasks.Task"/> to add to the loading list.</param>
+ <remarks>This overload will never show determinate progress.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.ShowLoading(System.Threading.Tasks.Task,System.String)">
+ <summary>
+ Adds the given <paramref name="task"/> to the list of currently loading tasks.
+ </summary>
+ <param name="task"><see cref="T:System.Threading.Tasks.Task"/> to add to the loading list.</param>
+ <param name="loadingMessage">User-friendly loading message.  Usually what the task is doing.</param>
+ <remarks>This overload will never show determinate progress.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.ShowLoading(SkyEditor.Core.Utilities.IReportProgress)">
+ <summary>
+ Adds the given <paramref name="task"/> to the list of currently loading tasks.
+ </summary>
+ <param name="task"><see cref="T:SkyEditor.Core.Utilities.IReportProgress"/> to add to the loading list.</param>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetIOFilter(System.Collections.Generic.ICollection{System.String},System.Boolean,System.Boolean)">
+ <summary>
+ Gets the IO filter string for use with an OpenFileDialog or a SaveFileDialog.
+ </summary>
+ <param name="filters">A collection containing the extensions to put in the string.</param>
+ <param name="addSupportedFilesEntry">Whether or not to add a "Supported Files" entry to the filter.</param>
+ <param name="allowAllFiles">Whether or not to add an "All Files" entry to the filters.</param>
+ <returns>A string that can be used directly with the filter of an OpenFileDialog or a SaveFileDialog.</returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetIOFilter">
+ <summary>
+ Gets the IO filter string for use with an OpenFileDialog or a SaveFileDialog.
+ </summary>
+ <returns>A string that can be used directly with the filter of an OpenFileDialog or a SaveFileDialog.</returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetIOFilter(System.Collections.Generic.ICollection{System.String})">
+ <summary>
+ Gets the IO filter string for use with an OpenFileDialog or a SaveFileDialog.
+ </summary>
+ <param name="filters">A collection containing the extensions to put in the string.</param>
+ <returns>A string that can be used directly with the filter of an OpenFileDialog or a SaveFileDialog.</returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.RegisterIOFilter(System.String,System.String)">
+ <summary>
+ Registers a filter for use in open and save file dialogs.
+ </summary>
+ <param name="FileExtension">Filter for the dialog.  If this is by extension, should be *.extension</param>
+ <param name="FileFormatName">Name of the file format</param>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetProjectIOFilter">
+ <summary>
+ Gets the filter for a Windows Forms Open or Save File Dialog for use with Sky Editor Projects.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,System.Boolean)">
+ <summary>
+ Opens the given file
+ </summary>
+ <param name="model">Model to open</param>
+ <param name="DisposeOnClose">True to call the file's dispose method (if IDisposable) when closed.</param>
+ <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="model"/> is null.</exception>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,SkyEditor.Core.Projects.Project)">
+ <summary>
+ Opens the given file
+ </summary>
+ <param name="model">File to open</param>
+ <param name="parentProject">Project the file belongs to.  If the file does not belong to a project, don't use this overload.</param>
+ <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="model"/> or <paramref name="parentProject"/> is null.</exception>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.OpenFile(System.String,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector)">
+ <summary>
+ Opens a file from the given filename.
+ </summary>
+ <param name="filename">Full path of the file to open.</param>
+ <param name="autoDetectSelector">Delegate function used to resolve duplicate auto-detection results.</param>
+ <remarks>This overload is intended to open files on disk that are not associated with a project, automatically determining the file type.
+ To open a project file, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,SkyEditor.Core.Projects.Project)"/>.
+ To open a file that is not necessarily on disk, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,System.Boolean)"/>.
+ To open a file using a specific type as the model, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.String,System.Reflection.TypeInfo)"/>.
+ 
+ When the file is closed, the underlying model will be disposed.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.OpenFile(System.String,System.Reflection.TypeInfo)">
+ <summary>
+ Opens a file from the given filename.
+ </summary>
+ <param name="filename">Full path of the file to open.</param>
+ <param name="modelType">Type of the model of the file.</param>
+ <remarks>This overload is intended to open files on disk, using a specific file type, that are not associated with a project.
+ To open a project file, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,SkyEditor.Core.Projects.Project)"/>.
+ To open a file that is not necessarily on disk, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.Object,System.Boolean)"/>.
+ To open a file, auto-detecting the file type, use <see cref="M:SkyEditor.Core.IOUIManager.OpenFile(System.String,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector)"/>.
+ 
+ When the file is closed, the underlying model will be disposed.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.CloseFile(SkyEditor.Core.UI.FileViewModel)">
+ <summary>
+ Closes the file
+ </summary>
+ <param name="File">File to close</param>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetViewModelsForModel(System.Object)">
+ <summary>
+ Gets the current view models for the model, creating them if necessary.
+ </summary>
+ <param name="model">Model for which to get the view models.</param>
+ <returns>An IEnumerable of view models that support the given model, or null if the model is not an open file.</returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetProjectOfOpenFile(SkyEditor.Core.UI.FileViewModel)">
+ <summary>
+ Returns the file's parent project, if it exists.
+ </summary>
+ <param name="File">File of which to get the parent project.  Must be an open file, otherwise the function will return Nothing.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetProjectOfOpenModel(System.Object)">
+ <summary>
+ Returns the file's parent project, if it exists.
+ </summary>
+ <param name="model">Model of which to get the parent project.  Must be an open file, otherwise the function will return Nothing.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetMenuActionTargets">
+ <summary>
+ Gets the possible targets for a menu action.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.GetMenuActionTargets(SkyEditor.Core.UI.MenuAction)">
+ <summary>
+ Gets the targets for the given menu action
+ </summary>
+ <param name="action">The action for which to retrieve the targets</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.UpdateMenuItemVisibility(SkyEditor.Core.ActionMenuItem)">
+ <summary>
+ Updates the visibility for the given menu item and its children, and returns the updated visibility
+ </summary>
+ <param name="menuItem"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IOUIManager.CreateViewModel(System.Object)">
+ <summary>
+ Creates a new FileViewModel wrapper for the given model.
+ </summary>
+ <param name="model">Model for which to create the FileViewModel wrapper.</param>
+ <returns>A new FileViewModel wrapper.</returns>
+</member>
+<member name="T:SkyEditor.Core.IO.DetectableFileTypeDetector">
+ <summary>
+ Detects the type of a file using all registered IDetectableFileTypes.
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.IO.FileTypeDetectionResult">
+ <summary>
+ The result of a file type detection.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.IO.FileTypeDetectionResult.FileType">
+ <summary>
+ The type of the class that can model the file in question.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.FileTypeDetectionResult.MatchChance">
+ <summary>
+ The percentage chance that this file type can model the file in question.
+ </summary>
+ <remarks>The FileTypeDetectionResult with the highest MatchChance will be used, and if there are duplicates (e.g. two FileTypeDetectionResult instances with a chance of 1.0), the user may be prompted.</remarks>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.IO.IFileOpener">
+ <summary>
+ Creates a model from a file
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileOpener.OpenFile(System.Reflection.TypeInfo,System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Creates an instance of fileType from the given filename.
+ </summary>
+ <param name="fileType">Type of the file to open</param>
+ <param name="filename">Full path of the file to open</param>
+ <param name="provider">Instance of the current IO provider</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileOpener.SupportsType(System.Reflection.TypeInfo)">
+ <summary>
+ Determines whether or not the IFileOpener supports opening a file of the given type
+ </summary>
+ <param name="fileType">Type of the file to open</param>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.IO.IFileSaver">
+ <summary>
+ Saves a model to a file
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.SupportsSave(System.Object)">
+ <summary>
+ Determines whether or not the current IFileSaver supports saving the given model without a filename.
+ </summary>
+ <param name="model">Model to save.</param>
+ <returns>A boolean indicating whether or nto the current IFileSaver can save the given model without a filename.</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.SupportsSaveAs(System.Object)">
+ <summary>
+ Determines whether or not the current IFileSaver supports saving the given model with a filename.
+ </summary>
+ <param name="model">Model to save.</param>
+ <returns>A boolean indicating whether or nto the current IFileSaver can save the given model with a filename.</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.Save(System.Object,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the model to disk.
+ </summary>
+ <param name="model">Model to save.</param>
+ <param name="provider">Instance of the current IOProvider</param>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.Save(System.Object,System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the model to a file at the given path.
+ </summary>
+ <param name="model">Model to save.</param>
+ <param name="filename">Full path of the file to which the model will be saved.</param>
+ <param name="provider">Instance of the current IOProvider</param>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.GetDefaultExtension(System.Object)">
+ <summary>
+ Gets the default extension for the given model when using Save As.
+ Should only be called if the <see cref="M:SkyEditor.Core.IO.IFileSaver.SupportsSaveAs(System.Object)"/> returns true.
+ </summary>
+ <param name="model">Model of which to determine the default extension.</param>
+ <returns>A string representing the default extension.</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IFileSaver.GetSupportedExtensions(System.Object)">
+ <summary>
+ Gets the supported extensions for the given model when using Save As.
+ </summary>
+ <param name="model">Model of which to determine the supported extensions.</param>
+ <returns>An IEnumerable that contains every extension that can be used to save this file.</returns>
+</member>
+<member name="T:SkyEditor.Core.IO.IFileTypeDetector">
+ <summary>
+ A type that can analyze a file and detect its file type.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.GetCreatableFileTypes(SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns an IEnumerable of all the registered types that implement iCreatableFile.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.GetOpenableFileTypes(SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns an IEnumerable of all the registered types that implement iOpenableFile.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.CreateNewFile(System.String,System.Reflection.TypeInfo)">
+ <summary>
+ Creates a new instance of the given file type.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.OpenFile(System.String,System.Reflection.TypeInfo,SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates a new instance of the given iOpenableFile type using the given filename.
+ </summary>
+ <param name="Filename">Filename of the file to open.</param>
+ <param name="FileType">Type of the class to create an instance of.  Must have a default constructor and implement iOpenableFile.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.OpenObject(System.String,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector,SkyEditor.Core.PluginManager)">
+ <summary>
+ Auto-detects the file/directory type and creates an instance of an appropriate class to model it.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.OpenFile(SkyEditor.Core.IO.GenericFile,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector,SkyEditor.Core.PluginManager)">
+ <summary>
+ Using the given file, auto-detects the file type and creates an instance of an appropriate class.
+ If no appropriate file can be found, will return the given File.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.OpenDirectory(System.String,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector,SkyEditor.Core.PluginManager)">
+ <summary>
+ Sometimes a "file" actually exists as multiple files in a directory.  This method will open a "file" using the given directory.  Returns Nothing if no class can model the directory at the given path.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOHelper.GetFileType(SkyEditor.Core.IO.GenericFile,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector,SkyEditor.Core.PluginManager)">
+ <summary>
+ Detects the type of the given file, or returns Nothing if no known classes that can model it exist.
+ </summary>
+ <param name="File">File of which to detect the type.</param>
+ <param name="Manager">Instance of the current plugin manager.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.ObjectFileDetector.TryGetObjectFileType(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ If the given file is of type ObjectFile, returns the contained Type.
+ Otherwise, returns Nothing.
+ </summary>
+ <param name="Filename"></param>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.IO.OpenableFileOpener">
+ <summary>
+ Opens files using file types that implement IOpenableFile
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.IO.SavableFileSaver">
+ <summary>
+ A class that can save models that implement ISavable or ISavableAs
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor">
+ <summary>
+ Creates a new instance of GenericFile for use with either GenericFile.OpenFile or GenericFile.CreateFile
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor(SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Creates a new instance of GenericFile for use with either GenericFile.OpenFile or GenericFile.CreateFile
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor(SkyEditor.Core.IO.IOProvider,System.Byte[])">
+ <summary>
+ Creates a new instance of GenericFile using the given data.
+ </summary>
+ <param name="RawData"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor(SkyEditor.Core.IO.IOProvider,System.String)">
+ <summary>
+ Creates a new instance of GenericFile from the given file.
+ </summary>
+ <param name="Filename">Full path of the file to load.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor(SkyEditor.Core.IO.IOProvider,System.String,System.Boolean)">
+ <summary>
+ Creates a new instance of GenericFile from the given file.
+ </summary>
+ <param name="Filename">Full path of the file to load.</param>
+ <param name="IsReadOnly">Whether or not to allow altering the file.  If True, an IOException will be thrown when attempting to alter the file.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.#ctor(SkyEditor.Core.IO.IOProvider,System.String,System.Boolean,System.Boolean)">
+ <summary>
+ Creates a new instance of GenericFile from the given file.
+ </summary>
+ <param name="Filename">Full path of the file to load.</param>
+ <param name="IsReadOnly">Whether or not to allow altering the file.  If True, an IOException will be thrown when attempting to alter the file, regardless of whether LoadToMemory is true.</param>
+ <param name="LoadToMemory">True to load the file into memory, False to use a FileStream.  If loading the file into memory would leave the system with less than 500MB, a FileStream will be used instead.</param>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.FileProvider">
+ <summary>
+ Platform dependant abstraction layer for the file system.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.IsReadOnly">
+ <summary>
+ Whether or not to allow altering the file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.EnableInMemoryLoad">
+ <summary>
+ Determines whether or not the file will be loaded into memory completely, or located on disk.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.OriginalFilename">
+ <summary>
+ The logical location of the file.
+ Null if the current file was created and has never been saved.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.PhysicalFilename">
+ <summary>
+ The location of the file being accessed by the internal FileReader.
+ If EnableShadowCopy is True, will be the location of a temporary file.  If False, it is equal to OriginalFilename.
+ Null if EnableInMemoryLoad is True.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.Name">
+ <summary>
+ Name of the file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.EnableShadowCopy">
+ <summary>
+ Whether or not to make a shadow copy of the file before loading it.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.InMemoryFile">
+ <summary>
+ The raw data of the file, if EnableInMemoryLoad is True.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.RawData(System.Int64)">
+ <summary>
+ Gets or sets the byte at the given index.
+ </summary>
+ <param name="Index">Index of the byte.</param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.Int16(System.Int64)">
+ <summary>
+ Gets a 16 bit signed little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.UInt16(System.Int64)">
+ <summary>
+ Gets a 16 bit unsigned little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.Int32(System.Int64)">
+ <summary>
+ Gets a 32 bit signed little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.UInt32(System.Int64)">
+ <summary>
+ Gets a 32 bit unsingned little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.Int64(System.Int64)">
+ <summary>
+ Gets a 64 bit signed little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.IO.GenericFile.UInt64(System.Int64)">
+ <summary>
+ Gets a 64 bit unsingned little endian int starting at the given index.
+ </summary>
+ <param name="Index"></param>
+ <returns></returns>
+</member>
+<member name="E:SkyEditor.Core.IO.GenericFile.FileSaved">
+ <summary>
+ Raised when the file has been saved to disk.
+ </summary>
+ <param name="sender"></param>
+ <param name="e"></param>
+</member>
+<member name="E:SkyEditor.Core.IO.GenericFile.FileSaving">
+ <summary>
+ Raised when the file is being saved, but before any changes have been written to disk.
+ </summary>
+ <param name="sender"></param>
+ <param name="e"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.CreateFile(System.String)">
+ <summary>
+ Creates a new file with the given name.
+ </summary>
+ <param name="Name">Name (not path) of the file.  Include the extension if applicable.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.CreateFile(System.Byte[])">
+ <summary>
+ Creates a new file with the given contents.
+ </summary>
+ <param name="FileContents">Contents of the new file.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.OpenFile(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Opens a file from the given filename.  If it does not exists, a blank one will be created.
+ </summary>
+ <param name="Filename"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.Save(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the file to the given destination.
+ </summary>
+ <param name="Destination">Full path of where the file should be saved to.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.Save(SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the file to the Original Filename.
+ Throws a NullReferernceException if the Original Filename is null.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.Read">
+ <summary>
+ Reads all the data in the file.
+ </summary>
+ <returns>An array of byte containing the contents of the file.</returns>
+ <remarks>Not recommended for larger files.  This function is thread-safe.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.Read(System.Int64)">
+ <summary>
+ Reads a byte from the file.
+ </summary>
+ <param name="index">Index from which to retrieve the byte.</param>
+ <returns>A byte equal to the byte at the given index in the file.</returns>
+ <remarks>This function is thread-safe.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.Read(System.Int64,System.Int64)">
+ <summary>
+ Reads a range of bytes from the file.
+ </summary>
+ <param name="index">Index from which to retrieve the range.</param>
+ <param name="length">Length of the range.</param>
+ <returns>An array of byte containing the data in the requested range.</returns>
+ <remarks>This function is thread-safe.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.CopyTo(System.IO.Stream,System.Int64,System.Int64)">
+ <summary>
+ Copies data into the given stream.
+ </summary>
+ <param name="destination">Stream to which to copy data.</param>
+ <param name="index">Index of the data to start reading from the <see cref="T:SkyEditor.Core.IO.GenericFile"/>.</param>
+ <param name="length">Number of bytes to copy into the destination stream.</param>
+ <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="destination"/> is null.</exception>
+ <remarks>Currently, the data of size <paramref name="length"/> is buffered in memory, and will error if there is insufficient memory.
+ 
+ To avoid threading issues, this function will synchronously block using SyncLock until the operation is complete.</remarks>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.ReadUnicodeString(System.Int32,System.Int32)">
+ <summary>
+ Reads a UTF-16 string from the file.
+ </summary>
+ <param name="Offset">Location of the string in the file.</param>
+ <param name="Length">Length, in characters, of the string.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.ReadUnicodeString(System.Int32)">
+ <summary>
+ Reads a null-terminated UTF-16 string from the file.
+ </summary>
+ <param name="Offset">Location of the string in the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.ReadNullTerminatedString(System.Int32,System.Text.Encoding)">
+ <summary>
+ Reads a null-terminated string from the file using the given encoding.
+ Currently only supports static 1 and 2 byte character formats.
+ </summary>
+ <param name="Offset">Location of the string in the file.</param>
+ <param name="e">Character encoding to use.  Currently only supports static 1 and 2 byte character formats (like ASCII and UTF-16, but not UTF-8 or UTF-32).</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.NextUInt16">
+ <summary>
+ Reads an unsigned 16 bit integer at the current position, then increments the current position by 2.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.GenericFile.GetDefaultExtension">
+ <summary>
+ Default file extension for this kind of file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.IO.IDetectableFileType">
+ <summary>
+ Represents a class that can detect whether or not it is the same type as the given file.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.IDetectableFileType.IsOfType(SkyEditor.Core.IO.GenericFile)">
+ <summary>
+ Returns whether or not the given file is of the type that the class represents.
+ </summary>
+ <param name="File">File to check.</param>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.IO.INotifyModified">
+ <summary>
+ Marks an object that supports raising an event when modified.
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.IO.IOnDisk">
+ <summary>
+ Represents something that's stored on disk.
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.IO.ISavable">
+ <summary>
+ Marks a class that supports saving.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.ISavable.Save(SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the class to the last filename.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.IO.ISavable.FileSaved">
+ <summary>
+ Raised when the file is saved.
+ </summary>
+ <param name="sender"></param>
+ <param name="e"></param>
+</member>
+<member name="T:SkyEditor.Core.IO.ISavableAs">
+ <summary>
+ Implemented by objects that can save themselves to disk.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.IO.ISavableAs.Save(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the class to the given filename.
+ </summary>
+ <param name="Filename"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.ISavableAs.GetDefaultExtension">
+ <summary>
+ Gets the default extension for the file.
+ </summary>
+ <returns>A string containing the default extension for the file.</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.ISavableAs.GetSupportedExtensions">
+ <summary>
+ Gets the supported extensions for the file.
+ </summary>
+ <returns>An IEnumerable that contains every extension that can be used to save this file.</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.GetFileLength(System.String)">
+ <summary>
+ Gets the length, in bytes, of the file at the given path.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns>The length, in bytes, of the file</returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.FileExists(System.String)">
+ <summary>
+ Determines whether the specified file exists.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.DirectoryExists(System.String)">
+ <summary>
+ Determines whether the specified directory exists.
+ </summary>
+ <param name="path">Full path of the directory.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.CreateDirectory(System.String)">
+ <summary>
+ Creates a directory at the specified path.
+ </summary>
+ <param name="path"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.GetFiles(System.String,System.String,System.Boolean)">
+ <summary>
+ Gets the full paths of the files in the directory at the given path.
+ </summary>
+ <param name="path">Full path of the directory from which to get the files.</param>
+ <param name="searchPattern">The search string to match against the names of files in path. This parameter can contain a combination of valid literal path and wildcard (* and ?) characters, but doesn't support regular expressions.</param>
+ <param name="topDirectoryOnly">True to search only the top directory.  False to search all child directories too.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.GetDirectories(System.String,System.Boolean)">
+ <summary>
+ Gets the full paths of the directories in the directory at the given path
+ </summary>
+ <param name="path">Full path of the directory from which to get the files.</param>
+ <param name="topDirectoryOnly">True to search only the top directory.  False to search all child directories too.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.ReadAllBytes(System.String)">
+ <summary>
+ Reads a file from disk, and returns its contents as a byte array.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.WriteAllText(System.String,System.String)">
+ <summary>
+ Writes the given text to disk.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <param name="data">File contents to be written.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.ReadAllText(System.String)">
+ <summary>
+ Reads a file from disk, and returns its contents as a string.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.WriteAllBytes(System.String,System.Byte[])">
+ <summary>
+ Writes the given byte array to disk.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <param name="data">File contents to be written.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.CopyFile(System.String,System.String)">
+ <summary>
+ Copies a file, overwriting the destination file if it exists.
+ </summary>
+ <param name="sourceFilename"></param>
+ <param name="destinationFilename"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.DeleteFile(System.String)">
+ <summary>
+ Deletes the file at the given path.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.DeleteDirectory(System.String)">
+ <summary>
+ Deletes the directory at the given path, and all of its contents.
+ </summary>
+ <param name="path"></param>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.GetTempFilename">
+ <summary>
+ Creates a temporary, blank file and returns its full path.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.GetTempDirectory">
+ <summary>
+ Creates a temporary empty directory and returns its full path.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.CanLoadFileInMemory(System.Int64)">
+ <summary>
+ Determines whether or not a file of the given size will fit in memory.
+ </summary>
+ <param name="fileSize">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.OpenFile(System.String)">
+ <summary>
+ Opens a file stream with Read/Write privilages.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.OpenFileReadOnly(System.String)">
+ <summary>
+ Opens a file stream with Read privilages.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.IO.IOProvider.OpenFileWriteOnly(System.String)">
+ <summary>
+ Opens a file stream with Write privilages.
+ </summary>
+ <param name="filename">Full path of the file.</param>
+ <returns></returns>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.None">
+ <summary>
+ No build has been run yet.
+ </summary>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.Building">
+ <summary>
+ Build has been started, but is not complete.
+ </summary>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.Done">
+ <summary>
+ Build has completed successfully.
+ </summary>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.Failed">
+ <summary>
+ Build has completed with errors.
+ </summary>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.Canceling">
+ <summary>
+ The build's cancelation has been requested, but the build is still running.
+ </summary>
+</member>
+<member name="F:SkyEditor.Core.Projects.BuildStatus.Canceled">
+ <summary>
+ The build is stopped because it has been canceled.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.FileOpenedEventArguments.ParentProject">
+ <summary>
+ The project the file was opened from.
+ Null if the file is not in a project.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ItemAddedEventArgs.FullPath">
+ <summary>
+ Full path in the solution of the newly added item.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.ItemRemovedEventArgs.FullPath">
+ <summary>
+ Full path in the solution of the newly removed item.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.Project.ProjectFile.Files">
+ <summary>
+ Matches project paths to project files, which are relative to the project directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.Project.ProjectFileLegacy.Files">
+ <summary>
+ Matches project paths to project files, which are relative to the project directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="E:SkyEditor.Core.Projects.Project.ProjectOpened">
+ <summary>
+ Raised when the project has been opened.
+ </summary>
+ <param name="sender"></param>
+ <param name="e"></param>
+</member>
+<member name="P:SkyEditor.Core.Projects.Project.ProjectReferences">
+ <summary>
+ List of the names of all projects in the current solution this project references.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.GetFileByPath(System.String,SkyEditor.Core.PluginManager,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector)">
+ <summary>
+ Gets the file at the given path.
+ Returns nothing if there is no file at that path.
+ </summary>
+ <param name="path">Path to look for a file.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.GetFilename(System.String)">
+ <summary>
+ Gets the filename of the file at the given project path.
+ </summary>
+ <param name="path">Path of the project file of which to get the physical filename.</param>
+ <returns>The physical filename of the project file.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.GetImportedFilePath(System.String,System.String)">
+ <summary>
+ Gets the project path of the imported file.
+ </summary>
+ <param name="parentProjectPath">Directory to put the imported file.</param>
+ <param name="filename">Full path of the file to import.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.HasCircularReferences(SkyEditor.Core.Projects.Solution)">
+ <summary>
+ Returns whether or not this project contains a circular reference back to itself.
+ It does not detect whether other projects this one references have their own circular references.
+ </summary>
+ <param name="Solution"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.FillReferenceTree(SkyEditor.Core.Projects.Solution,System.Collections.Generic.List{SkyEditor.Core.Projects.Project},SkyEditor.Core.Projects.Project)">
+ <summary>
+ Fills Tree with all the references of the current item.
+ Stops if the last item added is the current instance of project.
+ </summary>
+ <param name="Solution"></param>
+ <param name="Tree"></param>
+ <param name="CurrentItem"></param>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.CreateProject(System.String,System.String,SkyEditor.Core.Projects.Solution,SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates and returns a new Project.
+ </summary>
+ <param name="ProjectDirectory">Directory to store the Project.  Project will be stored in a sub directory of the one given.</param>
+ <param name="ProjectName">Name of the Project.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.CreateProject(System.String,System.String,System.Type,SkyEditor.Core.Projects.Solution,SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates and returns a new Project.
+ </summary>
+ <param name="ProjectDirectory">Directory to store the Project.  Project will be stored in a sub directory of the one given.</param>
+ <param name="ProjectName">Name of the Project.</param>
+ <param name="ProjectType">Type of the Project to create.  Must inherit from Project.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Project.OpenProjectFile(System.String,SkyEditor.Core.Projects.Solution,SkyEditor.Core.PluginManager)">
+ <summary>
+ Opens and returns the solution at the given filename.
+ </summary>
+ <param name="Filename"></param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectAddedEventArgs.Path">
+ <summary>
+ Path of the project in the solution
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectAddedEventArgs.Project">
+ <summary>
+ The project that was added
+ </summary>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.Projects.ProjectBase">
+ <summary>
+ Defines the common functionality of both projects and solutions.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.Projects.ProjectBase.DirectoryCreated">
+ <summary>
+ Raised when a directory is created.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.Projects.ProjectBase.DirectoryDeleted">
+ <summary>
+ Raised when a directory is deleted.
+ </summary>
+ <remarks>Event will only be raised for directories that are directly requested to be deleted.  Events will not be raised for child directories or items.</remarks>
+</member>
+<member name="E:SkyEditor.Core.Projects.ProjectBase.ItemAdded">
+ <summary>
+ Raised when an item, such as a file or a project, has been added.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.Projects.ProjectBase.ItemRemoved">
+ <summary>
+ Raised when an item, such as a file or a project, has been added.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.Projects.ProjectBase.BuildCompleted">
+ <summary>
+ Raised when building is complete.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.CurrentPluginManager">
+ <summary>
+ Gets or sets the instance of the current plugin manager
+ </summary>
+ <returns>The instance of the current plugin manager</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.Name">
+ <summary>
+ Gets or sets the name of the project
+ </summary>
+ <returns>A string containing the name of the project</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.Filename">
+ <summary>
+ Gets or sets the full path of the project file
+ </summary>
+ <returns>A string containing the absolute path of the project file</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.Settings">
+ <summary>
+ The project settings
+ </summary>
+ <returns>A <see cref="T:SkyEditor.Core.SettingsProvider"/> containing the settings for the project.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.UnsavedChanges">
+ <summary>
+ Gets or sets whether or not there are unsaved changes
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.Setting(System.String)">
+ <summary>
+ Gets or sets an individual setting in the project's settings.
+ </summary>
+ <param name="SettingName">Name of the setting to get or set.</param>
+ <returns>The value of the setting with the name <paramref name="SettingName"/></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.Items">
+ <summary>
+ Matches logical paths to items
+ </summary>
+ <remarks>Key: logical path; Value: Item (Projects for Solutions, Files for Projects).
+ If the value is null, the path is an empty directory.
+ 
+ Example Paths (In form: "{Path}"/{Value})
+ ""/null - Represents the root directory
+ "Test"/null - directory
+ "Test/Ing"/null - directory
+ "Test/File"/[GenericFile] - File of type GenericFile, named "File", in directory "Test"</remarks>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.BuildStatus">
+ <summary>
+ Gets or sets the status of the project's current build.
+ </summary>
+ <returns>The status of the project's current build.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.BuildProgress">
+ <summary>
+ Gets or sets the progress of the current project's build.
+ </summary>
+ <returns>A percentage indicating the progression of the build.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.BuildStatusMessage">
+ <summary>
+ Gets or sets the current build message.
+ </summary>
+ <returns>A string indicating what is being done in the build.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.IsBuildProgressIndeterminate">
+ <summary>
+ Gets or sets whether or not the build progress is indeterminate.
+ </summary>
+ <returns>A boolean indicating whether or not the build progress is indeterminate.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectBase.IsBuildCompleted">
+ <summary>
+ Whether or not a build has completed.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.IsBuilding">
+ <summary>
+ Gets whether or not a build is currently running.
+ </summary>
+ <returns>A boolean indicating whether or not the <see cref="P:SkyEditor.Core.Projects.ProjectBase.BuildStatus"/> indicates a running build.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.IsCancelRequested">
+ <summary>
+ Gets whether or not a build cancelation has been requested.
+ </summary>
+ <returns>A boolean indicating whether or not the <see cref="P:SkyEditor.Core.Projects.ProjectBase.BuildStatus"/> indicates the build should be canceled.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.Build">
+ <summary>
+ Builds the project, the project is not already building.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.CancelBuild">
+ <summary>
+ Requests that the current build be canceled.
+ </summary>
+ <remarks>This only requests that the build be canceled.  It is up to the implementation of the current project whether or not the build actaully stops.</remarks>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.CanBuild">
+ <summary>
+ Gets whether or not a build can be run.
+ </summary>
+ <returns>A boolean indicating whether or not a build can be started.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.FixPath(System.String)">
+ <summary>
+ Standardizes a path.
+ </summary>
+ <param name="path">Path to standardize.</param>
+ <returns>A standardized path.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.GetItemsInternal(System.String,System.Boolean,System.Boolean)">
+ <summary>
+ Gets paths and objects in the logical filesystem.
+ </summary>
+ <param name="path">Path of child items.</param>
+ <param name="recursive">Whether or not to search child directories.</param>
+ <param name="getDirectories">Whether to get files or directories.</param>
+ <returns>An instance of <see cref="T:System.Collections.Generic.IEnumerable`1"/>, where each key is the full path and each value is the corresponding object, or null if the path is a directory.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.GetItem(System.String)">
+ <summary>
+ Gets the item at the given path.
+ </summary>
+ <param name="path">Path of the item.</param>
+ <returns>The item at the given path, or null if there is no item at the given path.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.DeleteItem(System.String)">
+ <summary>
+ Deletes a directory or item at the given path, if it exists.
+ </summary>
+ <param name="path">Path of the directory or item to delete.</param>
+ <returns>A boolean indicating whether or not the item was deleted.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.DirectoryExists(System.String)">
+ <summary>
+ Determines whether or not a directory at the given path exists.
+ </summary>
+ <param name="path">Path of the directory to find.</param>
+ <returns>A boolean indicating whether or not a directory exists at the requested path.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.GetDirectories(System.String,System.Boolean)">
+ <summary>
+ Gets the directories in the given directory.
+ </summary>
+ <param name="path">Parent directory of the requested directories.</param>
+ <returns>A list of the full logical paths of the directories.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.CanCreateDirectory(System.String)">
+ <summary>
+ Determines whether or not a directory node can be created at the given path.
+ </summary>
+ <param name="parentPath">Path of the node in which a directory is to be created.</param>
+ <returns>A boolean indicating whether or not a directory is allowed to be created in the given path.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.CreateDirectory(System.String)">
+ <summary>
+ Creates a directory if it does not exist.
+ </summary>
+ <param name="path">Path of the new directory.</param>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.CanDeleteDirectory(System.String)">
+ <summary>
+ Determines whether or not a directory node located at the given path is allowed to be deleted.
+ </summary>
+ <param name="directoryPath">Path of the directory node to be deleted.</param>
+ <returns>A boolean indicating whether or not a directory is allowed to be deleted from the given path.</returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase.DeleteDirectory(System.String)">
+ <summary>
+ Deletes the directory with the given path, along with any child items.
+ </summary>
+ <param name="path"></param>
+</member>
+<member name="T:SkyEditor.Core.Projects.ProjectBase`1">
+ <summary>
+ Defines the common functionality of both projects and solutions.
+ </summary>
+ <typeparam name="T">Type of project items.</typeparam>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectBase`1.GetItem(System.String)">
+ <summary>
+ Gets the item at the given path.
+ </summary>
+ <param name="path">Path of the item.</param>
+ <returns>The item at the given path, or null if there is no item at the given path.</returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileAddedEventArgs.Filename">
+ <summary>
+ Name of the file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileAddedEventArgs.FullFilename">
+ <summary>
+ Physical path of the newly added file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.Projects.ProjectFileWrapper">
+ <summary>
+ Lazy-loads a file, for use with projects.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectFileWrapper.#ctor(System.String,System.String)">
+ <summary>
+ Creates a new instance of <see cref="T:SkyEditor.Core.Projects.ProjectFileWrapper"/>.
+ </summary>
+ <param name="projectFilename">Filename of the project file.</param>
+ <param name="filename">Path of the file, relative to the project directory.</param>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectFileWrapper.#ctor(System.String,System.String,System.String)">
+ <summary>
+ Creates a new instance of <see cref="T:SkyEditor.Core.Projects.ProjectFileWrapper"/>.
+ </summary>
+ <param name="projectFilename">Filename of the project file.</param>
+ <param name="filename">Path of the file, relative to the project directory.</param>
+ <param name="fileTypeAssemblyQualifiedName">Assembly qualified name of the file type.</param>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectFileWrapper.#ctor(System.String,System.String,System.Object)">
+ <summary>
+ Creates a new instance of <see cref="T:SkyEditor.Core.Projects.ProjectFileWrapper"/>.
+ </summary>
+ <param name="projectFilename">Filename of the project file.</param>
+ <param name="filename">Path of the file, relative to the project directory.</param>
+ <param name="file">File to contain.</param>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileWrapper.File">
+ <summary>
+ The contained file.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileWrapper.FileAssemblyQualifiedTypeName">
+ <summary>
+ Assembly qualified name of the type of the file.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileWrapper.Filename">
+ <summary>
+ Gets or sets the path of the file, relative to the project directory.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectFileWrapper.ProjectFilename">
+ <summary>
+ Full path of the project.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectFileWrapper.GetFilename">
+ <summary>
+ Gets the full path of the file
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.ProjectFileWrapper.GetFile(SkyEditor.Core.PluginManager,SkyEditor.Core.IO.IOHelper.DuplicateMatchSelector)">
+ <summary>
+ Gets the contained, opening it if it hasn't already been.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectRemovedEventArgs.DirectoryName">
+ <summary>
+ Name of the directory that was created.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectRemovedEventArgs.ParentPath">
+ <summary>
+ Path of the directory that the newly created directory is inside.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.ProjectRemovedEventArgs.FullPath">
+ <summary>
+ Full path of the new directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Projects.Solution.SolutionFileLegacy.Projects">
+ <summary>
+ Matches solution paths to project files, which are relative to the solution directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="E:SkyEditor.Core.Projects.Solution.FileSaved">
+ <summary>
+ Raised when the solution is saved.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.Projects.Solution.Created">
+ <summary>
+ Raised when the solution has been created.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.RaiseCreated">
+ <summary>
+ Raises the Created event
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.GetSupportedProjectTypes(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets the types of projects that can be added in a particular directory.
+ </summary>
+ <param name="path">Logical solution path in question</param>
+ <param name="manager">Instance of the currrent plugin manager</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.GetAllProjects">
+ <summary>
+ Gets all projects in the solution, regardless of their parent directory.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.SaveAllProjects(SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves all the projects in the solution
+ </summary>
+ <param name="provider"></param>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.GetProjectsByName(System.String)">
+ <summary>
+ Returns all projects in the solution with the given name, regardless of directories.
+ </summary>
+ <param name="Name"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.GetProjectByPath(System.String)">
+ <summary>
+ Gets the project at the given path.
+ Returns nothing if there is no project at that path.
+ </summary>
+ <param name="path">Path to look for a project.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.AddProject(System.String,SkyEditor.Core.Projects.Project)">
+ <summary>
+ Adds the project to the solution.
+ </summary>
+ <param name="path">Full path of the project</param>
+ <param name="project">Project to add</param>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.CancelBuild">
+ <summary>
+ Cancels the solution's build, and the builds of any child projects.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.CreateSolution(System.String,System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates and returns a new solution.
+ </summary>
+ <param name="SolutionDirectory">Directory to store the solution.  Solution will be stored in a sub directory of the one given.</param>
+ <param name="SolutionName">Name of the solution.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.CreateSolution(System.String,System.String,System.Type,SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates and returns a new solution.
+ </summary>
+ <param name="SolutionDirectory">Directory to store the solution.  Solution will be stored in a sub directory of the one given.</param>
+ <param name="SolutionName">Name of the solution.</param>
+ <param name="SolutionType">Type of the solution to create.  Must inherit from Solution.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Projects.Solution.OpenSolutionFile(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Opens and returns the solution at the given filename.
+ </summary>
+ <param name="Filename"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.Deserialize(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Deserializes the given data into a SettingsProvider
+ </summary>
+ <param name="data">Data to be deserialized</param>
+ <param name="manager">Current instance of the plugin manager</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.Open(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Opens a settings provider stored at the given filename, or creates a new one if it does not exist.
+ </summary>
+ <param name="filename">Full path of the settings file</param>
+ <param name="manager">Current instance of the plugin manager</param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.SettingsProvider.Settings">
+ <summary>
+ The settings contained by the settings provider.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.Serialize">
+ <summary>
+ Serializes the current SettingsProvider
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.Save(SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Saves the SettingsProvider to the filename it was loaded with.
+ </summary>
+ <exception cref="T:System.ArgumentNullException">Thrown if SettingsProvider.Filename is null.</exception>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.SetSetting(System.String,System.Object)">
+ <summary>
+ Sets a setting.
+ </summary>
+ <param name="name">Name of the setting.</param>
+ <param name="value">Value of the setting.  Must be serializable to JSON.</param>
+</member>
+<member name="M:SkyEditor.Core.SettingsProvider.GetSetting(System.String)">
+ <summary>
+ Gets a setting with the given name or returns null if it doesn't exist.
+ </summary>
+ <param name="name">Name of the setting.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.GetIsDevMode(SkyEditor.Core.ISettingsProvider)">
+ <summary>
+ Gets whether or not Development Mode is enabled.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.SetIsDevMode(SkyEditor.Core.ISettingsProvider,System.Boolean)">
+ <summary>
+ Sets whether or not Development Mode is enabled.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.GetFilesScheduledForDeletion(SkyEditor.Core.ISettingsProvider)">
+ <summary>
+ Gets the full paths of all files that are scheduled for deletion.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.ScheduleFileForDeletion(SkyEditor.Core.ISettingsProvider,System.String)">
+ <summary>
+ Schedules a file for deletion upon the next PluginManager load.
+ </summary>
+ <param name="path">Full path of the file to be deleted.</param>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.UncheduleFileForDeletion(SkyEditor.Core.ISettingsProvider,System.String)">
+ <summary>
+ Unschedules a file for deletion upon the next PluginManager load.
+ </summary>
+ <param name="path">Full path of the file to unschedule.</param>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.GetDirectoriesScheduledForDeletion(SkyEditor.Core.ISettingsProvider)">
+ <summary>
+ Gets the full paths of all directories that are scheduled for deletion.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.ScheduleDirectoryForDeletion(SkyEditor.Core.ISettingsProvider,System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Schedules a directory for deletion upon the next PluginManager load.
+ </summary>
+ <param name="path">Full path of the directory to be deleted.</param>
+ <param name="provider">Instance of the current IO Provider.</param>
+</member>
+<member name="M:SkyEditor.Core.Settings.ISettingsProviderExtensions.UncheduleDirectoryForDeletion(SkyEditor.Core.ISettingsProvider,System.String)">
+ <summary>
+ Unschedules a directory for deletion upon the next PluginManager load.
+ </summary>
+ <param name="path">Full path of the directory to unschedule.</param>
+</member>
+<member name="T:SkyEditor.Core.TestComponents.MemoryIOProvider">
+ <summary>
+ <see cref="T:SkyEditor.Core.IO.IOProvider"/> that stores virtual files in memory.
+ </summary>
+</member>
+<member name="T:SkyEditor.Core.UI.FileViewModel">
+ <summary>
+ The view model for an open file
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.ForceViewModelRefresh">
+ <summary>
+ Tells the view models to update the underlying model
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.Save(SkyEditor.Core.PluginManager)">
+ <summary>
+ Saves the current file.
+ </summary>
+ <param name="manager">Instance of the current plugin manager.</param>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Saves the file to the given filename.
+ </summary>
+ <param name="filename">Full path of the destination file.</param>
+ <param name="manager">Instance of the current plugin manager.</param>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.CanSave(SkyEditor.Core.PluginManager)">
+ <summary>
+ Determines whether <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(SkyEditor.Core.PluginManager)"/> can be called.
+ </summary>
+ <param name="manager">Instance of the current plugin manager.</param>
+ <returns>A boolean indicating if <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(SkyEditor.Core.PluginManager)"/> can be called.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.CanSaveAs(SkyEditor.Core.PluginManager)">
+ <summary>
+ Determines whether <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/> can be called.
+ </summary>
+ <param name="manager">Instance of the current plugin manager.</param>
+ <returns>A boolean indicating if <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/> can be called.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.GetDefaultExtension(SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets the default extension for the file when using <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/>.
+ </summary>
+ <param name="manager">Instance of the current plugin manager.</param>
+ <returns>The default extension for the file when using <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/>, or null if either the file does not support Save As, or there is no default extension.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.GetSupportedExtensions(SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets the supported extensions for the file when using <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/>.
+ </summary>
+ <param name="manager">Instance of the current plugin manager.</param>
+ <returns>An IEnumerable of extensions that can be used for the file when using <see cref="M:SkyEditor.Core.UI.FileViewModel.Save(System.String,SkyEditor.Core.PluginManager)"/>, or null if either the file does not support Save As, or there are no supported extensions.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.GetViewModels(SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets the current view models for the given file, creating them if necessary.
+ </summary>
+ <returns>An IEnumerable of view models that support the given file's model.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.FileViewModel.ResetViewModels">
+ <summary>
+ Clears the current view models and removes event handlers
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.UI.GenericViewModel.Model">
+ <summary>
+ The underlying model
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.UI.GenericViewModel.CurrentPluginManager">
+ <summary>
+ Instance of the current plugin manager
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.GetSupportedTypes">
+ <summary>
+ Returns an IEnumerable of every type that the view model is programmed to handle.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.SupportsObject(System.Object)">
+ <summary>
+ Returns whether or not the view model supports the given object.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.SetModel(System.Object)">
+ <summary>
+ Sets the <see cref="T:SkyEditor.Core.UI.GenericViewModel"/>'s model.
+ </summary>
+ <param name="model">Model to set</param>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.UpdateModel(System.Object)">
+ <summary>
+ Updates the model with the view model's current state
+ </summary>
+ <param name="model">Model to update</param>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.HasSiblingViewModel``1">
+ <summary>
+ Gets whether or not a view model of the given type is loaded for the same model.
+ </summary>
+ <typeparam name="T">Type of the view model of which to select.</typeparam>
+ <returns>Whether or not there is a view model of type <typeparamref name="T"/> for the same model.</returns>
+</member>
+<member name="M:SkyEditor.Core.UI.GenericViewModel.GetSiblingViewModel``1">
+ <summary>
+ Gets a view model for the same model.
+ </summary>
+ <typeparam name="T">Type of the view model of which to select.</typeparam>
+ <returns>The view model of type <typeparamref name="T"/> for the same model.</returns>
+</member>
+<member name="E:SkyEditor.Core.UI.IObjectControl.HeaderUpdated">
+ <summary>
+ Raised when the IObjectControl's Header has been changed
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.UI.IObjectControl.IsModifiedChanged">
+ <summary>
+ Raised when the IObjectControl's IsModified property has changed.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.UI.IObjectControl.Header">
+ <summary>
+ Returns the value of the Header.  Only used when the iObjectControl is behaving as a tab.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.IObjectControl.EditingObject">
+ <summary>
+ The object this control is intended to edit.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.IObjectControl.IsModified">
+ <summary>
+ Whether or not the EditingObject has been modified without saving.
+ Set to true when the user changes anything in the GUI.
+ Set to false when the object is saved, or if the user undoes every change.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.IObjectControl.SetPluginManager(SkyEditor.Core.PluginManager)">
+ <summary>
+ Updates the current IObjectControl's reference to the current plugin manager
+ </summary>
+ <param name="manager">Instance of the current plugin manager</param>
+</member>
+<member name="M:SkyEditor.Core.UI.IObjectControl.GetSupportedTypes">
+ <summary>
+ Returns an IEnumerable of every type that the iObjectControl is programmed to handle.
+ EditingObject will be of one of these types.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.IObjectControl.SupportsObject(System.Object)">
+ <summary>
+ Returns whether or not the iObjectControl supports the given object.
+ Obj will be of one of the types in GetSupportedTypes, but this function gives the iObjectControl more control over what objects it will edit.
+ Should return true if there is no situation exists where a given object of a supported type is not supported.
+ </summary>
+ <param name="Obj"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.IObjectControl.IsBackupControl">
+ <summary>
+ Determines whether or not this control is a backup control.
+ </summary>
+ <returns>A boolean indicating whether or not this control is a backup control.</returns>
+ <remarks>
+ Determines whether or not this <see cref="T:SkyEditor.Core.UI.IObjectControl"/> should be used for the given object if another control exists for it.
+ If false, this will be used if <see cref="M:SkyEditor.Core.UI.IObjectControl.SupportsObject(System.Object)"/> is true.
+ If true, this will only be used if no other <see cref="T:SkyEditor.Core.UI.IObjectControl"/> can edit the given object.
+ 
+ If multiple backup controls are present, <see cref="M:SkyEditor.Core.UI.IObjectControl.GetSortOrder(System.Type,System.Boolean)"/> will be used to determine which <see cref="T:SkyEditor.Core.UI.IObjectControl"/> is used.</remarks>
+</member>
+<member name="M:SkyEditor.Core.UI.IObjectControl.GetSortOrder(System.Type,System.Boolean)">
+ <summary>
+ Returns the sort order of this control when editing the given type.
+ Note: The returned value is context-specific.  Higher values make a Control more likely to be used, but lower values make tabs appear higher in the list of tabs.
+ Note: Negative values will result in the control not being used if there are other controls with positive values.
+ </summary>
+ <param name="CurrentType">Type of the EditingObject to get a sort order for.</param>
+ <param name="IsTab">Whether or not the iObjectControl is registered to behave as a Tab or a Control.</param>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.IsContextBased">
+ <summary>
+ Whether or not the menu item appears in context menus.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.ActionPath">
+ <summary>
+ Names representing the action's location in a heiarchy of menu items.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.CurrentPluginManager">
+ <summary>
+ The current instance of the plugin manager
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.AlwaysVisible">
+ <summary>
+ True to be visible regardless of current targets.
+ False to be dependant on MenuAction.SupportsObjects.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.DevOnly">
+ <summary>
+ True to be visible only when Development Mode is enabled and normal visibility conditions are satisfied.
+ False to be visibile as normal.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.UI.MenuAction.SortOrder">
+ <summary>
+ Order in which menu items are sorted
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.MenuAction.SupportedTypes">
+ <summary>
+ IEnumerable of types the action can be performed with.
+ If empty, can be performed on any type.
+ </summary>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.UI.MenuItemInfo">
+ <summary>
+ Contains all the information needed to make a MenuItem that runs one or more MenuAction.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetMenuItemInfo(System.Boolean,System.Object,SkyEditor.Core.PluginManager,System.Boolean)">
+ <summary>
+ Gets the currently registered MenuActions in heiarchy form.
+ </summary>
+ <param name="pluginManager">Instance of the current plugin manager.</param>
+ <param name="isDevMode">Whether or not to get the dev-only menu items.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GenerateLogicalMenuItems(System.Collections.Generic.IEnumerable{SkyEditor.Core.UI.MenuItemInfo},SkyEditor.Core.IOUIManager,System.Collections.Generic.IEnumerable{System.Object})">
+ <summary>
+ Generates MenuItems from the given IEnumerable of MenuItemInfo.
+ </summary>
+ <param name="MenuItemInfo">IEnumerable of MenuItemInfo that will be used to create the MenuItems.</param>
+ <param name="targets">Direct targets of the action, if applicable.  If Nothing, the IOUIManager will control the targets</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetObjectControls(SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns a new instance of each registered ObjectControl.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetObjectControl(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets an object control that can edit the given object.
+ </summary>
+ <param name="model"></param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetRefreshedTabs(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns a list of iObjectControl that edit the given ObjectToEdit.
+ </summary>
+ <param name="model">Object the IObjectControl should edit.</param>
+ <param name="RequestedTabTypes">Limits what types of iObjectControl should be returned.  If the iObjectControl is not of any type in this IEnumerable, it will not be used.  If empty or nothing, no constraints will be applied, which is not recommended because the iObjectControl could be made for a different environment (for example, a Windows Forms user control being used in a WPF environment).</param>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetRefreshedTabsByViewModel(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns a list of IObjectControl that edit the given ObjectToEdit.
+ </summary>
+ <param name="model">Object the IObjectControl should edit.</param>
+ <param name="RequestedTabTypes">Limits what types of iObjectControl should be returned.  If the iObjectControl is not of any type in this IEnumerable, it will not be used.  If empty or nothing, no constraints will be applied, which is not recommended because the iObjectControl could be made for a different environment (for example, a Windows Forms user control being used in a WPF environment).</param>
+ <param name="Manager">Instance of the current plugin manager.</param>
+ <returns>An IEnumerable of object controls for the given model.</returns>
+ <remarks>This version of <see cref="M:SkyEditor.Core.UI.UIHelper.GetRefreshedTabs(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)"/> searches for view models, then finds paths to the views.</remarks>
+</member>
+<member name="M:SkyEditor.Core.UI.UIHelper.GetRefreshedTabsByView(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)">
+ <summary>
+ Returns a list of IObjectControl that edit the given ObjectToEdit.
+ </summary>
+ <param name="model">Object the IObjectControl should edit.</param>
+ <param name="RequestedTabTypes">Limits what types of iObjectControl should be returned.  If the iObjectControl is not of any type in this IEnumerable, it will not be used.  If empty or nothing, no constraints will be applied, which is not recommended because the iObjectControl could be made for a different environment (for example, a Windows Forms user control being used in a WPF environment).</param>
+ <param name="Manager">Instance of the current plugin manager.</param>
+ <returns>An IEnumerable of object controls for the given model.</returns>
+ <remarks>This version of <see cref="M:SkyEditor.Core.UI.UIHelper.GetRefreshedTabs(System.Object,System.Collections.Generic.IEnumerable{System.Type},SkyEditor.Core.PluginManager)"/> searches for views, then finds paths to the model.</remarks>
+</member>
+<member name="T:SkyEditor.Core.Utilities.AsyncFor">
+ <summary>
+ Runs a provided delegate function or sub repeatedly and asynchronously in the style of a For statement.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.Utilities.AsyncFor.RunSynchronously">
+ <summary>
+ Whether or not to run each task sequentially.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Utilities.AsyncFor.BatchSize">
+ <summary>
+ The number of tasks to run at once.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Utilities.AsyncFor.RunningTasks">
+ <summary>
+ The currently running tasks.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Utilities.AsyncFor.TotalTasks">
+ <summary>
+ The total number of tasks to run.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.Utilities.AsyncFor.CompletedTasks">
+ <summary>
+ The number of tasks that have been completed.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.FileSystem.CopyDirectory(System.String,System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Asynchronously copies a directory.
+ </summary>
+ <param name="sourceDirectory">The directory to copy.</param>
+ <param name="destinationDirectory">The new destination for the source directory.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.FileSystem.ReCreateDirectory(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Ensures the given diretory exists with nothing inside.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.FileSystem.DeleteDirectory(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Deletes the given directory and all files inside it, if it exists.
+ </summary>
+ <param name="DirectoryName"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.FileSystem.DeleteFile(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Deletes the given file if it exists, and does nothing if it does not exist.
+ </summary>
+ <param name="Filename">Full path of the file to delete.</param>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Hex.IsHex(System.String)">
+ <summary>
+ Returns whether or not the given Input is a hex string.
+ </summary>
+ <param name="Input">String to check.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.IClonable.Clone">
+ <summary>
+ Creates a new instance of the current class type with the same logical data.
+ </summary>
+ <returns></returns>
+</member>
+<member name="F:SkyEditor.Core.Utilities.ParsedAssemblyQualifiedName.GenericTypeName">
+ <summary>
+ The name of the base type, if this is a generic type.  Otherwise, equal to TypeName.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.GetCachedInstance(System.Reflection.TypeInfo)">
+ <summary>
+ Creates a new instance of the given type, or returns a cached version if available.
+ </summary>
+ <param name="type"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.IsOfType(System.Object,System.Reflection.TypeInfo)">
+ <summary>
+ Determines whether the given Object is, inherits, or implements the given type.
+ </summary>
+ <param name="obj">The object to check type equality, inheritance, or implementation.  If Obj is itself a TypeInfo, it will be checked directly, instead of checking against the type of Obj.</param>
+ <param name="typeToCheck">The type to check for.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.IsIContainerOfType(System.Object,System.Reflection.TypeInfo)">
+ <summary>
+ Determines whether the given object is an IContainer of the given type.
+ </summary>
+ <param name="obj">Object to check</param>
+ <param name="typeToCheck">Type of container for which to check</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.GetTypeByName(System.String,SkyEditor.Core.PluginManager)">
+ <summary>
+ Gets a type using the assembly qualified name, or null if the type can't be found
+ </summary>
+ <param name="AssemblyQualifiedName">Assembly qualified name of the type to get</param>
+ <param name="Manager">Current instance of the plugin manager</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.CanCreateInstance(System.Reflection.TypeInfo)">
+ <summary>
+ Determines whether the given type has a default constructor.
+ </summary>
+ <param name="Type"></param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.CreateInstance(System.Reflection.TypeInfo)">
+ <summary>
+ Creates a new instance of the given type.
+ </summary>
+ <param name="Type">Type to create an instance of.  Must have a default constructor.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.CreateInstance(System.Type)">
+ <summary>
+ Creates a new instance of the given type.
+ </summary>
+ <param name="Type">Type to create an instance of.  Must have a default constructor.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.CreateNewInstance(System.Object)">
+ <summary>
+ Creates a new instance of the type of the given object.
+ </summary>
+ <param name="target">Instance of the type of which to create a new instance</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.ReflectionHelpers.GetTypeFriendlyName(System.Type)">
+ <summary>
+ Gets the name of the given type if its contained assembly has its name in its localized resource file, or the full name of the type if it does not.
+ </summary>
+ <param name="type">Type of which to get the name.</param>
+ <returns></returns>
+</member>
+<member name="T:SkyEditor.Core.Utilities.Json">
+ <summary>
+ Contains methods to help in JSON serialization.
+ Currently, this is a wrapper for the Newtonsoft Json library.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Json.Serialize(System.Object)">
+ <summary>
+ Serializes the specified object into a JSON string.
+ </summary>
+ <param name="ObjectToSerialize">Object to serialize.</param>
+ <returns>Json text that represents the given object.</returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Json.Deserialize``1(System.String)">
+ <summary>
+ Deserializes the given json string into a new object of type T.
+ </summary>
+ <typeparam name="T"></typeparam>
+ <param name="Json">The JSON to deserialize</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Json.Deserialize(System.Type,System.String)">
+ <summary>
+ Deserializes the given json string into a new object of type T.
+ </summary>
+ <param name="Json">The JSON to deserialize</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Json.SerializeToFile(System.String,System.Object,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Serializes the given object into JSON and writes it to disk.
+ </summary>
+ <param name="Filename">Filename to store the JSON.</param>
+ <param name="ObjectToSerialize">Object to serialize.</param>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Json.DeserializeFromFile``1(System.String,SkyEditor.Core.IO.IOProvider)">
+ <summary>
+ Deserializes JSON stored on disk.
+ </summary>
+ <typeparam name="T"></typeparam>
+ <param name="Filename">Path to the text file containing a JSON string.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Zip.Unzip(System.String,System.String)">
+ <summary>
+ Unzips the given zip file to the given directory.
+ </summary>
+ <param name="fileName">Filename of the zip file to unzip.</param>
+ <param name="outputDirectory">Directory to which to extract the zip.</param>
+</member>
+<member name="M:SkyEditor.Core.Utilities.Zip.Zip(System.String,System.String)">
+ <summary>
+ Zips the given directory into a zip file at the given path.
+ </summary>
+ <param name="sourceDirectory">Directory to zip.</param>
+ <param name="outputFileName">Filename of the output zip file.</param>
+</member>
+<member name="T:SkyEditor.Core.CoreSkyEditorPlugin">
+ <summary>
+ A variant of SkyEditorPlugin that controls how the plugin manager loads other plugins.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.CoreSkyEditorPlugin.GetIOProvider">
+ <summary>
+ Creates an instance of an IO Provider.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.CoreSkyEditorPlugin.GetSettingsProvider(SkyEditor.Core.PluginManager)">
+ <summary>
+ Creates an instance of an ISettingsProvider.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.CoreSkyEditorPlugin.GetExtensionDirectory">
+ <summary>
+ Gets the full path of the directory used to store extensions.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.CoreSkyEditorPlugin.IsPluginLoadingEnabled">
+ <summary>
+ Gets whether or not to enable dynamicaly loading plugins.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.CoreSkyEditorPlugin.LoadAssembly(System.String)">
+ <summary>
+ Loads the assembly at the given path into the current AppDomain and returns it.
+ </summary>
+ <param name="assemblyPath">Full path of the assembly to load.</param>
+ <returns></returns>
+ <exception cref="T:System.NotSupportedException">Thrown when the current platform does not support loading assemblies from a specific path.</exception>
+ <exception cref="T:System.BadImageFormatException">Thrown when the assembly is not a valid .Net assembly.</exception>
+</member>
+<member name="T:SkyEditor.Core.SkyEditorPlugin">
+ <summary>
+ Defines a plugin for Sky Editor.
+ </summary>
+</member>
+<member name="P:SkyEditor.Core.SkyEditorPlugin.PluginName">
+ <summary>
+ Name of the plugin.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.SkyEditorPlugin.PluginAuthor">
+ <summary>
+ Name of the person or group who authored the plugin.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.SkyEditorPlugin.Credits">
+ <summary>
+ Credits for the plugin.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.SkyEditorPlugin.Load(SkyEditor.Core.PluginManager)">
+ <summary>
+ Registers types in the PluginManager and loads any required resources.
+ </summary>
+ <param name="manager"></param>
+ <remarks></remarks>
+</member>
+<member name="M:SkyEditor.Core.SkyEditorPlugin.UnLoad(SkyEditor.Core.PluginManager)">
+ <summary>
+ Disposes of any resources.
+ </summary>
+ <param name="manager"></param>
+ <remarks></remarks>
+</member>
+<member name="M:SkyEditor.Core.SkyEditorPlugin.PrepareForDistribution">
+ <summary>
+ This should delete all temporary and user-specific files that are not required to distribute Sky Editor.
+ </summary>
+ <remarks></remarks>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.TypeInstances">
+ <summary>
+ Caches instances of types, so they are not constantly recreated to read metadata (such supported types on object controls)
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.TypeRegistery">
+ <summary>
+ The core of the plugin manager: matches base types or interfaces to types that inherit or implement these
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.DependantPlugins">
+ <summary>
+ Matches plugins (key) to plugins that depend on that plugin (value).
+ If a plugin is a key, it is manually loaded by each of the plugins in the value.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.DependantPluginLoadingQueue">
+ <summary>
+ Queue of dependant plugins that need to be loaded.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.Assemblies">
+ <summary>
+ Contains the assemblies that contain plugin information.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.Plugins">
+ <summary>
+ List of all loaded iSkyEditorPlugins that are loaded.
+ </summary>
+ <value></value>
+ <returns></returns>
+ <remarks></remarks>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.FailedPluginLoads">
+ <summary>
+ Gets a list of assemblies that failed to be loaded as plugins, while being registered as such.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.CurrentIOProvider">
+ <summary>
+ The current IO Provider for the application.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.CurrentSettingsProvider">
+ <summary>
+ The current Settings Provider for the applicaiton.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.CurrentConsoleProvider">
+ <summary>
+ The current Console Provider for the application.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.PluginManager.CurrentIOUIManager">
+ <summary>
+ The current instance of the IO/UI Manager, helping manage open files and their associated UI.
+ </summary>
+ <returns></returns>
+</member>
+<member name="E:SkyEditor.Core.PluginManager.TypeRegistered">
+ <summary>
+ Raised when a type is added into the type registry.
+ </summary>
+ <param name="sender">Instance of the PluginManager</param>
+</member>
+<member name="E:SkyEditor.Core.PluginManager.PluginsLoading">
+ <summary>
+ Raised before plugins' Load methods are called.
+ </summary>
+</member>
+<member name="E:SkyEditor.Core.PluginManager.PluginLoadComplete">
+ <summary>
+ Raised after all plugins have been loaded.
+ </summary>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.LoadCore(SkyEditor.Core.CoreSkyEditorPlugin)">
+ <summary>
+ Loads the given Core plugin, and any other available plugins, if supported by the platform.
+ </summary>
+ <param name="Core">Core to load</param>
+ <remarks>
+ Misc things this function does:
+ - Delete files scheduled for deletion
+ - Install pending extensions
+ </remarks>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.GetPluginPaths">
+ <summary>
+ Gets the paths of available plugin assemblies.
+ </summary>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.LoadRequiredPlugin(SkyEditor.Core.SkyEditorPlugin,SkyEditor.Core.SkyEditorPlugin)">
+ <summary>
+ Loads a plugin that's referenced by another.
+ </summary>
+ <param name="targetPlugin">The plugin to load.</param>
+ <param name="dependantPlugin">The plugin that requires the load.</param>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.LoadTypes(System.Reflection.Assembly)">
+ <summary>
+ Looks at the given assembly and loads supported types into the type registry.
+ </summary>
+ <param name="Item"></param>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.IsAssemblyDependant(System.Reflection.Assembly)">
+ <summary>
+ Returns a boolean indicating whether or not the given assembly is a plugin assembly that is directly loaded by another plugin assembly.
+ </summary>
+ <param name="Assembly">Assembly in question</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.RegisterTypeRegister(System.Reflection.TypeInfo)">
+ <summary>
+ Adds the given type to the type registry.
+ </summary>
+ <param name="type">Type of the type register.</param>
+ <remarks>After plugins are loaded, any type that inherits or implements the given Type can be easily found.
+ If the type is already in the type registry, nothing will be done.</remarks>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.RegisterTypeRegister``1">
+ <summary>
+ Adds the given type to the type register.
+ </summary>
+ <typeparam name="T">Type of the type register.</typeparam>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.RegisterType(System.Reflection.TypeInfo,System.Reflection.TypeInfo)">
+ <summary>
+ Registers the given Type in the type registry.
+ </summary>
+ <param name="Register">The base type or interface that the given Type inherits or implements.</param>
+ <param name="Type">The type to register.</param>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.RegisterType``1(System.Reflection.TypeInfo)">
+ <summary>
+ Registers the given type in the type registry.
+ </summary>
+ <typeparam name="R">The base type or interface that the given Type inherits or implements.</typeparam>
+ <param name="type">The type to register.</param>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.RegisterType``2">
+ <summary>
+ Registers the given type in the type registry.
+ </summary>
+ <typeparam name="R">The base type or interface that the given type inherits or implements.</typeparam>
+ <typeparam name="T">The type to register.</typeparam>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.GetRegisteredTypes(System.Reflection.TypeInfo)">
+ <summary>
+ Returns an IEnumerable of all the registered types that inherit or implement the given BaseType.
+ </summary>
+ <param name="BaseType">Type to get children or implementors of.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.GetRegisteredObjects(System.Reflection.TypeInfo)">
+ <summary>
+ Returns an IEnumerable of instances of all the registered types that inherit or implement the given type.
+ These instances are not new instances, so create new ones if needed.
+ </summary>
+ <param name="BaseType">Type to get children or implementors of.</param>
+ <returns></returns>
+</member>
+<member name="M:SkyEditor.Core.PluginManager.GetRegisteredObjects``1">
+ <summary>
+ Returns an IEnumerable of instances of all the registered types that inherit or implement the given type.
+ These instances are not new instances, so create new ones if needed.
+ </summary>
+ <typeparam name="T">Type to get children or implementors of.</typeparam>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.TypeRegisteredEventArgs.BaseType">
+ <summary>
+ The base type into which the RegisteredType inherits or implements.
+ </summary>
+ <returns></returns>
+</member>
+<member name="P:SkyEditor.Core.TypeRegisteredEventArgs.RegisteredType">
+ <summary>
+ The type that was registered.
+ </summary>
+ <returns></returns>
+</member>
+</members>
+</doc>

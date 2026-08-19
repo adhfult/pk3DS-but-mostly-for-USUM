@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
@@ -32,6 +32,27 @@ public sealed partial class OWSE : Form
     private string[] encdatapaths;
     private byte[] masterZoneData;
     private bool debugToolDumping;
+
+    /// <summary>
+    /// Suppresses write-back while a dev dumper walks every location, and restores it even if the
+    /// walk throws.
+    /// <para>
+    /// The flag used to be cleared by an assignment at the end of each dumper, which a throw part
+    /// way through skipped. <see cref="SetEntry"/> checks this flag and returns early, so once it
+    /// was stuck on the editor silently stopped writing any further edits back - no error, no
+    /// symptom until the changes turned out to be missing.
+    /// </para>
+    /// </summary>
+    private IDisposable DumpScope()
+    {
+        debugToolDumping = true;
+        return new Scope(() => debugToolDumping = false);
+    }
+
+    private sealed class Scope(Action end) : IDisposable
+    {
+        public void Dispose() => end();
+    }
 
     // Generated Storage
     private string[] zdLocations;
@@ -574,7 +595,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all Furniture?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -593,7 +614,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     private void B_DumpNPC_Click(object sender, EventArgs e)
@@ -601,7 +621,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all NPCs?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -620,7 +640,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     private void B_DumpWarp_Click(object sender, EventArgs e)
@@ -628,7 +647,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all Warps?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -647,7 +666,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     private void B_DumpTrigger_Click(object sender, EventArgs e)
@@ -655,7 +673,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all Triggers?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -674,7 +692,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     private void B_DumpUnk_Click(object sender, EventArgs e)
@@ -682,7 +699,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all Unks?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -701,7 +718,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     private void B_DumpMaps_Click(object sender, EventArgs e)
@@ -709,7 +725,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all MapImages?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         const string folder = "MapImages";
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
@@ -733,7 +749,6 @@ public sealed partial class OWSE : Form
             File.WriteAllLines("MapLocations.txt", result);
         CB_LocationID.SelectedIndex = 0;
         WinFormsUtil.Alert("All Map images have been dumped to " + folder + ".");
-        debugToolDumping = false;
     }
 
     private void B_DumpZD_Click(object sender, EventArgs e)
@@ -741,7 +756,7 @@ public sealed partial class OWSE : Form
         if (WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Export all ZD?") != DialogResult.Yes)
             return;
 
-        debugToolDumping = true;
+        using var dump = DumpScope();
         List<string> result = [];
         List<byte[]> data = [];
         for (int i = 0; i < CB_LocationID.Items.Count; i++)
@@ -757,7 +772,6 @@ public sealed partial class OWSE : Form
             Clipboard.SetText(string.Join(Environment.NewLine, result));
 
         CB_LocationID.SelectedIndex = 0;
-        debugToolDumping = false;
     }
 
     // Raw file editing

@@ -183,5 +183,126 @@ namespace pk3DS.Core.Modding
             }
             return val;
         }
+
+        /// <summary>
+        /// Extracts patch entries (offset, bytes) from sheet rows.
+        /// Dynamically assembles ARM instructions using Keystone if raw Hex is missing or empty.
+        /// Supports configurable custom Item ID override.
+        /// </summary>
+        public static List<(uint Offset, byte[] Bytes)> ExtractPatchEntries(List<Dictionary<string, string>> rows, string target = "Battle.cro", string version = "US", uint overrideItemId = 0)
+        {
+            var entries = new List<(uint Offset, byte[] Bytes)>();
+            if (rows == null || rows.Count == 0) return entries;
+
+            bool inTrampolineSection = false;
+            bool targetIsCro = target.EndsWith(".cro", StringComparison.OrdinalIgnoreCase);
+            bool targetIsCode = target.ToLower().Contains("code");
+
+            foreach (var r in rows)
+            {
+                string firstVal = r.Values.FirstOrDefault()?.Trim() ?? "";
+                string hexKey0 = r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
+                string hexVal0 = hexKey0 != null && r.ContainsKey(hexKey0) ? r[hexKey0]?.Trim() : "";
+                bool isHeaderRow = !string.IsNullOrEmpty(firstVal) && string.IsNullOrEmpty(hexVal0) && firstVal.Length > 8;
+
+                if (isHeaderRow)
+                {
+                    string headerLower = firstVal.ToLower();
+                    if (headerLower.Contains("trampoline") || headerLower.Contains("code.bin"))
+                        inTrampolineSection = true;
+                    else
+                        inTrampolineSection = false;
+                    continue;
+                }
+
+                if (inTrampolineSection && targetIsCro) continue;
+
+                // Priority for version-specific offset column if present
+                string verOffKey = version.Equals("UM", StringComparison.OrdinalIgnoreCase)
+                    ? r.Keys.FirstOrDefault(k => k.IndexOf("Address UM", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Offset UM", StringComparison.OrdinalIgnoreCase) >= 0)
+                    : r.Keys.FirstOrDefault(k => k.IndexOf("Address US", StringComparison.OrdinalIgnoreCase) >= 0 || k.IndexOf("Offset US", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                string offKey = verOffKey
+                             ?? r.Keys.FirstOrDefault(k => k.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) >= 0)
+                             ?? r.Keys.FirstOrDefault(k => k.IndexOf("Address File", StringComparison.OrdinalIgnoreCase) >= 0)
+                             ?? r.Keys.FirstOrDefault(k => k.IndexOf("Offset", StringComparison.OrdinalIgnoreCase) >= 0)
+                             ?? r.Keys.FirstOrDefault(k => k.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                if (offKey == null || !r.ContainsKey(offKey)) continue;
+
+                string offStr = r[offKey].Replace("0x", "").Replace("0X", "").Trim();
+                if (string.IsNullOrEmpty(offStr) || !uint.TryParse(offStr, System.Globalization.NumberStyles.HexNumber, null, out uint off)) continue;
+
+                if (targetIsCro && r.Values.Any(v => v != null && v.IndexOf("trampoline", StringComparison.OrdinalIgnoreCase) >= 0))
+                    continue;
+
+                bool isAddressColumn = offKey.IndexOf("Address", StringComparison.OrdinalIgnoreCase) >= 0
+                                    && offKey.IndexOf("in-file", StringComparison.OrdinalIgnoreCase) < 0
+                                    && offKey.IndexOf("File", StringComparison.OrdinalIgnoreCase) < 0;
+
+                if (isAddressColumn && targetIsCode && off >= 0x100000u)
+                    off -= 0x100000u;
+
+                // Priority for version-specific Hex column
+                string verHexKey = version.Equals("UM", StringComparison.OrdinalIgnoreCase)
+                    ? r.Keys.FirstOrDefault(k => k.Equals("Hex UM", StringComparison.OrdinalIgnoreCase))
+                    : r.Keys.FirstOrDefault(k => k.Equals("Hex US", StringComparison.OrdinalIgnoreCase));
+
+                string hexKey = verHexKey
+                             ?? r.Keys.FirstOrDefault(k => k.IndexOf("Hex", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                byte[] patchBytes = null;
+
+                if (hexKey != null && r.ContainsKey(hexKey) && !string.IsNullOrWhiteSpace(r[hexKey]))
+                {
+                    string hexStr = r[hexKey].Trim().Replace("0x", "").Replace("0X", "");
+                    patchBytes = Util.StringToByteArray(hexStr);
+
+                    // If custom Item ID override is active, patch 16-bit item placeholders
+                    if (overrideItemId > 0 && patchBytes != null && patchBytes.Length == 2)
+                    {
+                        ushort val = BitConverter.ToUInt16(patchBytes, 0);
+                        if (val == 0xFEED || val == 0xFFFE || val > 1000)
+                        {
+                            patchBytes = BitConverter.GetBytes((ushort)overrideItemId);
+                        }
+                    }
+                }
+
+                // Dynamic Assembly Fallback if Hex is missing/empty
+                if (patchBytes == null || patchBytes.Length == 0)
+                {
+                    string asmKey = r.Keys.FirstOrDefault(k => k.Equals("Replacing", StringComparison.OrdinalIgnoreCase))
+                                 ?? r.Keys.FirstOrDefault(k => k.IndexOf("instruction", StringComparison.OrdinalIgnoreCase) >= 0)
+                                 ?? r.Keys.FirstOrDefault(k => k.IndexOf("Assembly", StringComparison.OrdinalIgnoreCase) >= 0)
+                                 ?? r.Keys.FirstOrDefault(k => k.Equals("ARM", StringComparison.OrdinalIgnoreCase));
+
+                    if (asmKey != null && r.ContainsKey(asmKey) && !string.IsNullOrWhiteSpace(r[asmKey]))
+                    {
+                        string asmText = r[asmKey].Trim();
+
+                        // Replace item ID placeholder in assembly text if custom Item ID is provided
+                        if (overrideItemId > 0)
+                        {
+                            asmText = asmText.Replace("{ITEM_ID}", $"0x{overrideItemId:X}")
+                                             .Replace("ITEM_ID", $"0x{overrideItemId:X}");
+                        }
+
+                        // Assemble via Keystone
+                        patchBytes = ResearchEngine.AssembleARM(asmText, off);
+                    }
+                }
+
+                if (patchBytes == null || patchBytes.Length == 0) continue;
+
+                // Skip padding trap marker (0xCCCCCCCC)
+                if (patchBytes.Length == 4 && patchBytes[0] == 0xCC && patchBytes[1] == 0xCC && patchBytes[2] == 0xCC && patchBytes[3] == 0xCC)
+                    continue;
+
+                entries.Add((off, patchBytes));
+            }
+
+            return entries;
+        }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Keystone;
 using System.IO;
 using System.Linq;
 using pk3DS.Core.CTR;
@@ -572,16 +571,12 @@ public static class ResearchEngine
 
     public static bool InjectAssembly(byte[] data, uint absoluteOffset, string asm)
     {
-        // Use Keystone to assemble and write
         try
         {
-            using (var keystone = new Engine(Architecture.ARM, Mode.ARM))
-            {
-                var result = keystone.Assemble(asm, 0);
-                if (result == null || result.Buffer.Length == 0) return false;
-                Array.Copy(result.Buffer, 0, data, absoluteOffset, result.Buffer.Length);
-                return true;
-            }
+            byte[] code = ARMCodec.Assemble(asm, absoluteOffset);
+            if (code == null || code.Length == 0) return false;
+            Array.Copy(code, 0, data, absoluteOffset, code.Length);
+            return true;
         }
         catch { return false; }
     }
@@ -760,6 +755,9 @@ public static class ResearchEngine
     /// <summary>
     /// Searches for a contiguous block of zero bytes suitable for code injection.
     /// </summary>
+    /// <summary>
+    /// Finds room for read-only DATA. Never use this for code - see <see cref="FindFreeExecutableSpace"/>.
+    /// </summary>
     public static int FindFreeSpace(byte[] data, int requiredSize, bool isCro, int alignment = 4)
     {
         int searchStart = isCro ? 0 : 0x55D000;
@@ -773,6 +771,38 @@ public static class ResearchEngine
             if (empty) return i;
         }
         return -1;
+    }
+
+    /// <summary>
+    /// End of code.bin's executable mapping, as a file offset.
+    /// </summary>
+    public const int CodeTextRegionEnd = 0x4BA000;
+
+    /// <summary>
+    /// The largest run of padding inside .text - the only place new CODE may go in code.bin.
+    /// </summary>
+    public static (int Offset, int Length) FindFreeExecutableSpace(byte[] code, int alignment = 4)
+    {
+        int limit = Math.Min(CodeTextRegionEnd, code?.Length ?? 0);
+        int best = -1, bestLen = 0, runStart = -1;
+
+        for (int i = 0; i <= limit; i++)
+        {
+            bool pad = i < limit && (code[i] == 0x00 || code[i] == 0xCC);
+            if (pad)
+            {
+                if (runStart < 0) runStart = i;
+                continue;
+            }
+            if (runStart < 0) continue;
+
+            int s = (runStart + alignment - 1) / alignment * alignment;
+            int len = i - s;
+            if (len > bestLen) { best = s; bestLen = len; }
+            runStart = -1;
+        }
+
+        return bestLen > 0 ? (best, bestLen) : (-1, 0);
     }
 
     /// <summary>
@@ -796,9 +826,7 @@ public static class ResearchEngine
     {
         try
         {
-            using var ks = new Engine(Keystone.Architecture.ARM, Mode.ARM);
-            var result = ks.Assemble(asmText, baseAddress);
-            return result?.Buffer;
+            return ARMCodec.Assemble(asmText, baseAddress);
         }
         catch { return null; }
     }
@@ -1520,17 +1548,9 @@ public static class ResearchEngine
             }
         }
         
-        // Vanilla fallback: just return the default vanilla TM items, extended if necessary
         ushort[] readItemsFallback = new ushort[count];
         for (int i = 0; i < count; i++)
-        {
-            if (i < defaultItems.Length)
-                readItemsFallback[i] = defaultItems[i];
-            else if (i >= 107)
-                readItemsFallback[i] = (ushort)(960 + (i - 107)); // Default expansion start ID is 960
-            else
-                readItemsFallback[i] = 0;
-        }
+            readItemsFallback[i] = i < defaultItems.Length ? defaultItems[i] : (ushort)0;
         return readItemsFallback;
     }
 
@@ -1624,6 +1644,22 @@ public static class ResearchEngine
 
         if (itemTable == 0 || moveTable == 0 || asmTable == 0) return;
 
+        var (execOffset, execRoom) = FindFreeExecutableSpace(code);
+        if (execOffset < 0 || execRoom < Research.CodeSpaceBudget.TMExpansionBytes)
+        {
+            // Named rather than generic: on an Expansion build this almost always means the level
+            // cap routine has the space, and that is the difference between "broken" and "pick one".
+            System.Windows.Forms.MessageBox.Show(
+                Research.CodeSpaceBudget.ExplainShortfall(code, Research.CodeSpaceBudget.TMExpansionBytes, "The TM expansion") +
+                "\n\nNothing was changed.",
+                "TM expansion: not enough executable space");
+            return;
+        }
+
+        asmTable = execOffset;
+        asmRAM = asmTable + 0x100000;
+        int asmLimit = execOffset + execRoom;
+
         // Build Unified Item Table
         ushort[] unifiedItems = new ushort[count];
         Array.Copy(items, 0, unifiedItems, 0, count);
@@ -1645,7 +1681,11 @@ public static class ResearchEngine
         uint uAsmRAM = (uint)(asmTable + 0x100000);
         int currentAsmOffset = asmTable;
 
+        // The executable gap is small - 336 bytes on an Expansion Pack build - so every write is
+        // checked against it. Overflowing it would silently spill into whatever follows .text.
+        bool asmOverflow = false;
         Action<byte[]> writeAsm = (b) => {
+            if (currentAsmOffset + b.Length > asmLimit) { asmOverflow = true; return; }
             b.CopyTo(code, currentAsmOffset);
             currentAsmOffset += b.Length;
         };
@@ -1770,6 +1810,16 @@ public static class ResearchEngine
             (byte)(uCount & 0xFF), (byte)((uCount >> 8) & 0xFF), (byte)((uCount >> 16) & 0xFF), (byte)((uCount >> 24) & 0xFF)
         ];
         writeAsm(new_itemToMoveAssm);
+
+        if (asmOverflow)
+        {
+            System.Windows.Forms.MessageBox.Show(
+                $"The TM expansion's code needs more room than code.bin's executable section has " +
+                $"({currentAsmOffset - asmTable}+ bytes needed, {asmLimit - asmTable} available).\n\n" +
+                "No hooks were installed, so the ROM is still bootable.",
+                "TM expansion: not enough executable space");
+            return;
+        }
 
         // Apply Hooks
 
@@ -1974,4 +2024,4 @@ public static class ResearchEngine
         }
         return false;
     }
-}
+}

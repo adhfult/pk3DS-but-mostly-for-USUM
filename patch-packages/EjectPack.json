@@ -1,0 +1,58 @@
+{
+  "Name": "Eject Pack",
+  "Description": "Switches the holder out when a stat is lowered.",
+  "Category": "Held item",
+  "Requires": [],
+  "Parameters": {
+    "itemId": {
+      "Description": "Item id to install Eject Pack on. Must be a free slot or already named Eject Pack.",
+      "Type": "item",
+      "Default": "864",
+      "ExpectName": "Eject Pack",
+      "AllowUnnamed": true
+    }
+  },
+  "Mechanics": [
+    {
+      "Kind": "Item",
+      "Id": 0,
+      "IdText": "${itemId}",
+      "Name": "Eject Pack",
+      "Slots": [
+        {
+          "Timing": "0x74",
+          "Code": "F0402DE90070A0E10160A0E10240A0E10350A0E10200A0E380F8FDEB040050E100009505010050030C00001A2400A0E37AF8FDEB000050E3080000AA0200A0E3000085E50700A0E1D65DFDEB0420A0E10600A0E1F040BDE80010A0E32301FEEA",
+          "SourceBase": "0x109938",
+          "TimingByte": 116,
+          "SourceBaseValue": 1087800,
+          "CodeBytes": "8EAt6QBwoOEBYKDhAkCg4QNQoOECAKDjgPj96wQAUOEAAJUFAQBQAwwAABokAKDjevj96wAAUOMIAACqAgCg4wAAheUHAKDh1l396wQgoOEGAKDh8EC96AAQoOMjAf7q"
+        },
+        {
+          "Timing": "0x8A",
+          "Reuse": {
+            "Kind": "Item",
+            "Id": 846,
+            "Timing": "0x8A",
+            "Name": "Adrenaline Orb"
+          },
+          "TimingByte": 138,
+          "SourceBaseValue": 0
+        }
+      ],
+      "KindValue": 2
+    }
+  ],
+  "Blocks": [],
+  "SitePatches": [],
+  "OtherCros": {},
+  "ItemData": {
+    "${itemId}": {
+      "CloneFrom": "880",
+      "HeldEffect": "155",
+      "FlingPower": "30"
+    }
+  },
+  "ItemNames": {
+    "${itemId}": "Eject Pack"
+  }
+}

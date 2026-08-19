@@ -231,7 +231,7 @@ namespace pk3DS.WinForms
             string bakPath = LoadedPath + ".bak";
             if (!File.Exists(bakPath)) File.Copy(LoadedPath, bakPath);
             File.WriteAllBytes(LoadedPath, Data);
-            WinFormsUtil.Alert("Saved!", LoadedPath);
+            WinFormsUtil.Alert("Saved!", LoadedPath + "\n\nIMPORTANT: Please reload your ROM in pk3DS (File -> Open) so all editors update to the new expanded file sizes and prevent crashes.");
         }
 
         #endregion

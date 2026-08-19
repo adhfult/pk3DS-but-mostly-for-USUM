@@ -13,8 +13,10 @@ public partial class PickupEditor7 : Form
     {
         InitializeComponent();
         g_pickup = pickup;
-        var itemlist = Main.Config.GetText(TextName.ItemNames);
-        itemlist[0] = "";
+        // GetText returns an empty array when the item text file is missing from the loaded RomFS,
+        // so blanking entry 0 unconditionally threw before the editor had drawn anything.
+        var itemlist = Main.Config.GetText(TextName.ItemNames) ?? [];
+        if (itemlist.Length > 0) itemlist[0] = "";
         items = itemlist.Select((v, i) => $"{v} - {i:000}").ToArray();
         SetupFLP();
 
@@ -28,14 +30,19 @@ public partial class PickupEditor7 : Form
     {
         if (dgvCommon.CurrentRow == null) return;
         var cell = dgvCommon.CurrentRow.Cells[0];
-        if (cell.Value == null) return;
-        string itemStr = cell.Value.ToString();
-        // Parse item index from "ItemName - 123"
-        int dashIdx = itemStr.LastIndexOf('-');
-        if (dashIdx < 0) return;
-        if (!int.TryParse(itemStr.Substring(dashIdx + 1).Trim(), out int itemId)) return;
-        
-        PB_Item.Image = WinFormsUtil.getIcon(itemId, 0, Main.Config);
+        int itemId = ParseTrailingId(cell.Value?.ToString());
+        if (itemId < 0) return;
+
+        WinFormsUtil.SetImage(PB_Item, WinFormsUtil.getIcon(itemId, 0, Main.Config));
+    }
+
+    /// <summary>The id in a "Name - 123" label, or -1 when there is none.</summary>
+    private static int ParseTrailingId(string label)
+    {
+        if (string.IsNullOrEmpty(label)) return -1;
+        int dash = label.LastIndexOf('-');
+        if (dash < 0) return -1;
+        return int.TryParse(label[(dash + 1)..].Trim(), out int id) && id >= 0 ? id : -1;
     }
 
     private readonly LazyGARCFile g_pickup;
@@ -100,7 +107,15 @@ public partial class PickupEditor7 : Form
     private void GetList(byte[] data)
     {
         // Fill Data
+        if (data == null || data.Length < 4) return;
+
         int rows = BitConverter.ToUInt16(data, 0) - 1; // nice editor gamefreak
+        // Trust the header only as far as the file actually goes; a truncated or rewritten pickup
+        // file would otherwise be read past its end.
+        int fits = (data.Length - 4) / (Columns + 2);
+        if (rows > fits) rows = fits;
+        if (rows <= 0) return;
+
         dgvCommon.Rows.Add(rows);
         for (int i = 0; i < rows; i++)
         {
@@ -108,7 +123,12 @@ public partial class PickupEditor7 : Form
             int item = BitConverter.ToUInt16(data, offset);
 
             var r = dgvCommon.Rows[i];
-            r.Cells[0].Value = items[item];
+            string label = (uint)item < (uint)items.Length ? items[item] : $"??? - {item:000}";
+            // The cell is a combo box, so a value absent from the column's list is rejected;
+            // register the placeholder before assigning it.
+            if (dgvCommon.Columns[0] is DataGridViewComboBoxColumn cb && !cb.Items.Contains(label))
+                cb.Items.Add(label);
+            r.Cells[0].Value = label;
             for (int j = 0; j < Columns; j++)
             {
                 int rate = data[offset + 2 + j];
@@ -156,8 +176,17 @@ public partial class PickupEditor7 : Form
         for (int i = 0; i < rows; i++)
         {
             var r = dgvCommon.Rows[i];
-            string item = r.Cells[0].Value.ToString();
+            string item = r.Cells[0].Value?.ToString() ?? "";
             int itemindex = Array.IndexOf(items, item);
+
+            if (itemindex < 0)
+                itemindex = ParseTrailingId(item);
+            if (itemindex < 0)
+            {
+                WinFormsUtil.Alert($"Row {i + 1} has no recognisable item ({item}).", "Fix that row and save again.");
+                return null;
+            }
+
             bw.Write((ushort)itemindex);
 
             foreach (var b in rates[i])
@@ -187,15 +216,24 @@ public partial class PickupEditor7 : Form
         if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNoCancel, "Randomize pickup lists?"))
             return;
 
-        int[] validItems = Randomizer.GetRandomItemList();
+        // Only ids this ROM can actually name; the shared list is built for a stock item table.
+        int[] validItems = Randomizer.GetRandomItemList().Where(z => (uint)z < (uint)items.Length).ToArray();
+        if (validItems.Length == 0)
+        {
+            WinFormsUtil.Alert("No usable items to randomize with.");
+            return;
+        }
 
         int ctr = 0;
         Util.Shuffle(validItems);
         for (int r = 0; r < dgvCommon.RowCount; r++)
         {
+            if (ctr >= validItems.Length)
+            {
+                Util.Shuffle(validItems);
+                ctr = 0;
+            }
             dgvCommon.Rows[r].Cells[0].Value = items[validItems[ctr++]];
-            if (ctr <= validItems.Length) continue;
-            Util.Shuffle(validItems); ctr = 0;
         }
         WinFormsUtil.Alert("Randomized!");
     }
@@ -229,8 +267,17 @@ public partial class PickupEditor7 : Form
         var speciesNames = Main.Config.GetText(TextName.SpeciesNames);
         var personal = Main.Config.Personal;
 
+        // Clear() detaches the old controls without disposing them, and a PictureBox never disposes
+        // the Image it was given, so each rebuild used to abandon both.
+        foreach (Control c in FLP_Pokemon.Controls)
+        {
+            if (c is PictureBox old) old.Image?.Dispose();
+            c.Dispose();
+        }
         FLP_Pokemon.Controls.Clear();
-        for (int i = 1; i < Main.Config.MaxSpeciesID; i++)
+
+        int max = Math.Min(Main.Config.MaxSpeciesID, Math.Min(personal.Table.Length, speciesNames.Length));
+        for (int i = 1; i < max; i++)
         {
             var p = personal[i];
             if (p.Abilities.Contains(pickupIdx))
@@ -242,9 +289,22 @@ public partial class PickupEditor7 : Form
                     Image = WinFormsUtil.GetSprite(i, 0, 0, 0, Main.Config),
                     Margin = new Padding(2)
                 };
-                new ToolTip().SetToolTip(pb, speciesNames[i]);
+                // One shared ToolTip rather than a native tooltip window per icon.
+                tips.SetToolTip(pb, speciesNames[i]);
                 FLP_Pokemon.Controls.Add(pb);
             }
         }
+    }
+
+    private readonly ToolTip tips = new();
+
+    protected override void OnFormClosed(FormClosedEventArgs e)
+    {
+        foreach (Control c in FLP_Pokemon.Controls)
+        {
+            if (c is PictureBox pb) pb.Image?.Dispose();
+        }
+        tips.Dispose();
+        base.OnFormClosed(e);
     }
 }

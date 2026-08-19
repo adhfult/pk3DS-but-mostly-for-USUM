@@ -42,16 +42,16 @@ namespace pk3DS.Core.Modding
                 string patchRootCodeBin = Path.Combine(patchSourceDir, "code.bin");
                 if (File.Exists(patchRootCodeBin) && Directory.Exists(exefsPath))
                 {
-                    string targetCodeBin = Path.Combine(exefsPath, "code.bin");
+                    string targetCodeBin = pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefsPath);
                     File.Copy(patchRootCodeBin, targetCodeBin, true);
                     copiedFiles++;
                     ProjectState.Instance.RecordModifiedFile("exefs/code.bin");
                 }
 
                 // Apply form reversion fix if code.bin exists in exefsPath
-                if (Directory.Exists(exefsPath) && File.Exists(Path.Combine(exefsPath, "code.bin")))
+                if (Directory.Exists(exefsPath) && File.Exists(pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefsPath)))
                 {
-                    ApplyFormReversionFix(Path.Combine(exefsPath, "code.bin"), out _);
+                    ApplyFormReversionFix(pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefsPath), out _);
                     ProjectState.Instance.RecordModifiedFile("exefs/code.bin");
                 }
 
@@ -220,7 +220,7 @@ namespace pk3DS.Core.Modding
                         {
                             filesToExport.Add($"romfs/{Path.GetFileName(f)}");
                         }
-                        if (File.Exists(Path.Combine(cand, "code.bin")))
+                        if (File.Exists(pk3DS.Core.CTR.ExeFS.ResolveCodeBin(cand)))
                         {
                             filesToExport.Add("exefs/code.bin");
                         }
@@ -228,7 +228,7 @@ namespace pk3DS.Core.Modding
                 }
 
                 // 3. Always include code.bin if present in exefsPath and patches were applied
-                if (Directory.Exists(exefsPath) && File.Exists(Path.Combine(exefsPath, "code.bin")))
+                if (Directory.Exists(exefsPath) && File.Exists(pk3DS.Core.CTR.ExeFS.ResolveCodeBin(exefsPath)))
                 {
                     filesToExport.Add("exefs/code.bin");
                 }
@@ -320,7 +320,13 @@ namespace pk3DS.Core.Modding
                 {
                     byte oldByte = codeData[offset];
                     codeData[offset] = 0xEA;
-                    File.WriteAllBytes(codeBinPath, codeData);
+                    if (!BinaryWriteGuard.TryWrite(codeBinPath, codeData,
+                            "Apply the form reversion fix",
+                            $"Changes one byte at 0x{offset:X} from 0x{oldByte:X2} to 0xEA."))
+                    {
+                        message = "Form reversion fix was not applied - the write was declined.";
+                        return false;
+                    }
                     message = $"Form reversion fix applied to code.bin at 0x{offset:X} (old: 0x{oldByte:X2}, new: 0xEA).";
                     return true;
                 }

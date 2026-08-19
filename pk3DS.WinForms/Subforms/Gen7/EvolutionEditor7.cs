@@ -253,6 +253,48 @@ public partial class EvolutionEditor7 : Form
         WinFormsUtil.Alert("All Pokémon's Evolutions have been randomized!");
     }
 
+    /// <summary>
+    /// Checks whether the Expansion Pack species are missing their evolution methods, and adds the
+    /// ones that are.
+    /// </summary>
+    private void B_AddMissingEvos_Click(object sender, EventArgs e)
+    {
+        SetList();
+        var evos = files.Select(z => new EvolutionSet7(z)).ToArray();
+
+        if (Main.Config.MaxSpeciesID < 1025)
+        {
+            WinFormsUtil.Alert("This ROM does not have the Expansion Pack species.",
+                "These evolution methods only apply to species 808-1025, which are not present here.");
+            return;
+        }
+
+        int missing = ExpansionPackEvolutions.CountMissing(Main.Config, evos);
+        if (missing == 0)
+        {
+            WinFormsUtil.Alert("Nothing to add.",
+                $"All {ExpansionPackEvolutions.DefinedCount} Expansion Pack evolution methods are already present.");
+            return;
+        }
+
+        if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo,
+                $"Add {missing} missing evolution method(s)?",
+                "Covers Primeape, Girafarig, Dunsparce, Stantler, Meltan, Toxel and the rest of the "
+                + "Expansion Pack species, plus the Galarian, Hisuian and White-Striped forms.\n\n"
+                + "Existing evolutions are left alone - these only fill empty slots."))
+            return;
+
+        int added = ExpansionPackEvolutions.Apply(Main.Config, evos);
+        evos.Select(z => z.Write()).ToArray().CopyTo(files, 0);
+        GetList();
+
+        WinFormsUtil.Alert($"Added {added} evolution method(s).",
+            added < missing
+                ? $"{missing - added} could not be added - either the species has no free evolution "
+                  + "slot, or a move/item the method needs is not in this ROM."
+                : "Save the editor to write them to the ROM.");
+    }
+
     private void B_Trade_Click(object sender, EventArgs e)
     {
         if (DialogResult.Yes != WinFormsUtil.Prompt(MessageBoxButtons.YesNo, "Remove all trade evolutions?", "Evolution methods will be altered so that evolutions will be possible with only one game."))
@@ -403,6 +445,6 @@ public partial class EvolutionEditor7 : Form
         if (form == -1)
             form = formVal[entry];
 
-        pic[index].Image = WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config);
+        WinFormsUtil.SetImage(pic[index], WinFormsUtil.GetSprite(species, form, 0, 0, Main.Config));
     }
 }

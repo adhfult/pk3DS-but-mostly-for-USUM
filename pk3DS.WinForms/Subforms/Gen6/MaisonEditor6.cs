@@ -155,7 +155,7 @@ public partial class MaisonEditor6 : Form
 
     private void ChangeSpecies(object sender, EventArgs e)
     {
-        PB_PKM.Image = WinFormsUtil.GetSprite(CB_Species.SelectedIndex, 0, 0, CB_Item.SelectedIndex, Main.Config);
+        WinFormsUtil.SetImage(PB_PKM, WinFormsUtil.GetSprite(CB_Species.SelectedIndex, 0, 0, CB_Item.SelectedIndex, Main.Config));
     }
 
     private void B_Remove_Click(object sender, EventArgs e)
